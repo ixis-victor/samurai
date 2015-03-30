@@ -1,0 +1,90 @@
+body,
+html {
+  margin: 0px;
+  padding: 0px;
+  background-color: $body_background_color;
+
+  &.toolbar {
+    section {
+
+      &#header-wrapper {
+        top: auto;
+      }
+      &#menu-wrapper {
+        top: auto;
+        margin-top: 3em;
+      }
+    }
+  }
+}
+
+section {
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  li,
+  label,
+  .description {
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 300;
+  }
+
+  .description {
+    font-size: 70% !important;
+  }
+
+  &#menu-wrapper {
+    max-width: 250px;
+    min-width: 150px;
+    top: 3em;
+    width: 225px;
+    height: 100%;
+    float: left;
+    position: fixed;
+    background-color: $menu_background_color;
+    border-right: $menu_right_border_width solid $menu_border_color;
+  }
+
+  &#header-wrapper {
+    width: 100%;
+    height: 3em;
+    float: right;
+    position: fixed;
+    background-color: $header_background_color;
+    border-bottom: 1px solid $header_border_color;
+    top: 0;
+  }
+
+  &#content-wrapper {
+    margin-top: 3.5em;
+    margin-left: 240px;
+    margin-right: 1em;
+  }
+
+  h1 {
+    font-size: 1.3em;
+  }
+  h2 {
+    font-size: 1.1em;
+  }
+  h3 {
+    font-size: 0.9em;
+  }
+  h4 {
+    font-size: 0.7em;
+  }
+  h5 {
+    font-size: 0.5em;
+  }
+  h6 {
+    font-size: 0.3em;
+  }
+  p {
+    font-size: 0.8em;
+  }
+}
+

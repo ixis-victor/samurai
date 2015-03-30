@@ -1,0 +1,9 @@
+name = Security Samurai Controller
+description = Controller module for the security_samurai client module. Defines the client entity, handles the views, handles the encryption code.
+package = Security Samurai
+core = 7.x
+version = 7.x-0.1
+
+dependencies[] = entity
+
+files[] = includes/samurai.inc

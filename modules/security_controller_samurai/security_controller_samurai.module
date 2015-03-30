@@ -1,0 +1,141 @@
+<?php
+/**
+ * @file
+ * security_controller_samurai.module
+ */
+
+// Define module path
+define('SAMURAI_MODULE_PATH', drupal_get_path('module', 'security_controller_samurai'));
+
+include(SAMURAI_MODULE_PATH . '/includes/samurai.inc');
+include(SAMURAI_MODULE_PATH . '/security_controller_samurai.fetch.inc');
+
+/**
+ * Implements hook_entity_info()
+ */
+function security_controller_samurai_entity_info() {
+  $info = array();
+
+  $info['client'] = array(
+    'label' => t('Client'),
+    'base table' => 'securitysamuraiclient_client',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'name',
+    ),
+    'uri callback' => 'entity_class_uri',
+    'entity class' => 'ClientEntity',
+    'controller class' => 'ClientEntityController',
+    'admin ui' => array(
+       'path' => 'admin/client',
+       'controller class' => 'EntityDefaultUIController',
+       'menu wildcard' => '%client',
+       'file' => 'security_controller_samurai.admin.inc',
+     ),
+    'module' => 'security_controller_samurai',
+    'access callback' => 'security_controller_samurai_access_callback',
+    'views controller class' => 'EntityDefaultViewsController',
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_views_api()
+ */
+function security_controller_samurai_views_api() {
+  return array(
+    'api' => 3,
+    'path' => SAMURAI_MODULE_PATH,
+  );
+}
+
+/**
+ * Implements hook_menu()
+ */
+function security_controller_samurai_menu() {
+  $items = array();
+
+  $items['dashboard/client/%client'] = array(
+    'title' => t('Client'),
+    'page callback' => 'security_controller_samurai_client_view_entity',
+    'page arguments' => array(2),
+    'access arguments' => array('view security samurai update status'),
+    'access callback' => TRUE,
+  );
+
+  return $items;
+}
+
+/**
+ * Menu autoloader for dashboard/client
+ */
+function client_load($id) {
+  $client = entity_load('client', array($id));
+  return array_pop($client);
+}
+
+/**
+ * Load the entity.
+ */
+function security_controller_samurai_client_view_entity($client) {
+  drupal_set_title($client->name);
+  $client_entity = entity_view('client', array($client->id => $client));
+  return $client_entity;
+}
+
+/**
+ * Implements hook_permission()
+ */
+function security_controller_samurai_permission() {
+  return array(
+    'administer security samurai' => array(
+      'title' => t('Administer security samurai configuration'),
+    ),
+    'administer security samurai clients' => array(
+      'title' => t('Administer security samurai clients'),
+    ),
+    'view security samurai update status' => array(
+      'title' => t('View module update status'),
+    ),
+  );
+}
+
+/**
+ * Access callback for viewing the client nodes.
+ */
+function security_controller_samurai_access_callback($op, $client_entity = NULL, $account = NULL) {
+  if ($op == 'view' && user_access('view security samurai update status', $account)) {
+    return TRUE;
+  } elseif (user_access('administer security samurai clients', $account) || user_access('administer security samurai', $account)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * @todo
+ */
+class ClientEntity extends Entity {
+  protected function defaultUri() {
+    return array('path' => 'dashboard/client/' . $this->identifier());
+  }
+}
+
+/**
+ * @todo
+ */
+class ClientEntityController extends EntityAPIController {
+  public function save($entity, DatabaseTransaction $transaction = NULL) {
+    if (isset($entity->is_new)) {
+      $entity->created_at = REQUEST_TIME;
+    }
+    $entity->updated_at = REQUEST_TIME;
+    return parent::save($entity, $transaction);
+  }
+
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+    return $build;
+  }
+}

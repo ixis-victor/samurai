@@ -1,0 +1,30 @@
+
+// Load in the google font
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,300italic);
+
+// Body
+$body_background_color: #eee;
+
+// Header 
+$header_background_color: #fff;
+$header_border_color: #aaa;
+
+// Menu
+$menu_font_color: #6d7983;
+$menu_background_color: #2d353c;
+$menu_border_color: darken($menu_background_color, 10%);
+$menu_right_border_width: 3px;
+$menu_item_font_color: #a8acb1;
+$menu_item_active_font_color: #fff;
+$menu_item_active_background_color: darken($menu_background_color, 10%);
+$menu_item_hover_background_color: #232a2f;
+
+// Text input
+$text_input_border_color: lighten($header_border_color, 20%);
+$text_input_border_radius: 3px;
+$text_input_padding: 0.3em;
+
+// Button submit
+$button_submit_border_color: lighten($header_border_color, 10%);
+$button_submit_horz_padding: 1.5em;
+$button_submit_border_radius: 3px;

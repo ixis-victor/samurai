@@ -1,0 +1,109 @@
+section {
+  &#menu-wrapper {
+    color: $menu_font_color;
+    #menu {
+      h2 {
+        font-size: 14px;
+        padding-left: 1em;
+        padding-top: 1em;
+        padding-bottom: 1em;
+        margin: 0;
+      }
+
+      ul {
+
+        padding: 0;
+        margin: 0;
+        li {
+          list-style-type: none;
+          padding: 0;
+          margin: 0;
+          &.active-trail {
+            > a {
+              & > div {
+                color: $menu_item_active_font_color;
+                background-color: $menu_item_active_background_color !important;
+              }
+            }
+          }
+          & > a {
+            & > div {
+              padding-left: 1em;
+              padding-bottom: 0.5em;
+              padding-top: 0.5em;
+              color: $menu_item_font_color;
+              -webkit-transition: 0.2s ease;
+              transition: 0.2s ease;
+
+              &:hover {
+                background-color: $menu_item_hover_background_color;
+              }
+            }
+            text-decoration: none;
+          }
+        }
+      }
+    }
+  }
+
+  #user-login {
+    label {
+      margin-bottom: 0.1em;
+    }
+  }
+
+  input {
+    &[type="textarea"],
+    &[type="text"],
+    &[type="password"] {
+      border: 1px solid $text_input_border_color;
+      border-radius: $text_input_border_radius;
+      padding: $text_input_padding;
+      outline: none !important;
+      margin-left: 0;
+    }
+
+    &[type="submit"] {
+      -webkit-transition: 0.3s ease;
+      transition: 0.3s ease;
+      border: none;
+      padding: ($button_submit_horz_padding / 2.1) $button_submit_horz_padding;
+      border-radius: $button_submit_border_radius;
+      background-color: lighten(#2d353c, 20%);
+      color: darken(#FFF, 25%);
+      &:hover {
+        cursor: pointer;
+        background-color: #2d353c;
+        color: #FFF;
+      }
+    }
+  }
+
+  table {
+    width: 100%;
+    font-family: 'Roboto', sans-serif;
+    thead {
+      tr {
+        th {
+          padding: 0.5em;
+          font-weight: 300;
+          background-color: darken($body_background_color, 20%);
+          border-bottom: 1px solid darken($body_background_color, 25%);
+        }
+      }
+    }
+    tbody {
+      tr {
+        td {
+          background-color: lighten($body_background_color, 20%);
+          padding: 0.5em;
+          font-family: 'Roboto', sans-serif;
+        }
+      }
+    }
+  }
+
+  a {
+    color: #333;
+  }
+}

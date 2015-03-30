@@ -1,0 +1,132 @@
+<?php
+/**
+ * Install and uninstall functions
+ */
+
+/**
+ * Implements hook_schema
+ */
+function security_controller_samurai_schema() {
+  $schema = array();
+  $schema['securitysamuraiclient_client'] = array(
+    'description' => 'The base table for the security samurai client entity',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key of the client entity',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'Human readable name of the client',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'encryption_key' => array(
+        'description' => 'The encryption key used to decrypt the update data from the client',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'site_url' => array(
+        'description' => 'The client site URL',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'created_at' => array(
+        'description' => 'The date in which the client was created',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => FALSE,
+      ),
+      'updated_at' => array(
+        'description' => 'The date in which the client was updated',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => FALSE,
+      ),
+      'site_update_data' => array(
+        'description' => 'The update data in json format',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'update_count' => array(
+        'description' => 'The counter for available security updates',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => FALSE,
+      ),
+      'update_last_check' => array(
+        'description' => 'The last time an update was checked',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => FALSE,
+      ),
+      'site_available_update_data' => array(
+        'description' => 'The updates available on the site',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  $schema['securitysamuraiclient_projects'] = array(
+    'description' => 'The table in which update data for every project ever retrieved is stored',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The unique table row id',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The project name',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'machine_name' => array(
+        'description' => 'The machine name of the project',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'major_version' => array(
+        'description' => 'The major version of the project',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => FALSE,
+      ),
+      'minor_version' => array(
+        'description' => 'The latest secure project minor version',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => FALSE,
+      ),
+      'core' => array(
+        'description' => 'The compatible drupal core version',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'unsupported' => array(
+        'description' => 'The project support status',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'project_type' => array(
+        'description' => 'The type of project. e.g. Contrib Custom Theme',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  return $schema;
+}
