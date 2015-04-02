@@ -150,21 +150,7 @@ function _samurai_get_project_type($machine_name, $core) {
  * @param string $minor_version The minor version of the project 1.x
  */
 function _samurai_add_project($name, $machine_name, $type, $core, $major_version, $minor_version) {
-  // Check first that the project isn't already added.
-  /**
-   * @todo If the project needs to be checked anywhere else, create a function for it.
-   */
-  $result = db_query('SELECT name FROM {securitysamuraiclient_projects} WHERE 
-    name = :name AND 
-    core = :core AND 
-    major_version = :majversion', 
-    array(
-      ':name' => $name,
-      ':core' => $core,
-      ':majversion' => $major_version,
-    )
-  )->fetchField();
-  if (empty($result)) {
+  if (!_samurai_project_exists($machine_name, $core, $major_version)) {
     // The project has not yet been added to the database.
     // We must add it to the database.
     db_insert('securitysamuraiclient_projects')
@@ -187,11 +173,32 @@ function _samurai_add_project($name, $machine_name, $type, $core, $major_version
  * Checks whether a project is already in the database.
  *
  * @param string $machine_name The machine name of the project.
+ * @param string $core The compatible core version e.g. 7.x, 6.x, 8.x
+ * @param string $major_version The major version number.
  *
- * @todo
+ * @return bool TRUE/FALSE Depends on the project existing in the database
  */
-function _samurai_project_exists($machine_name) {
-  // Not implemented
+function _samurai_project_exists($machine_name, $core, $major_version) {
+  // Query the database for the project.
+  $result = db_query('SELECT name FROM {securitysamuraiclient_projects} WHERE
+    machine_name = :machine_name AND
+    core = :core AND
+    major_version = :major_version',
+    array(
+      ':machine_name' => $machine_name,
+      ':core' => $core,
+      ':major_version' => $major_version,
+    )
+  )->fetchField();
+
+  if (!empty($result)) {
+    // The project is not in the database.
+    return FALSE;
+  } else {
+    // The project is in the database.
+    return TRUE;
+  }
+
 }
 
 /**
@@ -205,6 +212,7 @@ function _samurai_project_exists($machine_name) {
  */
 function _samurai_mark_project_type($project_name, $type) {
   // Not implemented
+  // Maybe not needed thanks to _samurai_get_project_type?
 }
 
 /**
