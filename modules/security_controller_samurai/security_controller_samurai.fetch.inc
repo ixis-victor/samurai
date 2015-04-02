@@ -14,6 +14,7 @@
 
 /**
  * @todo Add a check to see if a module is unsupported.
+ * @todo dump the minor version number database field - Is not needed.
  */
 
 define('SAMURAI_ORG_UPDATE_URL', 'http://updates.drupal.org/release-history/');
@@ -75,17 +76,24 @@ function _samurai_process_update_data($decrypted_update_data) {
   if (!empty($modules)) {
     foreach ($modules as $module => $m) {
       // Human readable name
-      $name = $m['name'];
+      $m_name = $m['name'];
       // Machine name
-      $machine_name = $m['machine_name'];
+      $m_machine_name = $m['machine_name'];
       // Compatible core version
-      $core = $m['core'];
+      $m_core = $m['core'];
       // The type of module e.g. module_custom, module_contrib
-      $type = 'module' . _samurai_get_project_type($machine_name, $core);
+      $m_type = 'module' . _samurai_get_project_type($m_machine_name, $m_core);
       // Split the version number into the minor and major versions.
-      $split_version = _samurai_split_version_number($m['version']);
+      $m_split_version = _samurai_split_version_number($m['version']);
       // Add the project.
-      _samurai_add_project($name, $machine_name, $type, $core, $split_version['major'], $split_version['minor']);
+      _samurai_add_project(
+        $m_name,
+        $m_machine_name,
+        $m_type,
+        $m_core,
+        $m_split_version['major'],
+        $m_split_version['minor']
+      );
       // Add the module on to the projects_array
       $projects_array[$m['machine_name']] = $m;
     }
@@ -94,27 +102,56 @@ function _samurai_process_update_data($decrypted_update_data) {
   if (!empty($themes)) {
     foreach ($themes as $theme => $t) {
       // Human readable name
-      $name = $t['name'];
+      $t_name = $t['name'];
       // Machine name
-      $machine_name = $t['machine_name'];
+      $t_machine_name = $t['machine_name'];
       // Compatible core version
-      $core = $t['core'];
+      $t_core = $t['core'];
       // The type of theme e.g. theme_custom, theme_contrib.
-      $type = 'theme' . _samurai_get_project_type($machine_name, $core);
+      $t_type = 'theme' . _samurai_get_project_type($t_machine_name, $t_core);
       // Split the version number into the minor and major versions.
-      $split_version = _samurai_split_version_number($t['version']);
+      $t_split_version = _samurai_split_version_number($t['version']);
       // Add the project.
-      _samurai_add_project($name, $machine_name, $type, $core, $split_version['major'], $split_version['minor']);
+      _samurai_add_project(
+        $t_name,
+        $t_machine_name,
+        $t_type,
+        $t_core,
+        $t_split_version['major'],
+        $t_split_version['minor']
+      );
       // Add the theme on to the projects_array
       $projects_array[$t['machine_name']] = $t;
     }
   }
   // Process core
   if (!empty($core)) {
-    /**
-     * @todo
-     */
+    // Humam readable name
+    $c_name = 'Drupal core';
+    // Machine name
+    $c_machine_name = 'drupal';
+    // Split the version number into minor and major versions.
+    $c_split_version = _samurai_split_version_number($core['version']);
+    // Compatible core version
+    $c_core = $c_split_version['major'] . '.x';
+    // Define the project type as core.
+    $c_type = 'core';
+    // Add the project.
+    _samurai_add_project(
+      $c_name,
+      $c_machine_name,
+      $c_type, $c_core,
+      $c_split_version['major'],
+      $c_split_version['minor']
+    );
+    // Add the core project to the projects array
+    $projects_array[$c_machine_name] = array(
+      'name' => $c_name,
+      'machine_name' => $c_machine_name,
+      'version' => $core['version'],
+    );
   }
+  // Return the projects array for manipulation
   return $projects_array;
 }
 
@@ -190,13 +227,12 @@ function _samurai_project_exists($machine_name, $core, $major_version) {
       ':major_version' => $major_version,
     )
   )->fetchField();
-
   if (!empty($result)) {
-    // The project is not in the database.
-    return FALSE;
-  } else {
     // The project is in the database.
     return TRUE;
+  } else {
+    // The project is not in the database.
+    return FALSE;
   }
 
 }
