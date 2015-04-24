@@ -8,7 +8,8 @@
  */
 function security_controller_samurai_schema() {
   $schema = array();
-  $schema['securitysamuraiclient_client'] = array(
+  // Schema for client entities
+  $schema['securitysamurai_client'] = array(
     'description' => 'The base table for the security samurai client entity',
     'fields' => array(
       'id' => array(
@@ -49,8 +50,7 @@ function security_controller_samurai_schema() {
       ),
       'site_update_data' => array(
         'description' => 'The update data in json format',
-        'type' => 'varchar',
-        'length' => 255,
+        'type' => 'text',
         'not null' => FALSE,
       ),
       'update_count' => array(
@@ -59,14 +59,8 @@ function security_controller_samurai_schema() {
         'length' => 10,
         'not null' => FALSE,
       ),
-      'update_last_check' => array(
+      'update_next_check' => array(
         'description' => 'The last time an update was checked',
-        'type' => 'int',
-        'length' => 10,
-        'not null' => FALSE,
-      ),
-      'site_available_update_data' => array(
-        'description' => 'The updates available on the site',
         'type' => 'int',
         'length' => 10,
         'not null' => FALSE,
@@ -74,8 +68,9 @@ function security_controller_samurai_schema() {
     ),
     'primary key' => array('id'),
   );
-  $schema['securitysamuraiclient_projects'] = array(
-    'description' => 'The table in which update data for every project ever retrieved is stored',
+  // Schema for project entities
+  $schema['securitysamurai_projects'] = array(
+    'description' => 'Data for every project ever retrieved',
     'fields' => array(
       'id' => array(
         'description' => 'The unique table row id',
@@ -101,7 +96,13 @@ function security_controller_samurai_schema() {
         'length' => 10,
         'not null' => FALSE,
       ),
-      'minor_version' => array(
+      'latest_minor_version' => array(
+        'description' => 'The latest project minor version number',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => FALSE,
+      ),
+      'latest_secure_minor_version' => array(
         'description' => 'The latest secure project minor version',
         'type' => 'int',
         'length' => 10,
@@ -113,7 +114,7 @@ function security_controller_samurai_schema() {
         'length' => '255',
         'not null' => FALSE,
       ),
-      'unsupported' => array(
+      'supported' => array(
         'description' => 'The project support status',
         'type' => 'varchar',
         'length' => '255',
@@ -121,6 +122,65 @@ function security_controller_samurai_schema() {
       ),
       'project_type' => array(
         'description' => 'The type of project. e.g. Contrib Custom Theme',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'update_next_check' => array(
+        'description' => 'The next time to check for an update for this project',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  // Schema for security announcement entities
+  $schema['securitysamurai_sa'] = array(
+    'description' => 'The security announcment data',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The unique table row id',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'sa_id' => array(
+        'description' => 'The SA identifier',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'risk_level' => array(
+        'description' => 'The risk level of the security announcment',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'date' => array(
+        'description' => 'The date the security announcment was made',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+      'version' => array(
+        'description' => 'JSON array of affected versions',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'vulnerability' => array(
+        'description' => 'JSON array of vulnerabilities',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'solution' => array(
+        'description' => 'The solution to fix the vulnerability',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'project_name' => array(
+        'description' => 'The project name the securty announcement is for',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,

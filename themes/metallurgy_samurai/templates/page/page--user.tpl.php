@@ -72,28 +72,12 @@
 
 <section id="header-wrapper">
   <div id="header">
-    
+    <!-- Centered samurai druplicon logo @todo -->
   </div>
 </section>
-<?php if ($user->uid != 0): ?>
-<section id="menu-wrapper">
-  <div id="menu">
-    <?php print theme('links__system_main_menu', array(
-      'links' => $main_menu,
-      'attributes' => array(
-        'id' => 'main-menu',
-        'class' => array(
-          'links',
-        ),
-      ), 
-      'heading' => t('Navigation'),
-    )); ?>
-  </div>
-</section>
-<?php endif; ?>
-<section id="content-wrapper">
+<section id="content-wrapper" class="full-width">
   <div id="content">
-    <?php print $messages; ?>
+    <h1 id="user-login-title" class="center-text"><?php print $title ?></h1>
     <?php print render($page['content']); ?>
   </div>
 </section>

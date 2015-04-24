@@ -63,28 +63,56 @@ section {
     margin-top: 3.5em;
     margin-left: 240px;
     margin-right: 1em;
+    font-family: 'Roboto', sans-serif !important;
+    &.full-width {
+      margin-left: 0px !important;
+    }
+  }
+
+  #column-right-wrapper {
+    margin-left: 53px;
+    margin-top: 79px;
   }
 
   h1 {
-    font-size: 1.3em;
+    margin: 1em 0;
+    font-size: 1.4em;
   }
   h2 {
-    font-size: 1.1em;
+    margin: 0.9em 0;
+    font-size: 1.2em;
   }
   h3 {
-    font-size: 0.9em;
+    margin: 0.8em 0;
+    font-size: 1.1em;
   }
   h4 {
-    font-size: 0.7em;
+    margin: 0.7em 0;
+    font-size: 0.8em;
   }
   h5 {
-    font-size: 0.5em;
+    margin: 0.6em 0;
+    font-size: 0.6em;
   }
   h6 {
-    font-size: 0.3em;
+    margin: 0.5em 0;
+    font-size: 0.4em;
   }
   p {
-    font-size: 0.8em;
+    font-size: 1em;
   }
 }
 
+#left-content {
+  width: 70%;
+  float: left;
+}
+
+#right-content {
+  width: 30%;
+  float: right;
+}
+
+.center-text {
+  text-align: center;
+}

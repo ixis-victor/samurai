@@ -4,8 +4,6 @@
  * Administrative UI functions.
  */
 
-// include(SAMURAI_MODULE_PATH . '/includes/samurai.inc');
-
 /**
  * Implements hook_form
  */
@@ -83,27 +81,18 @@ function client_form_submit($form, &$form_state) {
     $form_state['values']['encryption_key'] = $encryption_string;
     $form_state['values']['site_url'] = base64_decode($site_url);
   }
-  // Get the update data from the site.
-  $update_data = _samurai_get_update_data($form_state['values']['site_url']);
-
-  // Decrypt the update data and add the modules to the module checker table.
-  $encrypted_string = drupal_json_decode($update_data);
-  $decrypted_data = drupal_json_decode(trim(_samurai_decrypt_update_data($encrypted_string['encrypted'], $form_state['values']['encryption_key'])));
-  $processed_data = drupal_json_encode(_samurai_process_update_data($decrypted_data));
-
-  // Set a update_data and update_last_check form value.
-  $form_state['values']['site_update_data'] = $processed_data;
-  $form_state['values']['update_last_check'] = REQUEST_TIME;
-
-  // Save the entity
+  // We need to check if the client is being updated or saved.
+  if (!samurai_client_exists($form_state['values']['name'], $form_state['values']['site_url'])) {
+    // $form_state['values']['update_next_check'] = strtotime('+24 hours'); @todo
+    // Set the update_next_check to 0, so the updates are checked on the next cron execution.
+    $form_state['values']['update_next_check'] = 0;
+  }
+  // Save the entity.
   $client = entity_ui_form_submit_build_entity($form, $form_state);
   $client->save();
-
-  // Messages
+  // Notification messages.
   drupal_set_message(t('@name has been saved.', array('@name' => $client->name)));
-  // Log the client creation to watchdog.
-  // @todo
-
+  watchdog('Security samurai', t('@name has been saved.', array('@name' => $client->name)));
   // Redirect to admin/client
   $form_state['redirect'] = 'admin/client';
 }

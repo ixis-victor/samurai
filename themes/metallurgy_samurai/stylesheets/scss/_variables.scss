@@ -9,6 +9,13 @@ $body_background_color: #eee;
 $header_background_color: #fff;
 $header_border_color: #aaa;
 
+// Global
+$border_radius: 3px;
+$required_input: #fff;
+
+// Specific
+$box_shadow: 0px 1px 0px #aaa;
+
 // Menu
 $menu_font_color: #6d7983;
 $menu_background_color: #2d353c;
@@ -28,3 +35,9 @@ $text_input_padding: 0.3em;
 $button_submit_border_color: lighten($header_border_color, 10%);
 $button_submit_horz_padding: 1.5em;
 $button_submit_border_radius: 3px;
+
+// Risk colors
+$risk_highly_critical: #c0392b;
+$risk_moderately_critical: #f39c12;
+$risk_critical: #d35400;
+$risk_less_critical: #f1c40f;

@@ -1,24 +1,28 @@
 section {
+  
+  &#header-wrapper {
+    z-index: 1;
+  }
+  
   &#menu-wrapper {
     color: $menu_font_color;
     #menu {
       h2 {
-        font-size: 14px;
+        font-size: 12px;
         padding-left: 1em;
         padding-top: 1em;
         padding-bottom: 1em;
         margin: 0;
       }
-
       ul {
-
         padding: 0;
         margin: 0;
         li {
           list-style-type: none;
           padding: 0;
           margin: 0;
-          &.active-trail {
+          &.active-trail,
+          &.active {
             > a {
               & > div {
                 color: $menu_item_active_font_color;
@@ -28,9 +32,10 @@ section {
           }
           & > a {
             & > div {
+              font-size: 14px;
               padding-left: 1em;
-              padding-bottom: 0.5em;
-              padding-top: 0.5em;
+              padding-bottom: 0.8em;
+              padding-top: 0.8em;
               color: $menu_item_font_color;
               -webkit-transition: 0.2s ease;
               transition: 0.2s ease;
@@ -46,40 +51,59 @@ section {
     }
   }
 
+  #user-login-title {
+    margin-top: 80px;
+  }
   #user-login {
     label {
       margin-bottom: 0.1em;
     }
+    .form-required {
+      // Pretty self explanatory you need a username and password to login.
+      display: none;
+    }
+    width: 400px;
+    padding: 2em;
+    margin: 45px auto;
+    box-shadow: $box_shadow;
+    border-radius: $border-radius;
+    background-color: #fff;
   }
 
-  input {
-    &[type="textarea"],
-    &[type="text"],
-    &[type="password"] {
-      border: 1px solid $text_input_border_color;
-      border-radius: $text_input_border_radius;
-      padding: $text_input_padding;
-      outline: none !important;
-      margin-left: 0;
-    }
-
-    &[type="submit"] {
-      -webkit-transition: 0.3s ease;
-      transition: 0.3s ease;
-      border: none;
-      padding: ($button_submit_horz_padding / 2.1) $button_submit_horz_padding;
-      border-radius: $button_submit_border_radius;
-      background-color: lighten(#2d353c, 20%);
-      color: darken(#FFF, 25%);
-      &:hover {
-        cursor: pointer;
-        background-color: #2d353c;
-        color: #FFF;
+  form {
+    input {
+      &[type="textarea"],
+      &[type="text"],
+      &[type="password"] {
+        border: 1px solid $text_input_border_color;
+        border-radius: $text_input_border_radius;
+        padding: $text_input_padding;
+        outline: none !important;
+        margin-left: 0;
       }
+      &[type="submit"] {
+        -webkit-transition: 0.3s ease;
+        -moz-transition: 0.3s ease;
+        transition: 0.3s ease;
+        border: none;
+        padding: ($button_submit_horz_padding / 2.1) $button_submit_horz_padding;
+        border-radius: $button_submit_border_radius;
+        background-color: lighten(#2d353c, 20%);
+        color: darken(#FFF, 25%);
+        &:hover {
+          cursor: pointer;
+          background-color: #2d353c;
+          color: #FFF;
+        }
+      }
+    }
+    .form-required {
+      color: $required_input;
     }
   }
 
   table {
+    border-radius: $border-radius;
     width: 100%;
     font-family: 'Roboto', sans-serif;
     thead {
@@ -87,7 +111,7 @@ section {
         th {
           padding: 0.5em;
           font-weight: 300;
-          background-color: darken($body_background_color, 20%);
+          background-color: lighten($body_background_color, 3%);
           border-bottom: 1px solid darken($body_background_color, 25%);
         }
       }
@@ -103,7 +127,108 @@ section {
     }
   }
 
+  .view-content {
+    border-radius: $border-radius;
+    .views-row {
+      padding: 0.7em 0.6em;
+      border-bottom: 1px solid darken($body_background_color, 25%);
+      font-size: 95%;
+      &.views-row-even {
+        background-color: lighten($body_background_color, 3%);
+      }
+      &.views-row-odd {
+        background-color: lighten($body_background_color, 5%);
+      }
+      .views-field {
+        padding: 0.1em 0;
+      }
+    }
+  }
+
   a {
     color: #333;
+  }
+
+  #content-header {
+    position: absolute;
+    margin-top: 1em;
+    #title {
+      display: inline;
+      font-weight: bold;
+      color: #FFF;
+      border-radius: $border-radius;
+    }
+    #title-type {
+      display: inline;
+      padding: 0.4em;
+    }
+    & > #title {
+      background-color: $menu-background-color;
+      padding: 0.4em;
+      margin-top: 1em 0;
+    }
+    .risk-highlycritical,
+    .risk-moderatelycritical,
+    .risk-critical,
+    .risk-lesscritical {
+      padding: 0.6em;
+      padding-top: 0.8em;
+    }
+  }
+  #content-main {
+    z-index: -10;
+    position: absolute;
+    margin-top: 2.7em;
+    .publish-info {
+      padding-top: 3px;
+      padding-left: 1px;
+    }
+  }
+
+  #left-content {
+    .card {
+      width: 70% !important;
+    }
+  }
+
+  .card {
+    .title {
+      margin-top: 0.4em;
+      padding-bottom: 0.5em;
+      border-bottom: 1px dotted #333;
+    }
+    margin-top: 0.5em;
+    padding: 0.5em 1em;
+    background-color: #fff;
+    border-radius: $border-radius;
+    box-shadow: $box_shadow;
+  }
+
+  .risk-highlycritical {
+    padding: 2px;
+    border-radius: $border-radius;
+    color: #FFF;
+    background-color: $risk_highly_critical;
+  }
+
+  .risk-moderatelycritical {
+    padding: 2px;
+    border-radius: $border-radius;
+    color: #FFF;
+    background-color: $risk_moderately_critical;
+  }
+
+  .risk-critical {
+    padding: 2px;
+    border-radius: $border-radius;
+    color: #FFF;
+    background-color: $risk_critical;
+  }
+
+  .risk-lesscritical {
+    padding: 2px;
+    border-radius: $border-radius;
+    color: #FFF;
+    background-color: $risk_less_critical;
   }
 }

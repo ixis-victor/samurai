@@ -2,12 +2,38 @@
 /**
  * @file
  * security_controller_samurai.module
+ *
+ * @author jkswoods
  */
 
-// Define module path
-define('SAMURAI_MODULE_PATH', drupal_get_path('module', 'security_controller_samurai'));
+/**
+ * @todo cleanup the code, make it eaier to work with.
+ * @todo remove the _ from functions.
+ * @todo Implement a get latest update function.
+ * @todo use the entity way for adding projects.
+ */
 
-include(SAMURAI_MODULE_PATH . '/includes/samurai.inc');
+/**
+ * @global string SAMURAI_MODULE_PATH 
+ * Defines the path of the security_samurai module.
+ *
+ * @global string SAMURAI_ORG_UPDATE_URL
+ * Define the release history URL for gathering project releases.
+ *
+ * @global string SAMURAI_ORG_SA_CORE
+ * Define the core project security update feed URL.
+ *
+ * @global string SAMURAI_ORG_SA_CONTRIB
+ * Define the contributed projects security update feed URL.
+ */
+define('SAMURAI_MODULE_PATH', drupal_get_path('module', 'security_controller_samurai'));
+define('SAMURAI_ORG_UPDATE_URL', 'http://updates.drupal.org/release-history/');
+define('SAMURAI_ORG_SA_CORE', 'https://www.drupal.org/security/rss.xml');
+define('SAMURAI_ORG_SA_CONTRIB', 'https://www.drupal.org/security/contrib/rss.xml');
+
+// Include the helper functions to this module.
+include(SAMURAI_MODULE_PATH . '/security_controller_samurai.inc');
+// Include the cron/fetch related functions etc.
 include(SAMURAI_MODULE_PATH . '/security_controller_samurai.fetch.inc');
 
 /**
@@ -16,9 +42,10 @@ include(SAMURAI_MODULE_PATH . '/security_controller_samurai.fetch.inc');
 function security_controller_samurai_entity_info() {
   $info = array();
 
+  // The client entity.
   $info['client'] = array(
     'label' => t('Client'),
-    'base table' => 'securitysamuraiclient_client',
+    'base table' => 'securitysamurai_client',
     'entity keys' => array(
       'id' => 'id',
       'label' => 'name',
@@ -34,6 +61,41 @@ function security_controller_samurai_entity_info() {
      ),
     'module' => 'security_controller_samurai',
     'access callback' => 'security_controller_samurai_access_callback',
+    // Default views support.
+    'views controller class' => 'EntityDefaultViewsController',
+  );
+
+  // The security announcement entity.
+  $info['security_announcement'] = array(
+    'label' => t('Security announcement'),
+    'base table' => 'securitysamurai_sa',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'sa_id',
+    ),
+    'uri callback' => 'entity_class_uri',
+    'entity class' => 'SAEntity',
+    'controller class' => 'SAEntityController',
+    'module' => 'security_controller_samurai',
+    'access callback' => 'security_controller_samurai_access_callback',
+    // Default views support.
+    'views controller class' => 'EntityDefaultViewsController',
+  );
+
+  // The project entity.
+  $info['project'] = array(
+    'label' => t('Project'),
+    'base table' => 'securitysamurai_projects',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'name',
+    ),
+    'uri callback' => 'entity_class_uri',
+    'entity class' => 'ProjectEntity',
+    'controller class' => 'ProjectEntityController',
+    'module' => 'security_controller_samurai',
+    'access callback' => 'security_controller_samurai_access_callback',
+    // Default views support.
     'views controller class' => 'EntityDefaultViewsController',
   );
 
@@ -55,33 +117,24 @@ function security_controller_samurai_views_api() {
  */
 function security_controller_samurai_menu() {
   $items = array();
-
-  $items['dashboard/client/%client'] = array(
+  // For entities of type 'client'
+  $items['client/%client'] = array(
     'title' => t('Client'),
     'page callback' => 'security_controller_samurai_client_view_entity',
-    'page arguments' => array(2),
+    'page arguments' => array(1),
     'access arguments' => array('view security samurai update status'),
-    'access callback' => TRUE,
+    'access callback' => TRUE
   );
-
+  // For entities of type 'security_announcement'
+  $items['security-announcement/%security_announcement'] = array(
+    'title' => t('Security announcement'),
+    'page callback' => 'security_controller_samurai_security_announcement_view_entity',
+    'page arguments' => array(1),
+    'access arguments' => array('view content'),
+    'access callback' => TRUE
+  );
+  // Return the menu items
   return $items;
-}
-
-/**
- * Menu autoloader for dashboard/client
- */
-function client_load($id) {
-  $client = entity_load('client', array($id));
-  return array_pop($client);
-}
-
-/**
- * Load the entity.
- */
-function security_controller_samurai_client_view_entity($client) {
-  drupal_set_title($client->name);
-  $client_entity = entity_view('client', array($client->id => $client));
-  return $client_entity;
 }
 
 /**
@@ -89,6 +142,7 @@ function security_controller_samurai_client_view_entity($client) {
  */
 function security_controller_samurai_permission() {
   return array(
+    // Currently there is no configuration - will this be needed?
     'administer security samurai' => array(
       'title' => t('Administer security samurai configuration'),
     ),
@@ -103,29 +157,43 @@ function security_controller_samurai_permission() {
 
 /**
  * Access callback for viewing the client nodes.
+ *
+ * @todo Update for the new entities.
  */
 function security_controller_samurai_access_callback($op, $client_entity = NULL, $account = NULL) {
   if ($op == 'view' && user_access('view security samurai update status', $account)) {
     return TRUE;
-  } elseif (user_access('administer security samurai clients', $account) || user_access('administer security samurai', $account)) {
+  } elseif (user_access('administer security samurai clients', $account) || 
+    user_access('administer security samurai', $account)) {
     return TRUE;
   }
   return FALSE;
 }
 
 /**
- * @todo
+ * Extends the default entity class for the 'client' entity type.
  */
 class ClientEntity extends Entity {
+  /**
+   * Override the default path for the 'client' entity type.
+   */
   protected function defaultUri() {
-    return array('path' => 'dashboard/client/' . $this->identifier());
+    return array('path' => 'client/' . $this->identifier());
   }
 }
 
 /**
- * @todo
+ * Extends the EntityAPIController class for the 'client' entity type
+ *
+ * @method object save()
+ * @method object buildContent()
+ *
+ * @todo update the @method docs
  */
 class ClientEntityController extends EntityAPIController {
+  /**
+   * Override the default save function to 
+   */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
     if (isset($entity->is_new)) {
       $entity->created_at = REQUEST_TIME;
@@ -134,6 +202,106 @@ class ClientEntityController extends EntityAPIController {
     return parent::save($entity, $transaction);
   }
 
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+    return $build;
+  }
+}
+
+/**
+ * Implements hook_load
+ *
+ * Menu autoloader for dashboard/client
+ */
+function client_load($id) {
+  $client = entity_load('client', array($id));
+  return array_pop($client);
+}
+
+/**
+ * Load the entity of type client.
+ */
+function security_controller_samurai_client_view_entity($entity, $view_mode = 'full') {
+  $entity_type = $entity->entityType();
+  $entity_id = entity_id($entity_type, $entity);
+  $entity->content = array();
+  $entity->title = filter_xss($entity->name);
+  field_attach_prepare_view($entity_type, array($entity_id => $entity), $view_mode);
+  entity_prepare_view($entity_type, array($entity_id => $entity));
+  $entity->content += field_attach_view($entity_type, $entity, $view_mode);
+  $entity->content += array(
+    '#theme'     => $entity_type,
+    '#element'   => $entity,
+    '#view_mode' => $view_mode,
+    '#language'  => LANGUAGE_NONE,
+  );
+  return $entity->content;
+}
+
+/**
+ * @todo
+ */
+class SAEntity extends Entity {
+  protected function defaultUri() {
+    return array('path' => 'security-announcement/' . $this->identifier());
+  }
+}
+
+/**
+ * @todo
+ */
+class SAEntityController extends EntityAPIController {
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+    return $build;
+  }
+}
+
+/**
+ * Menu autoloader for dashboard/security-announcement
+ */
+function security_announcement_load($id) {
+  $sa_entity = entity_load('security_announcement', array($id));
+  return array_pop($sa_entity);
+}
+
+/**
+ * Load the entity of type Security announcement.
+ */
+function security_controller_samurai_security_announcement_view_entity($entity, $view_mode = 'full') {
+  $entity_type = $entity->entityType();
+  $entity_id = entity_id($entity_type, $entity);
+  
+  $entity->content = array();
+  
+  $entity->title = filter_xss($entity->sa_id);
+  
+  field_attach_prepare_view($entity_type, array($entity_id => $entity), $view_mode);
+  entity_prepare_view($entity_type, array($entity_id => $entity));
+  $entity->content += field_attach_view($entity_type, $entity, $view_mode);
+  $entity->content += array(
+    '#theme'     => $entity_type,
+    '#element'   => $entity,
+    '#view_mode' => $view_mode,
+    '#language'  => LANGUAGE_NONE,
+  );
+  
+  return $entity->content;
+}
+
+/**
+ * @todo
+ */
+class ProjectEntity extends Entity {
+  protected function defaultUri() {
+    return array('path' => 'project/' . $this->identifier());
+  }
+}
+
+/**
+ * @todo
+ */
+class ProjectEntityController extends EntityAPIController {
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
     $build = parent::buildContent($entity, $view_mode, $langcode, $content);
     return $build;
