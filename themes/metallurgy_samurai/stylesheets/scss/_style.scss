@@ -1,5 +1,5 @@
 section {
-  
+  font-weight: 300;
   &#header-wrapper {
     z-index: 1;
   }
@@ -110,8 +110,8 @@ section {
       tr {
         th {
           padding: 0.5em;
-          font-weight: 300;
-          background-color: lighten($body_background_color, 3%);
+          font-weight: 400;
+          background-color: #fff;
           border-bottom: 1px solid darken($body_background_color, 25%);
         }
       }
@@ -119,7 +119,7 @@ section {
     tbody {
       tr {
         td {
-          background-color: lighten($body_background_color, 20%);
+          background-color: #fff;
           padding: 0.5em;
           font-family: 'Roboto', sans-serif;
         }
@@ -134,14 +134,30 @@ section {
       border-bottom: 1px solid darken($body_background_color, 25%);
       font-size: 95%;
       &.views-row-even {
-        background-color: lighten($body_background_color, 3%);
+        background-color: #fff;
       }
       &.views-row-odd {
-        background-color: lighten($body_background_color, 5%);
+        background-color: #fff;
       }
       .views-field {
         padding: 0.1em 0;
       }
+    }
+  }
+  .view-footer { 
+    margin-top: 5px;
+  }
+  .item-list {
+    .pager {
+      margin-top: 5px;
+      .pager-current {
+        font-weight: 300;
+      }
+    }
+  }
+  .views-exposed-form {
+    label {
+      font-weight: 300;
     }
   }
 

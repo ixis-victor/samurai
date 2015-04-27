@@ -89,6 +89,18 @@
       'heading' => t('Navigation'),
     )); ?>
   </div>
+  <div id="menu">
+    <?php print theme('links__system_secondary_menu', array(
+      'links' => $secondary_menu,
+      'attributes' => array(
+        'id' => 'main-menu',
+        'class' => array(
+          'links'
+          ),
+        ),
+        'heading' => t('User menu'),
+      )); ?>
+  </div>
 </section>
 <?php endif; ?>
 <section id="content-wrapper">
