@@ -15,8 +15,6 @@
  *
  * @return string $return HTML content to return.
  * @return NULL Returned when there is no result from the query.
- *
- * @todo Will also need to make sure the isntalled version minor is less than the security update minor.
  */
 function samurai_get_affected_clients($sa_id, $project_name, $core) {
   // Now retrieve the data on the client if they have the project in the update_data
@@ -54,7 +52,11 @@ function samurai_get_affected_clients($sa_id, $project_name, $core) {
         }
       }
       // Return the result.
-      return $return;
+      if (!empty($return)) {
+        return $return;
+      } else {
+        return NULL;
+      }
     } else {
       // No result. return NULL.
       return NULL;
@@ -189,10 +191,9 @@ function samurai_project_exists($machine_name, $core, $major_version) {
  *          Module Contrib,
  *          Module Custom
  * @param string $major_version The major version of the project e.g. x.1
- * @param string $minor_version The minor version of the project e.g. 1.x
+ * @param string $latest_minor_versino The minor version of the project 1.x
+ * @param string $latest_secure_minor_version The latest secure minor version of the project e.g. 1.x
  * @param int $supported 1 OR 0, 1 for supported, 0 for unsupported.
- *
- * @todo use the entity way of creating projects.
  */
 function samurai_add_project(
   $name,
@@ -204,10 +205,9 @@ function samurai_add_project(
   $latest_secure_minor_version,
   $supported = NULL) {
   if (!samurai_project_exists($machine_name, $core, $major_version)) {
-    // The project has not yet been added to the database.
-    // We must add it to the database.
-    db_insert('securitysamurai_projects')
-    ->fields(array(
+    // The project has not yet been created.
+    // Create the new project entity
+    $project = entity_create('project', array(
       'name' => $name,
       'machine_name' => $machine_name,
       'project_type' => $type,
@@ -215,10 +215,13 @@ function samurai_add_project(
       'latest_minor_version' => (int)$latest_minor_version,
       'latest_secure_minor_version' => (int)$latest_secure_minor_version,
       'core' => $core,
-      'supported' => $supported,
-    ))
-    // Execute the query.
-    ->execute();
+      'supported' => $supported
+    ));
+    $project_wrapper = entity_metadata_wrapper('project', $project);
+    // Save the entity
+    $project_wrapper->save();
+    // Log a message to watchdog stating the project has been added to the database.
+    watchdog('Security samurai', $name . t(' has been added to the project list'));
   }
 }
 
@@ -290,12 +293,9 @@ function samurai_decrypt_update_data($update_data, $encryption_key) {
  *
  * @param string $project_name The project name.
  * @param string $type The new project type.
- *
- * @todo
  */
-function _samurai_mark_project_type($project_name, $type) {
+function samurai_mark_project_type($project_name, $type) {
   // Not implemented
-  // Maybe not needed thanks to _samurai_get_project_type?
 }
 
 /**
@@ -381,4 +381,13 @@ function samurai_project_machine_name($project_name) {
     // The result is empty.
     return NULL;
   }
+}
+
+/**
+ * Check that samurai has access to the client site.
+ *
+ * @param string $site_url The site url of which to check access on.
+ */
+function samurai_check_site_access($site_url) {
+  // Not implemented
 }

@@ -7,10 +7,6 @@
  */
 
 /**
- * @todo maybe combine $modules and $themes in @see _samurai_project_update_data()
- */
-
-/**
  * Implements hook_cron
  */
 function security_controller_samurai_cron() {
@@ -33,7 +29,7 @@ function security_controller_samurai_cron() {
     // Decrypt the update data.
     $decrypted_update_data = drupal_json_decode(trim(samurai_decrypt_update_data($encrypted_update_data['encrypted'], $client->encryption_key)));
     // Process the data and make final changes to the entity.
-    $client->site_update_data = drupal_json_encode(_samurai_process_update_data($decrypted_update_data));
+    $client->site_update_data = drupal_json_encode(samurai_process_update_data($decrypted_update_data));
     $client->update_next_check = strtotime('+24 hours');
     // Save the entity.
     entity_save('client', $client);
@@ -47,33 +43,30 @@ function security_controller_samurai_cron() {
   // Check $xml_contrib isn't null before continuing.
   if (!is_null($xml_contrib)) {
     // Process the contrib projects security announcements.
-    _samurai_process_sa($xml_contrib, 'contrib');
+    samurai_process_sa($xml_contrib, 'contrib');
   }
   // Get the core projects security announcements.
   $xml_core = samurai_xml_curl_request(SAMURAI_ORG_SA_CORE);
   // Check $xml_core isn't null before continuing
   if (!is_null($xml_core)) {
     // Process the core projects security announements.
-    _samurai_process_sa($xml_core, 'core');
+    samurai_process_sa($xml_core, 'core');
   }
   // Check for general updates of contrib projects
-  // Check every ten minutes, check 10 projects every 10 minutes
+  // Check every ten minutes, check 100 projects every 10 minutes
   $check = variable_get('security_controller_samurai_contrib_check', NULL);
+  /**
+   * @thought when setting the check_offset, it can't exceed the amount of results.
+   */
   $offset = variable_get('security_controller_samurai_contrib_check_offset', NULL);
   if ((!is_null($check) && $check <= REQUEST_TIME) && !is_null($offset)) {
-    // Now is the time to check for normal module updates.
-    // To save resources, maybe we should limit the checking to only a certain number of modules?
-    /**
-     * @todo
-     */
+    // Now is the time to check for normal module updates
   } else {
     // $check might be null
     // $offset might be null
     // OR it isn't time to check yet.
-    /**
-     * @todo
-     */
   }
+  // Recache the sites 
 }
 
 /**
@@ -81,10 +74,8 @@ function security_controller_samurai_cron() {
  *
  * @param SimpleXMLElement[object] The sa feed.
  * @param string $type core or contrib.
- *
- * @todo project_name should be the machinename of the project.
  */
-function _samurai_process_sa($xml, $type) {
+function samurai_process_sa($xml, $type) {
   // Loop through each item in the sa $xml
   foreach ($xml->channel->item as $item) {
     // Remove the tags each value. We have to do this because sometimes
@@ -94,6 +85,7 @@ function _samurai_process_sa($xml, $type) {
     }
     // The description contains everything needed and will need to be split up.
     $description = (string)$item->description;
+    kpr($item);
     // Get the Security announcement ID from the description.
     $sa = samurai_split_sa_data($description, 'Advisory ID:', 'Project:');
     // Check to make sure the SA hasn't already been added to the database before continuing.
@@ -184,15 +176,6 @@ function samurai_xml_curl_request($url) {
 }
 
 /**
- * Check that samurai has access to the client site.
- *
- * @todo
- */
-function _samurai_check_site_access($site_url) {
-  // Not implemented
-}
-
-/**
  * Retrieve the update data from a client site.
  *
  * @param string $site_url The site URL of a client.
@@ -210,10 +193,8 @@ function samurai_get_site_update_data($site_url) {
  * Add the update data to the securitysamurai_projects table.
  *
  * @param array[mixed] $decrypted_update_data Decrypted update data array.
- *
- * @todo Reduce the amount of code and do the modules and themes together.
  */
-function _samurai_process_update_data($decrypted_update_data) {
+function samurai_process_update_data($decrypted_update_data) {
   // This array will be used to produce a tidy version of site_update_data
   $projects_array = array();
 
@@ -316,7 +297,7 @@ function _samurai_process_update_data($decrypted_update_data) {
         $t_latest_minor = $t_split_version['minor'];
         $t_latest_minor_secure = NULL;
         // Frist check that the project isn't custom.
-        if ($t_type_status['type'] != '_custom') {
+        if ($t_type != 'theme_custom') {
           // Retrieve the latest secure minor version of the theme.
           $t_latest_minor_secure = samurai_get_project_latest_secure_version(
             $t_machine_name,
@@ -410,40 +391,6 @@ function _samurai_process_update_data($decrypted_update_data) {
  * Gets a project type e.g. Contrib or Custom
  *
  * @param string $machine_name The machine name of the project.
- * @param string $core The supported core version e.g. 7.x
- * @param string $major_version The major version of the project e.g. 1.x
- *
- * @todo Retrieving the type and status should be kept separate.
- */
-function _samurai_get_project_type_status($machine_name, $core, $major_version, $xml = NULL) {
-  // Define the return array
-  $return = array();
-
-  if (is_null($xml)) {
-    // The XML has not been passed.
-      $xml = samurai_xml_curl_request(SAMURAI_ORG_UPDATE_URL . $machine_name . '/' . $core);
-  }
-
-  if (!isset($xml->title)) {
-    // The XML title isn't set. Presume custom module.
-    $return['type'] = '_custom';
-    // Project is custom, status should  be NULL.
-    $return['status'] = NULL;
-  } else {
-    // Project is available on Drupal.org
-    // Return it as contrib.
-    $return['type'] = '_contrib';
-    // Check that the major version is supported.
-    $return['status'] = samurai_get_project_is_supported($machine_name, $core, $major_version, $xml);
-  }
-  // Return the type and status.
-  return $return;
-}
-
-/**
- * Gets a project type e.g. Contrib or Custom
- *
- * @param string $machine_name The machine name of the project.
  * @param string $core The supported core version e.g. 7.x OR 6.x
  * @param stirng $major_version The major version of the project e.g. 1.x
  * @param SimpleXMLElement[object] $xml The XML of the project.
@@ -465,6 +412,7 @@ function samurai_get_project_type($machine_name, $core, $major_version, $xml = N
     // The title of the project is set, so it must be a contributed project.
     $return = '_contrib';
   }
+  return $return;
 }
 
 /**
@@ -532,6 +480,7 @@ function samurai_get_project_latest_version($machine_name, $core, $major_version
       break;
     }
   }
+  // Return the latest project version.
   return $return;
 }
 
@@ -576,5 +525,6 @@ function samurai_get_project_latest_secure_version($machine_name, $core, $major_
       }
     }
   }
+  // Return the latest secure minor version
   return $return;
 }

@@ -2,6 +2,9 @@
 /**
  * @file
  * Administrative UI functions.
+ *
+ * These functions handle creating a new entity
+ * entity type of 'client
  */
 
 /**
@@ -9,7 +12,7 @@
  */
 function client_form($form, &$form_state, $client = NULL) {
   $form = array();
-
+  // The human readable name to give the client.
   $form['name'] = array(
     '#title' => t('Client name'),
     '#type' => 'textfield',
@@ -17,7 +20,7 @@ function client_form($form, &$form_state, $client = NULL) {
     '#description' => t('The name of the client.'),
     '#required' => TRUE,
   );
-
+  // The encryption key.
   $form['encryption_key'] = array(
     '#title' => t('Encryption key'),
     '#type' => 'textfield',
@@ -25,7 +28,9 @@ function client_form($form, &$form_state, $client = NULL) {
     '#description' => t('The key provided by the client site.'),
     '#required' => TRUE,
   );
-
+  // Check if the clients site_url is already an existing value.
+  // If it isn't, then the client has not been submitted before and the site_url
+  // will be extracted from the enryption_key
   if (isset($client->site_url)) {
     $form['site_url'] = array(
       '#title' => t('Site URL'),
@@ -35,7 +40,7 @@ function client_form($form, &$form_state, $client = NULL) {
       '#required' => TRUE,
     );
   }
-
+  // Default form submit actions.
   $form['actions'] = array(
     '#type' => 'actions',
     'submit' => array(
@@ -43,7 +48,7 @@ function client_form($form, &$form_state, $client = NULL) {
       '#value' => isset($client->id) ? t('Update client') : t('Create client'),
     ),
   );
-
+  // Return the form.
   return $form;
 }
 
@@ -55,17 +60,6 @@ function client_form_validate($form, $form_state) {
   if (strlen($form_state['values']['encryption_key']) < 32) {
     // Return error message.
     form_set_error('encryption_key', t('Please enter a valid encryption key.'));
-  }
-  // Check if the site_url has been set in the form.
-  if (isset($form_state['values']['site_url'])) {
-    // Check that samurai can access the samurai report page on the client site.
-    // if (!_security_controller_check_site_access($form_state['values']['site_url'])) {
-    //   // Return error if it can't access the report page.
-    //   form_set_error('encryption_key', t('Cannot access the encrypted site'))
-    // }
-  } else {
-    // site_url is empty. Take it from the encryption_key
-    
   }
 }
 
@@ -83,8 +77,8 @@ function client_form_submit($form, &$form_state) {
   }
   // We need to check if the client is being updated or saved.
   if (!samurai_client_exists($form_state['values']['name'], $form_state['values']['site_url'])) {
-    // $form_state['values']['update_next_check'] = strtotime('+24 hours'); @todo
-    // Set the update_next_check to 0, so the updates are checked on the next cron execution.
+    // Set the update_next_check to 0, so the updates are checked 
+    // on the next cron execution.
     $form_state['values']['update_next_check'] = 0;
   }
   // Save the entity.
@@ -92,6 +86,7 @@ function client_form_submit($form, &$form_state) {
   $client->save();
   // Notification messages.
   drupal_set_message(t('@name has been saved.', array('@name' => $client->name)));
+  // Log to watchdog.
   watchdog('Security samurai', t('@name has been saved.', array('@name' => $client->name)));
   // Redirect to admin/client
   $form_state['redirect'] = 'admin/client';

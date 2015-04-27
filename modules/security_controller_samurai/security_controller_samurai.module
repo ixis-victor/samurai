@@ -7,10 +7,18 @@
  */
 
 /**
- * @todo cleanup the code, make it eaier to work with.
- * @todo remove the _ from functions.
- * @todo Implement a get latest update function.
- * @todo use the entity way for adding projects.
+ * @todo implement a search feature on the security samurai site.
+ * @todo upon submitting a change to a client the next_update_time should always be within the next five minutes.
+ * @todo utilise the views.inc file for making the views look and work nicer.
+ * @todo maybe combine $modules and $themes in @see _samurai_project_update_data()
+ * @todo implement a secure_minor version to the security announcement.
+ * @todo finish the checking for general module updates.
+ * @todo implement a function that will check samurai has access to the site before saving it. If samurai can't access the site - throw an error.
+ * @todo administrative users can mark project types, or mark them to be ignored in security updates.
+ * @todo @see samurai_process_update_data think of a better more efficient way to do this. Cleanup.
+ * @todo finish some of the unfinished phpdoc comments.
+ * @todo comment on some of things the entity functions are doing @see view_entity()
+ * @todo automate ALL THE THINGS.
  */
 
 /**
@@ -271,11 +279,8 @@ function security_announcement_load($id) {
 function security_controller_samurai_security_announcement_view_entity($entity, $view_mode = 'full') {
   $entity_type = $entity->entityType();
   $entity_id = entity_id($entity_type, $entity);
-  
   $entity->content = array();
-  
   $entity->title = filter_xss($entity->sa_id);
-  
   field_attach_prepare_view($entity_type, array($entity_id => $entity), $view_mode);
   entity_prepare_view($entity_type, array($entity_id => $entity));
   $entity->content += field_attach_view($entity_type, $entity, $view_mode);
@@ -285,7 +290,6 @@ function security_controller_samurai_security_announcement_view_entity($entity, 
     '#view_mode' => $view_mode,
     '#language'  => LANGUAGE_NONE,
   );
-  
   return $entity->content;
 }
 
