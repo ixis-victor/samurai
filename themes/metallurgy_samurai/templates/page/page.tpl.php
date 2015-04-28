@@ -109,3 +109,5 @@
     <?php print render($page['content']); ?>
   </div>
 </section>
+<script type="text/javascript"></script>
+

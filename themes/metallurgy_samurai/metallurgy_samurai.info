@@ -5,6 +5,9 @@ core = 7.x
 
 stylesheets[all][] = stylesheets/css/build.css
 
+scripts[] = javascript/jquery.ripple.js
+scripts[] = javascript/ripple.js
+
 regions[header] = Header
 regions[help] = Help
 regions[page_top] = Page top

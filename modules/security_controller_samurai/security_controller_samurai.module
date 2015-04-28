@@ -14,16 +14,14 @@
  * LOW @todo implement a secure_minor version to the security announcement.
  * HIGH @todo finish the checking for general module updates.
  * HIGH @todo implement a function that will check samurai has access to the site before saving it. If samurai can't access the site - throw an error.
- * HIGH @todo update permissions and conclude them.
+ * HIGH @todo update permissions for the new entities and conclude them.
  * MEDIUM @todo administrative users can mark project types, or mark them to be ignored in security updates.
  * LOW @todo @see samurai_process_update_data think of a better more efficient way to do this. Cleanup.
  * LOW @todo comment on some of things the entity functions are doing @see view_entity()
  * MEDIUM @todo theme the notification messages.
- * NO PRIORITY FOR NOW @todo automate ALL THE THINGS.
- *    @todo decide a method of automation
- *      - probably best to use jenkins or some other bot.
- *      - the security_samurai_automate module will utilise functions provided by the jenkins_api module to deploy and test things.
- *    @todo Proof of concept with tests
+ * NO PRIORITY @todo automate ALL THE THINGS.
+ *   @todo finish the security_samurai_automate module will utilise functions provided by the jenkins_api module to deploy and test things.
+ *   @todo Proof of concept with codeception tests (Can be easily done in jenkins).
  */
 
 /**
