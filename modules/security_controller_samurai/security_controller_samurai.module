@@ -19,6 +19,7 @@
  * LOW @todo @see samurai_process_update_data think of a better more efficient way to do this. Cleanup.
  * HIGH @todo Print an update list on the client page.
  * LOW @todo comment on some of things the entity functions are doing @see view_entity()
+ * MEDIUM @todo The my account page needs theming.
  * MEDIUM @todo theme the notification messages.
  * NO PRIORITY @todo automate ALL THE THINGS.
  *   @todo finish the security_samurai_automate module will utilise functions provided by the jenkins_api module to deploy and test things.
@@ -27,7 +28,7 @@
 
 /**
  * @global string SAMURAI_MODULE_PATH 
- * Defines the path of the security_samurai module.
+ * Define the path of the security_samurai module.
  *
  * @global string SAMURAI_ORG_UPDATE_URL
  * Define the release history URL for gathering project releases.
