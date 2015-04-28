@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Security samurai base feature.
+ */
+
+include_once 'security_samurai_base.features.inc';
