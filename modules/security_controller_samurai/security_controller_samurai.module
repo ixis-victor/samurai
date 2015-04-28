@@ -7,26 +7,6 @@
  */
 
 /**
- * LOW @todo implement a search feature on the security samurai site.
- * HIGH @todo upon submitting a change to a client the next_update_time should always be within the next five minutes.
- * MEDIUM @todo utilise the views.inc file for making the views look and work nicer.
- * LOW @todo maybe combine $modules and $themes in @see _samurai_project_update_data()
- * LOW @todo implement a secure_minor version to the security announcement.
- * HIGH @todo finish the checking for general module updates.
- * HIGH @todo implement a function that will check samurai has access to the site before saving it. If samurai can't access the site - throw an error.
- * HIGH @todo update permissions for the new entities and conclude them.
- * MEDIUM @todo administrative users can mark project types, or mark them to be ignored in security updates.
- * LOW @todo @see samurai_process_update_data think of a better more efficient way to do this. Cleanup.
- * HIGH @todo Print an update list on the client page.
- * LOW @todo comment on some of things the entity functions are doing @see view_entity()
- * MEDIUM @todo The my account page needs theming.
- * MEDIUM @todo theme the notification messages.
- * NO PRIORITY @todo automate ALL THE THINGS.
- *   @todo finish the security_samurai_automate module will utilise functions provided by the jenkins_api module to deploy and test things.
- *   @todo Proof of concept with codeception tests (Can be easily done in jenkins).
- */
-
-/**
  * @global string SAMURAI_MODULE_PATH 
  * Define the path of the security_samurai module.
  *
