@@ -14,12 +14,16 @@
  * @todo implement a secure_minor version to the security announcement.
  * @todo finish the checking for general module updates.
  * @todo implement a function that will check samurai has access to the site before saving it. If samurai can't access the site - throw an error.
+ * @todo update permissions and conclude them.
  * @todo administrative users can mark project types, or mark them to be ignored in security updates.
  * @todo @see samurai_process_update_data think of a better more efficient way to do this. Cleanup.
  * @todo finish some of the unfinished phpdoc comments.
  * @todo comment on some of things the entity functions are doing @see view_entity()
  * @todo theme the notification messages.
  * @todo automate ALL THE THINGS.
+ *    @todo decide a method of automation
+ *      - probably best to use jenkins or some other bot.
+ *    @todo Proof of concept with tests
  */
 
 /**
@@ -166,8 +170,6 @@ function security_controller_samurai_permission() {
 
 /**
  * Access callback for viewing the client nodes.
- *
- * @todo Update for the new entities.
  */
 function security_controller_samurai_access_callback($op, $client_entity = NULL, $account = NULL) {
   if ($op == 'view' && user_access('view security samurai update status', $account)) {
@@ -196,8 +198,6 @@ class ClientEntity extends Entity {
  *
  * @method object save()
  * @method object buildContent()
- *
- * @todo update the @method docs
  */
 class ClientEntityController extends EntityAPIController {
   /**
@@ -248,7 +248,7 @@ function security_controller_samurai_client_view_entity($entity, $view_mode = 'f
 }
 
 /**
- * @todo
+ * 
  */
 class SAEntity extends Entity {
   protected function defaultUri() {
@@ -257,7 +257,7 @@ class SAEntity extends Entity {
 }
 
 /**
- * @todo
+ * 
  */
 class SAEntityController extends EntityAPIController {
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
@@ -295,7 +295,7 @@ function security_controller_samurai_security_announcement_view_entity($entity, 
 }
 
 /**
- * @todo
+ * 
  */
 class ProjectEntity extends Entity {
   protected function defaultUri() {
@@ -304,7 +304,7 @@ class ProjectEntity extends Entity {
 }
 
 /**
- * @todo
+ * 
  */
 class ProjectEntityController extends EntityAPIController {
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
