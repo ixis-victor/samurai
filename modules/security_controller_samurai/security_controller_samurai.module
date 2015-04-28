@@ -7,20 +7,19 @@
  */
 
 /**
- * @todo implement a search feature on the security samurai site. NOT REQUIRED BUT NICE TO HAVE.
- * @todo upon submitting a change to a client the next_update_time should always be within the next five minutes.
- * @todo utilise the views.inc file for making the views look and work nicer.
- * @todo maybe combine $modules and $themes in @see _samurai_project_update_data()
- * @todo implement a secure_minor version to the security announcement.
- * @todo finish the checking for general module updates.
- * @todo implement a function that will check samurai has access to the site before saving it. If samurai can't access the site - throw an error.
- * @todo update permissions and conclude them.
- * @todo administrative users can mark project types, or mark them to be ignored in security updates.
- * @todo @see samurai_process_update_data think of a better more efficient way to do this. Cleanup.
- * @todo finish some of the unfinished phpdoc comments.
- * @todo comment on some of things the entity functions are doing @see view_entity()
- * @todo theme the notification messages.
- * @todo automate ALL THE THINGS.
+ * LOW @todo implement a search feature on the security samurai site.
+ * HIGH @todo upon submitting a change to a client the next_update_time should always be within the next five minutes.
+ * MEDIUM @todo utilise the views.inc file for making the views look and work nicer.
+ * LOW @todo maybe combine $modules and $themes in @see _samurai_project_update_data()
+ * LOW @todo implement a secure_minor version to the security announcement.
+ * HIGH @todo finish the checking for general module updates.
+ * HIGH @todo implement a function that will check samurai has access to the site before saving it. If samurai can't access the site - throw an error.
+ * HIGH @todo update permissions and conclude them.
+ * MEDIUM @todo administrative users can mark project types, or mark them to be ignored in security updates.
+ * LOW @todo @see samurai_process_update_data think of a better more efficient way to do this. Cleanup.
+ * LOW @todo comment on some of things the entity functions are doing @see view_entity()
+ * MEDIUM @todo theme the notification messages.
+ * NO PRIORITY FOR NOW @todo automate ALL THE THINGS.
  *    @todo decide a method of automation
  *      - probably best to use jenkins or some other bot.
  *      - the security_samurai_automate module will utilise functions provided by the jenkins_api module to deploy and test things.
@@ -249,7 +248,7 @@ function security_controller_samurai_client_view_entity($entity, $view_mode = 'f
 }
 
 /**
- * 
+ * Extends the default entity class for the 'security_announcement' entity type.
  */
 class SAEntity extends Entity {
   protected function defaultUri() {
@@ -258,7 +257,9 @@ class SAEntity extends Entity {
 }
 
 /**
- * 
+ * Extends the EntityAPIController class for the 'security_announcement' entity type
+ *
+ * @method object buildContent()
  */
 class SAEntityController extends EntityAPIController {
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
@@ -268,6 +269,8 @@ class SAEntityController extends EntityAPIController {
 }
 
 /**
+ * Implements hook_load
+ *
  * Menu autoloader for dashboard/security-announcement
  */
 function security_announcement_load($id) {
@@ -296,7 +299,7 @@ function security_controller_samurai_security_announcement_view_entity($entity, 
 }
 
 /**
- * 
+ * Extends the default entity class for the 'project' entity type.
  */
 class ProjectEntity extends Entity {
   protected function defaultUri() {
@@ -305,7 +308,9 @@ class ProjectEntity extends Entity {
 }
 
 /**
- * 
+ * Extends the EntityAPIController class for the 'project' entity type
+ *
+ * @method object buildContent()
  */
 class ProjectEntityController extends EntityAPIController {
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
