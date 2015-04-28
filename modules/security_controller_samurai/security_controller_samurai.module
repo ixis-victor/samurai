@@ -17,6 +17,7 @@
  * HIGH @todo update permissions for the new entities and conclude them.
  * MEDIUM @todo administrative users can mark project types, or mark them to be ignored in security updates.
  * LOW @todo @see samurai_process_update_data think of a better more efficient way to do this. Cleanup.
+ * HIGH @todo Print an update list on the client page.
  * LOW @todo comment on some of things the entity functions are doing @see view_entity()
  * MEDIUM @todo theme the notification messages.
  * NO PRIORITY @todo automate ALL THE THINGS.
