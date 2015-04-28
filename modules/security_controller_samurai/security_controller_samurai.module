@@ -7,7 +7,7 @@
  */
 
 /**
- * @todo implement a search feature on the security samurai site.
+ * @todo implement a search feature on the security samurai site. NOT REQUIRED BUT NICE TO HAVE.
  * @todo upon submitting a change to a client the next_update_time should always be within the next five minutes.
  * @todo utilise the views.inc file for making the views look and work nicer.
  * @todo maybe combine $modules and $themes in @see _samurai_project_update_data()
@@ -23,6 +23,7 @@
  * @todo automate ALL THE THINGS.
  *    @todo decide a method of automation
  *      - probably best to use jenkins or some other bot.
+ *      - the security_samurai_automate module will utilise functions provided by the jenkins_api module to deploy and test things.
  *    @todo Proof of concept with tests
  */
 
