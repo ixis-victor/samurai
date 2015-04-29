@@ -252,4 +252,7 @@ section {
 .logo {
   margin-left: 95px;
   margin-top: 5px;
+  &.center {
+    margin-left: 49%;
+  }
 }

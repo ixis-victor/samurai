@@ -72,7 +72,7 @@
 
 <section id="header-wrapper">
   <div id="header">
-    <!-- Centered samurai druplicon logo @todo -->
+    <img class="logo center" src="<?php print $logo; ?>" width="35" height="auto"></img>
   </div>
 </section>
 <section id="content-wrapper" class="full-width">
