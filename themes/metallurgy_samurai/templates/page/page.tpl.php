@@ -72,7 +72,7 @@
 
 <section id="header-wrapper">
   <div id="header">
-    
+    <img class="logo" src="<?php print $logo; ?>" width="35" height="auto"></img>
   </div>
 </section>
 <?php if ($user->uid != 0): ?>
