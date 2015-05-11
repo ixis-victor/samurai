@@ -16,10 +16,39 @@
           <p class="content">The site will be scanned on the next cron run (less than 5 minutes).</p>
         <?php endif; ?>
       </div>
-      <div class="card">
-        <h2 class="title">testing</h2>
-        <p class="content">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-      </div>
+      <!-- print a theme grid right here. -->
+      <?php $grid_data = samurai_render_update_data($element->site_update_data); ?>
+      <?php if (!is_null($grid_data)): ?>
+        <table class="client-projects">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Installed version</th>
+              <th>Latest version</th>
+              <th>Latest secure version</th>
+            </tr>
+          </thead>
+        <?php foreach($grid_data as $data): ?>
+          <tr>
+            <td><?php print $data['name']; ?></td>
+            <td><?php print $data['type']; ?></td>
+            <td <?php 
+              if (isset($data['status'])) {
+                print 'class="' . $data['status'] . '"';
+              }
+            ?>><?php print $data['installed_version']; ?></td>
+            <td><?php print $data['latest_version']; ?></td>
+            <td><?php print $data['secure_version']; ?></td>
+          </tr>
+        <?php endforeach; ?>
+        </table>
+      <?php else: ?>
+        <div class="card">
+          <h2 class="title">404 - No projects found :(</h2>
+          <p class="content">Doesn't look like any projects for this client exist. Try scanning the site.</p>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 </div>

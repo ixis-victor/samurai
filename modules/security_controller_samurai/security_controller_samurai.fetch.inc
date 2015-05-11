@@ -10,34 +10,7 @@
  * Implements hook_cron
  */
 function security_controller_samurai_cron() {
-  // Get an array of clients that have not yet had their sites checked/need to be checked.
-  $result = db_query("SELECT id FROM {securitysamurai_client}
-    WHERE update_next_check <= 0 OR
-    update_next_check <= :time",
-    array(
-      ':time' => REQUEST_TIME,
-  ));
-
-  // Loop through each result, obtaining the site_update_data and processing it.
-  foreach ($result as $record) {
-    // Load the client.
-    $client = client_load($record->id);
-    // Get the update data from the client's site.
-    $encoded_update_data = samurai_get_site_update_data($client->site_url);
-    // Decode the json encoded update data, so we can directly access the encrypted string.
-    $encrypted_update_data = drupal_json_decode($encoded_update_data);
-    // Decrypt the update data.
-    $decrypted_update_data = drupal_json_decode(trim(samurai_decrypt_update_data($encrypted_update_data['encrypted'], $client->encryption_key)));
-    // Process the data and make final changes to the entity.
-    $client->site_update_data = drupal_json_encode(samurai_process_update_data($decrypted_update_data));
-    $client->update_next_check = strtotime('+24 hours');
-    // Save the entity.
-    entity_save('client', $client);
-    // Log to watchdog.
-    watchdog('Security samurai', t('@name has been scanned.', array('@name' => $client->name)));
-  }
   // Security updates will be checked for every single cron run.
-  // Checking for security updates is the fairly quick and simple, it can be done in 2 curl requests.
   // Get the contrib projects security announcements.
   $xml_contrib = samurai_xml_curl_request(SAMURAI_ORG_SA_CONTRIB);
   // Check $xml_contrib isn't null before continuing.
@@ -52,21 +25,48 @@ function security_controller_samurai_cron() {
     // Process the core projects security announements.
     samurai_process_sa($xml_core, 'core');
   }
-  // Check for general updates of contrib projects
-  // Check every ten minutes, check 100 projects every 10 minutes
-  $check = variable_get('security_controller_samurai_contrib_check', NULL);
-  /**
-   * @thought when setting the check_offset, it can't exceed the amount of results.
-   */
-  $offset = variable_get('security_controller_samurai_contrib_check_offset', NULL);
-  if ((!is_null($check) && $check <= REQUEST_TIME) && !is_null($offset)) {
-    // Now is the time to check for normal module updates
-  } else {
-    // $check might be null
-    // $offset might be null
-    // OR it isn't time to check yet.
+  // // Check for general updates of contrib projects
+  // // Check every ten minutes, check 100 projects every 10 minutes
+  // $check = variable_get('security_controller_samurai_contrib_check', NULL);
+  // /**
+  //  * @thought when setting the check_offset, it can't exceed the amount of results.
+  //  */
+  // $offset = variable_get('security_controller_samurai_contrib_check_offset', NULL);
+  // if ((!is_null($check) && $check <= REQUEST_TIME) && !is_null($offset)) {
+  //   // Now is the time to check for normal module updates
+  // } else {
+  //   // $check might be null
+  //   // $offset might be null
+  //   // OR it isn't time to check yet.
+  // }
+  // // Recache the sites
+
+  // Get an array of clients that have not yet had their sites checked/need to be checked.
+  $result = db_query("SELECT id FROM {securitysamurai_client}
+    WHERE update_next_check <= :time",
+    array(
+      ':time' => REQUEST_TIME,
+  ));
+  // Loop through each result, obtaining the site_update_data and processing it.
+  foreach ($result as $record) {
+    // Load the client.
+    $client = client_load($record->id);
+    // Get the update data from the client's site.
+    $encoded_update_data = samurai_get_site_update_data($client->site_url);
+    // Decode the json encoded update data, so we can directly access the encrypted string.
+    $encrypted_update_data = drupal_json_decode($encoded_update_data);
+    // Decrypt the update data.
+    $decrypted_update_data = drupal_json_decode(trim(samurai_decrypt_update_data($encrypted_update_data['encrypted'], $client->encryption_key)));
+    // Get the security update count.
+    $client->update_count = samurai_count_available_security_updates($decrypted_update_data);
+    // Process the data and make final changes to the entity.
+    $client->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
+    $client->update_next_check = strtotime('+24 hours');
+    // Save the entity.
+    entity_save('client', $client);
+    // Log to watchdog.
+    watchdog('Security samurai', t('@name has been scanned.', array('@name' => $client->name)));
   }
-  // Recache the sites 
 }
 
 /**
@@ -127,10 +127,74 @@ function samurai_process_sa($xml, $type) {
       $security_announcement_wrapper = entity_metadata_wrapper('security_announcement', $security_announcement);
       $security_announcement_wrapper->save();
       watchdog('Security samurai', $sa . t(' New security update data'));
+      // Check for a security update concerning the project_name from the SA.
+      samurai_check_security_update($project_name, $version_aff);
     } else {
       continue;
     }
   }
+}
+
+/**
+ * Check for the latest secure version.
+ *
+ * @param string $project_name The project name of the project.
+ * @param array[string] $version_aff The core versions affected.
+ */
+function samurai_check_security_update($project_name, $version_aff) {
+  foreach ($version_aff as $core) {
+    $machine_name = samurai_project_machine_name($project_name);
+    $version_arr = drupal_json_decode($version_aff);
+    foreach ($version_arr as $key => $value) {
+      $latest_secure_version = samurai_get_project_latest_secure_version($machine_name, $value);
+      if (!is_null($latest_secure_version)) {
+        // Update the project in the database.
+      } else {
+        return NULL;
+      }
+    }
+  }
+}
+
+/**
+ * The way this function works is:
+ *  - Checks for an update on at least each project once every day
+ *  - It will then load and update the entity with the updated data.
+ *  - Only check updates for projects that are supported.
+ *
+ * @param string $machine_name The machine name of the project.
+ * @param int $major_version The major_version of the project.
+ * @param string $core The core version that the project is for e.g. 7.x
+ */
+function samurai_get_project_update($machine_name, $major_version, $core, $xml = NULL) {
+  // If $xml is NULL then retrieve the XML here.
+  if (is_null($xml)) {
+    // Retrieve the XML
+    $xml = samurai_xml_curl_request(SAMURAI_ORG_UPDATE_URL . $machine_name . "/" . $core);
+  }
+  // Get the latest secure version minor
+  $latest_secure_version = samurai_get_project_latest_secure_version($machine_name, $core, $major_version, $xml);
+  // Get the latest version minor.
+  $latest_version = samurai_get_project_latest_version($machine_name, $core, $major_version, $xml);
+  // Load the entity and update it with the latest project versions.
+  // Get the ID of the project node
+  $result = db_query("SELECT id FROM {securitysamurai_projects} WHERE
+    major_version = :major_version AND
+    machine_name = :machine_name AND
+    core = :core", array(
+      ":major_version" => $major_version,
+      ":machine_name" => $machine_name,
+      ":core" => $core
+    ))->fetchField();
+  // Load the project entity.
+  $project_entity = project_load($result);
+  // Update the entity.
+  $project_entity->latest_secure_minor_version = $latest_secure_version;
+  $project_entity->latest_minor_version = $latest_version;
+  // Apply the Entity API wrapper.
+  $project_entity = entity_metadata_wrapper('project', $project_entity);
+  // Save the entity.
+  $project_entity->save();
 }
 
 /**
@@ -202,6 +266,61 @@ function samurai_process_update_data($decrypted_update_data) {
   $modules = $decrypted_update_data['modules'];
   $themes = $decrypted_update_data['themes'];
   $core = $decrypted_update_data['core'];
+  // Process core
+  if (!empty($core)) {
+    // Humam readable name
+    $c_name = 'Drupal core';
+    // Machine name
+    $c_machine_name = 'drupal';
+    // Split the version number into minor and major versions.
+    $c_split_version = samurai_split_version_number($core['version']);
+    // Compatible core version
+    $c_core = $c_split_version['major'] . '.x';
+    // Define the project type as core.
+    $c_type = 'core';
+
+    // Save time by only doing the functions that are required if the project isn't already in the database.
+    if (!samurai_project_exists($c_machine_name, $c_core, $c_split_version['major'])) {
+      // Create the XML object.
+      $c_xml = samurai_xml_curl_request(
+        SAMURAI_ORG_UPDATE_URL . $c_machine_name . '/' . $c_core);
+      // Retrieve the latest secure minor version of core.
+      $c_latest_minor_secure = samurai_get_project_latest_secure_version(
+        $c_machine_name,
+        $c_core,
+        $c_split_version['major'],
+        $c_xml);
+      // Retrieve the latest minor version of core.
+      $c_latest_minor = samurai_get_project_latest_version(
+        $c_machine_name,
+        $c_core,
+        $c_split_version['major'],
+        $c_xml);
+      // Check if the core version is still supported.
+      $c_supported = samurai_get_project_is_supported(
+        $c_machine_name,
+        $c_core,
+        $c_split_version['major'],
+        $c_xml);
+      // Add the project.
+      samurai_add_project(
+        $c_name,
+        $c_machine_name,
+        $c_type,
+        $c_core,
+        $c_split_version['major'],
+        $c_latest_minor,
+        $c_latest_minor_secure,
+        $c_supported
+      );
+    }
+    // Add the core project to the projects array
+    $projects_array[$c_machine_name] = array(
+      'name' => $c_name,
+      'machine_name' => $c_machine_name,
+      'version' => $core['version'],
+    );
+  }
   // Process module projects
   if (!empty($modules)) {
     foreach ($modules as $module => $m) {
@@ -234,7 +353,7 @@ function samurai_process_update_data($decrypted_update_data) {
         $m_latest_minor = $m_split_version['minor'];
         $m_latest_minor_secure = $m_split_version['minor'];
         // First check that the project isn't custom.
-        if ($m_type_status['type'] != '_custom') {
+        if ($m_type['type'] != 'module_custom') {
           // Retrieve the latest secure minor version of the module.
           $m_latest_minor_secure = samurai_get_project_latest_secure_version(
             $m_machine_name,
@@ -328,61 +447,6 @@ function samurai_process_update_data($decrypted_update_data) {
       $projects_array[$t['machine_name']] = $t;
     }
   }
-  // Process core
-  if (!empty($core)) {
-    // Humam readable name
-    $c_name = 'Drupal core';
-    // Machine name
-    $c_machine_name = 'drupal';
-    // Split the version number into minor and major versions.
-    $c_split_version = samurai_split_version_number($core['version']);
-    // Compatible core version
-    $c_core = $c_split_version['major'] . '.x';
-    // Define the project type as core.
-    $c_type = 'core';
-
-    // Save time by only doing the functions that are required if the project isn't already in the database.
-    if (!samurai_project_exists($c_machine_name, $c_core, $c_split_version['major'])) {
-      // Create the XML object.
-      $c_xml = samurai_xml_curl_request(
-        SAMURAI_ORG_UPDATE_URL . $c_machine_name . '/' . $c_core);
-      // Retrieve the latest secure minor version of core.
-      $c_latest_minor_secure = samurai_get_project_latest_secure_version(
-        $c_machine_name,
-        $c_core,
-        $c_split_version['major'],
-        $c_xml);
-      // Retrieve the latest minor version of core.
-      $c_latest_minor = samurai_get_project_latest_version(
-        $c_machine_name,
-        $c_core,
-        $c_split_version['major'],
-        $c_xml);
-      // Check if the core version is still supported.
-      $c_supported = samurai_get_project_is_supported(
-        $c_machine_name,
-        $c_core,
-        $c_split_version['major'],
-        $c_xml);
-      // Add the project.
-      samurai_add_project(
-        $c_name,
-        $c_machine_name,
-        $c_type,
-        $c_core,
-        $c_split_version['major'],
-        $c_latest_minor,
-        $c_latest_minor_secure,
-        $c_supported
-      );
-    }
-    // Add the core project to the projects array
-    $projects_array[$c_machine_name] = array(
-      'name' => $c_name,
-      'machine_name' => $c_machine_name,
-      'version' => $core['version'],
-    );
-  }
   // Return the projects array for manipulation
   return $projects_array;
 }
@@ -444,7 +508,7 @@ function samurai_get_project_is_supported($machine_name, $core, $major_version, 
   }
   // If $supported is greater than 0
   // then return TRUE, else, FALSE.
-  if ($supported_status != 'unsupported' || $supported > 0) {
+  if ($supported_status != 'unsupported' && $supported > 0) {
     return 1;
   } else {
     return 0;
@@ -494,35 +558,78 @@ function samurai_get_project_latest_version($machine_name, $core, $major_version
  *
  * @return string $return The latest available secure minor version
  */
-function samurai_get_project_latest_secure_version($machine_name, $core, $major_version, $xml = NULL) {
+function samurai_get_project_latest_secure_version($machine_name, $core, $major_version = NULL, $xml = NULL) {
   if (is_null($xml)) {
     // The XML has not been passed.
     $xml = samurai_xml_curl_request(SAMURAI_ORG_UPDATE_URL . $machine_name . '/' . $core);
   }
-  // Loop through each release entry looking for the corresponding major version
-  // with the term 'Security update'
   $return = '';
-  foreach ($xml->releases->release as $release => $r) {
-    // As Drupa.org lists the updates by most recent, we can loop
-    // through efficiently and easily.
-    if ($major_version == (string)$r->version_major) {
-      // The terms are often not ordered the same.
-      // We will have to check each term entry.
-      if (!empty($r->terms)) {
-        foreach ($r->terms->term as $term => $t) {
-          $term_value = (string)$t->value;
-          if ($term_value == 'Security update') {
-            // We have found the latest secure version for the specified major.
-            $return = (string)$r->version_patch;
-            // Break out of the inner foreach loop;
-            break;
+  // If the major_version is not specified. Then check for all major versions.
+  if (!is_null($major_version)) {
+    // Loop through each release entry looking for the corresponding major version
+    // with the term 'Security update'
+    foreach ($xml->releases->release as $release => $r) {
+      // As Drupal.org lists the updates by most recent, we can loop
+      // through efficiently and easily.
+      if ($major_version == (string)$r->version_major) {
+        // The terms are often not ordered the same.
+        // Check each term entry.
+        if (!empty($r->terms)) {
+          foreach ($r->terms->term as $term => $t) {
+            $term_value = (string)$t->value;
+            if ($term_value == 'Security update') {
+              // The latest secure version has been found
+              $return = (string)$r->version_patch;
+              // Break out of the inner foreach loop;
+              break;
+            }
+          }
+        }
+        if (strlen($return) > 0) {
+          // Break out of the foreach loop.
+          break;
+        }
+      }
+    }
+  } else {
+    // Query the database for all the possible version_majors
+    $result = db_query("SELECT major_version FROM {securitysamurai_projects}
+      WHERE machine_name = :machine_name
+      AND core = :core", array(
+        ':machine_name' => $machine_name,
+        ':core' => $core
+      ));
+    // Check that the result isn't empty before continuing.
+    if (!empty($result)) {
+      foreach ($result as $key => $value) {
+        // Loop through each release entry looking for the corresponding major version
+        // with the term 'Security update'
+        foreach ($xml->releases->release as $release => $r) {
+          // As Drupal.org lists the updates by most recent, we can loop
+          // through efficiently and easily.
+          if ($value == (string)$r->major_version) {
+            // The terms are oftem not ordered the same.
+            // Check each term entry.
+            if (!empty($r->terms)) {
+              foreach ($r->terms->term as $term => $t) {
+                if ($term == 'Security update') {
+                  // The latest secure version has been found.
+                  $return = (string)$r->version_patch;
+                  // Break out of the inner foreach loop;
+                  break;
+                }
+              }
+            }
+            if (strlen($return) > 0) {
+              // Break out of the foreach loop.
+              break;
+            }
           }
         }
       }
-      if (strlen($return) > 0) {
-        // Break out of the foreach loop.
-        break;
-      }
+    } else {
+      // The result is empty, which means the project isn't in the database.
+      return NULL;
     }
   }
   // Return the latest secure minor version

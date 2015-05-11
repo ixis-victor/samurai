@@ -251,7 +251,7 @@ class SAEntityController extends EntityAPIController {
 /**
  * Implements hook_load
  *
- * Menu autoloader for dashboard/security-announcement
+ * Menu autoloader for security_announcement entities.
  */
 function security_announcement_load($id) {
   $sa_entity = entity_load('security_announcement', array($id));
@@ -297,4 +297,14 @@ class ProjectEntityController extends EntityAPIController {
     $build = parent::buildContent($entity, $view_mode, $langcode, $content);
     return $build;
   }
+}
+
+/**
+ * Implements hook_load
+ *
+ * Menu autoloader for project entities.
+ */
+function project_load($id) {
+  $project_entity = entity_load('project', array($id));
+  return array_pop($project_entity);
 }

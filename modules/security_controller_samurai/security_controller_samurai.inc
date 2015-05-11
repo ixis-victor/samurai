@@ -293,8 +293,10 @@ function samurai_decrypt_update_data($update_data, $encryption_key) {
  *
  * @param string $project_name The project name.
  * @param string $type The new project type.
+ * @param string $core The compatible core version
+ * @param string $major_version The major version number e.g. x.1
  */
-function samurai_mark_project_type($project_name, $type) {
+function samurai_mark_project_type($project_name, $core, $major_version, $type) {
   // Not implemented
 }
 
@@ -310,6 +312,16 @@ function samurai_split_version_number($version_number) {
   if (strpos($version_number, '7.x-') !== FALSE) {
     // Cater for version numbers that contain 7.x-
     $version_number = substr($version_number, 4);
+  }
+  if (strpos($version_number, '-') !== FALSE) {
+    // Remove the ending version e.g. -beta1
+    $pos = strpos($version_number, '-');
+    $version_number = substr($version_number, 0, $pos);
+  } 
+  if (strpos($version_number, '+') !== FALSE) {
+    // Remove the ending version e.g. +rc1
+    $pos = strpos($version_number, '+');
+    $version_number = substr($version_number, 0, $pos);
   }
   // Get the position of the splitter.
   $splitter = strpos($version_number, '.');
@@ -330,8 +342,6 @@ function samurai_split_version_number($version_number) {
  * @param string $machine_name The machine name of the project.
  * @param string $core The compatible core version e.g. 7.x, 6.x
  * @param string $major_version The major version of the project.
- *
- * @todo FINISH HIM!
  */
 function samurai_project_secure_minor($machine_name, $core, $major_version) {
   if (samurai_project_exists($machine_name, $core, $major_version)) {
@@ -389,5 +399,135 @@ function samurai_project_machine_name($project_name) {
  * @param string $site_url The site url of which to check access on.
  */
 function samurai_check_site_access($site_url) {
-  // Not implemented
+  // Now we must check that we have access to the site.
+  $content = samurai_curl_request($site_url);
+  // Check that the content returned is not empty.
+  if (!empty($content)) {
+    $decoded = drupal_json_decode($content);
+    watchdog('samurai', $decoded);
+    if (isset($decoded['encrypted'])) {
+      // We have access to the site, return TRUE.
+      return TRUE;
+    } else {
+      // We can't find what we're looking for.
+      return FALSE;
+    }
+  } else {
+    // We can't find what we're looking for.
+    return FALSE;
+  }
+}
+
+/**
+ * This function may be misleading due to it's name.
+ * This function will actually organise the update data into an array
+ * that can be easily printed out on to the page.
+ *
+ * @param string $update_data The json encoded update data
+ */
+function samurai_render_update_data($update_data) {
+  // Create the return array
+  $return = array();
+  $array_key = 0;
+  // Decoode the json update_data
+  $decoded = drupal_json_decode($update_data);
+  // Split the core version number - we need the major number
+  if (isset($decoded['drupal'])) {
+    $core_version = samurai_split_version_number($decoded['drupal']['version']);
+  } else {
+    return NULL;
+  }
+  // Loop through each project.
+  foreach ($decoded as $key => $value) {
+    // Get the major project version
+    $split_version_project = samurai_split_version_number($value['version']);
+    // Get the stored project data.
+    $result = db_query("SELECT 
+      name, 
+      major_version, 
+      latest_minor_version, 
+      latest_secure_minor_version,
+      project_type,
+      supported
+      FROM {securitysamurai_projects}
+      WHERE machine_name = :key
+      AND core = :core 
+      AND major_version = :major_version
+      AND project_type != 'module_custom'",
+      array(
+        ':key' => $key,
+        ':major_version' => $split_version_project['major'],
+        ':core' => $core_version['major'] . '.x'
+    ))->fetchAll();
+    if (!empty($result)) {
+      $return[$array_key]['name'] = $result[0]->name;
+      $return[$array_key]['type'] = str_replace('_', ' ', $result[0]->project_type);
+      if ($value['name'] == 'Drupal core') {
+        $return[$array_key]['installed_version'] = $value['version'];
+      } else {
+        $return[$array_key]['installed_version'] = substr($value['version'], 4);
+      }
+      $return[$array_key]['latest_version'] = $result[0]->major_version . '.' . $result[0]->latest_minor_version;
+      $return[$array_key]['secure_version'] = $result[0]->major_version . '.' . $result[0]->latest_secure_minor_version;
+      // If the module is unsupported.
+      if ($result[0]->supported == 0) {
+        $return[$array_key]['status'] = 'unsupported';
+      }
+      // Check if the project minor is equal to x e.g. 1.x 2.x
+      // It is generally not recommended to install modules like this.
+      if ($split_version_project['minor'] == 'x') {
+        $return[$array_key]['status'] = 'unsecure';
+      }
+      // Check if the project minor is lest than the latest minor.
+      if ($split_version_project['minor'] < $result[0]->latest_minor_version) {
+        $return[$array_key]['status'] = 'secure';
+      }
+      // Check if the project minor is equal to the latest minor.
+      if ($split_version_project['minor'] == $result[0]->latest_minor_version) {
+        $return[$array_key]['status'] = 'latest';
+      }
+      // Check if the project minor is less than the latest secure minor.
+      if ($split_version_project['minor'] < $result[0]->latest_secure_minor_version) {
+        $return[$array_key]['status'] = 'unsecure';
+      }
+      $array_key++;
+    }
+  }
+  if (!empty($return)) {
+    return $return;
+  } else {
+    return NULL;
+  }
+}
+
+/**
+ * The PHP array of the decrypted update data
+ *
+ * @param array[mixed] $update_data The update data.
+ *
+ * @return int $update_counter THe available security updates.
+ */
+function samurai_count_available_security_updates($update_data) {
+  $projects = array();
+  $projects = $update_data['modules'];
+  $projects = array_merge($update_data['themes'], $projects);
+  $core = $update_data['core'];
+  $update_counter = 0;
+  foreach ($projects as $project => $p) {
+    $version = samurai_split_version_number($p['version']);
+    $secure_minor = samurai_project_secure_minor($p['machine_name'], $p['core'], $version['major']);
+    if ($version['minor'] < $secure_minor) {
+      $update_counter++;
+    } else {
+      continue;
+    }
+  }
+  // Check the core version number.
+  // The core array isn't structured the same as the modules and themes.
+  $core_version = samurai_split_version_number($core['version']);
+  $core_secure_minor = samurai_project_secure_minor($core['machine_name'], $core_version['major'] . '.x', $core_version['major']);
+  if ($core_version['minor'] < $core_secure_minor) {
+    $update_counter++;
+  }
+  return $update_counter;
 }

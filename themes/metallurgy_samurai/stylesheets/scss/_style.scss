@@ -256,3 +256,33 @@ section {
     margin-left: 49%;
   }
 }
+
+.page-client {
+  #content-main {
+    width: 86%;
+    .client-projects {
+      margin-top: 7px;
+      margin-bottom: 25px;
+      width: 72.3%
+    }
+    td {
+      &.secure {
+        background-color: lighten($risk_less_critical, 10%);
+        color: #fff;
+      }
+      &.unsecure {
+        background-color: lighten($risk_highly_critical, 10%);
+        color: #fff;
+      }
+      &.unsupported {
+        background-color: lighten($risk_unsupported, 10%);
+        color: #fff;
+      }
+      &.latest {
+        background-color: lighten($risk_latest, 10%);
+        color: #fff;
+      }
+    }
+  }
+}
+

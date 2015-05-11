@@ -3,7 +3,11 @@ description = A theme for security samurai
 version = 7.x-0.1
 core = 7.x
 
+plugins[panels][layouts] = panels/layouts
+
 stylesheets[all][] = stylesheets/css/build.css
+
+scripts[] = javascript/page.js
 
 regions[header] = Header
 regions[help] = Help

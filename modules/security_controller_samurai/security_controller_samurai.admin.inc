@@ -81,14 +81,20 @@ function client_form_submit($form, &$form_state) {
     // on the next cron execution.
     $form_state['values']['update_next_check'] = 0;
   }
-  // Save the entity.
-  $client = entity_ui_form_submit_build_entity($form, $form_state);
-  $client->save();
-  // Notification messages.
-  drupal_set_message(t('@name has been saved.', array('@name' => $client->name)));
-  // Log to watchdog.
-  watchdog('Security samurai', t('@name has been saved.', array('@name' => $client->name)));
-  // Redirect to admin/client
-  $form_state['redirect'] = 'admin/client';
+  // Check that samurai can access the client site.
+  if (samurai_check_site_access($form_state['values']['site_url'])) {
+    // Save the entity.
+    $client = entity_ui_form_submit_build_entity($form, $form_state);
+    $client->save();
+    // Notification messages.
+    drupal_set_message(t('@name has been saved.', array('@name' => $client->name)));
+    // Log to watchdog.
+    watchdog('Security samurai', t('@name has been saved.', array('@name' => $client->name)));
+    // Redirect to admin/client
+    $form_state['redirect'] = 'admin/client';
+  } else {
+    // Return an error.
+    form_set_error('encryption_key', t('Samurai wasn\'t to establish a connection to the site.'));
+  }
 }
 

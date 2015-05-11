@@ -36,8 +36,10 @@ $button_submit_border_color: lighten($header_border_color, 10%);
 $button_submit_horz_padding: 1.5em;
 $button_submit_border_radius: 3px;
 
-// Risk colors
+// Risk colors also used as the project security status colours.
 $risk_highly_critical: #c0392b;
 $risk_moderately_critical: #f39c12;
 $risk_critical: #d35400;
 $risk_less_critical: #f1c40f;
+$risk_unsupported: #e67e22;
+$risk_latest: #27ae60;

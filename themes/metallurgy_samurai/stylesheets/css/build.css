@@ -261,3 +261,22 @@ section {
   margin-top: 5px; }
   .logo.center {
     margin-left: 49%; }
+
+.page-client #content-main {
+  width: 86%; }
+  .page-client #content-main .client-projects {
+    margin-top: 7px;
+    margin-bottom: 25px;
+    width: 72.3%; }
+  .page-client #content-main td.secure {
+    background-color: #f4d03f;
+    color: #fff; }
+  .page-client #content-main td.unsecure {
+    background-color: #d65548;
+    color: #fff; }
+  .page-client #content-main td.unsupported {
+    background-color: #eb9950;
+    color: #fff; }
+  .page-client #content-main td.latest {
+    background-color: #36d278;
+    color: #fff; }
