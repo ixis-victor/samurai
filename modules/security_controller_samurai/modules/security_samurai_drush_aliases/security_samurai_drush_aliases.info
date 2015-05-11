@@ -1,0 +1,4 @@
+name = Security samurai drush aliases
+description = Allows the use of drush aliases in security update checking.
+core = 7.x
+version 0.1
