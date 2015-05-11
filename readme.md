@@ -5,6 +5,7 @@
     - Finish the checking for general module updates.
     - Implement a function that will check samurai has access to the site before saving it. If samurai can't access the site - throw an error.
     - Update permissions for the new entity types e.g. Security announcement, Project.
+    - Client pages and security announcement pages need to be panel pages.
     - Add a core version number to the client entity type so it can be added as a filter in the client view page.
     - Send an email to all subscribed users when a security update is available with a list of affected sites.
 - Moderately important things
