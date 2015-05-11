@@ -9,6 +9,7 @@
     - Add a core version number to the client entity type so it can be added as a filter in the client view page.
     - Make it work with drush aliases. OOOOOOOOOOO
     - Send an email to all subscribed users when a security update is available with a list of affected sites.
+    - Rename everything about the client entity type to 'site'
 - Moderately important things
     - Utilise views.inc to make the views look and work nicer.
     - Administrative users should be able to mark project types, or mark them to be ignored in automated security updates.
