@@ -7,6 +7,7 @@
     - Update permissions for the new entity types e.g. Security announcement, Project.
     - Client pages and security announcement pages need to be panel pages.
     - Add a core version number to the client entity type so it can be added as a filter in the client view page.
+    - Make it work with drush aliases. OOOOOOOOOOO
     - Send an email to all subscribed users when a security update is available with a list of affected sites.
 - Moderately important things
     - Utilise views.inc to make the views look and work nicer.
