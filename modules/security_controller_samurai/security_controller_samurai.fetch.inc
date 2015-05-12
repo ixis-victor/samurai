@@ -10,6 +10,7 @@
  * Implements hook_cron
  */
 function security_controller_samurai_cron() {
+  /////////////////////////////////////////////////////////////
   // Security updates will be checked for every single cron run.
   // Get the contrib projects security announcements.
   $xml_contrib = samurai_xml_curl_request(SAMURAI_ORG_SA_CONTRIB);
@@ -25,22 +26,23 @@ function security_controller_samurai_cron() {
     // Process the core projects security announements.
     samurai_process_sa($xml_core, 'core');
   }
-  // // Check for general updates of contrib projects
-  // // Check every ten minutes, check 100 projects every 10 minutes
-  // $check = variable_get('security_controller_samurai_contrib_check', NULL);
-  // /**
-  //  * @thought when setting the check_offset, it can't exceed the amount of results.
-  //  */
-  // $offset = variable_get('security_controller_samurai_contrib_check_offset', NULL);
-  // if ((!is_null($check) && $check <= REQUEST_TIME) && !is_null($offset)) {
-  //   // Now is the time to check for normal module updates
-  // } else {
-  //   // $check might be null
-  //   // $offset might be null
-  //   // OR it isn't time to check yet.
-  // }
-  // // Recache the sites
-
+  /////////////////////////////////////////////////////////////
+  // Check for general updates of contrib projects
+  // Check every ten minutes, check 100 projects every 10 minutes
+  $check = variable_get('security_controller_samurai_contrib_check', NULL);
+  /**
+   * @thought when setting the check_offset, it can't exceed the amount of results.
+   */
+  $offset = variable_get('security_controller_samurai_contrib_check_offset', NULL);
+  if ((!is_null($check) && $check <= REQUEST_TIME) && !is_null($offset)) {
+    // Get the samurai project.
+    samurai_get_project_update($machine_name, $major_version, $core, $xml = NULL);
+  } else {
+    // $check might be null
+    // $offset might be null
+    // OR it isn't time to check yet.
+  }
+  /////////////////////////////////////////////////////////////
   // Get an array of clients that have not yet had their sites checked/need to be checked.
   $result = db_query("SELECT id FROM {securitysamurai_client}
     WHERE update_next_check <= :time",
@@ -131,27 +133,6 @@ function samurai_process_sa($xml, $type) {
       samurai_check_security_update($project_name, $version_aff);
     } else {
       continue;
-    }
-  }
-}
-
-/**
- * Check for the latest secure version.
- *
- * @param string $project_name The project name of the project.
- * @param array[string] $version_aff The core versions affected.
- */
-function samurai_check_security_update($project_name, $version_aff) {
-  foreach ($version_aff as $core) {
-    $machine_name = samurai_project_machine_name($project_name);
-    $version_arr = drupal_json_decode($version_aff);
-    foreach ($version_arr as $key => $value) {
-      $latest_secure_version = samurai_get_project_latest_secure_version($machine_name, $value);
-      if (!is_null($latest_secure_version)) {
-        // Update the project in the database.
-      } else {
-        return NULL;
-      }
     }
   }
 }
