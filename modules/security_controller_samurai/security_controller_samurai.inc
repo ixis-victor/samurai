@@ -166,7 +166,7 @@ function samurai_project_exists($machine_name, $core, $major_version) {
     array(
       ':machine_name' => $machine_name,
       ':core' => $core,
-      ':major_version' => $major_version,
+      ':major_version' => $major_version
     )
   )->fetchField();
   if (!empty($result)) {
@@ -175,6 +175,60 @@ function samurai_project_exists($machine_name, $core, $major_version) {
   } else {
     // The project is not in the database.
     return FALSE;
+  }
+}
+
+/**
+ * Returns a array of available project major versions.
+ *
+ * @param string $machine_name The machine name of the project.
+ * @param string $core The compatible core version e.g. 7.x
+ *
+ * @return array[int] $return The array of major versions.
+ */
+function samurai_get_available_major_versions($machine_name, $core) {
+  // Query the database for the major_versions
+  $result = db_query('SELECT major_version FROM {securitysamurai_projects} WHERE
+    machine_name = :machine_name AND
+    core = :core', array(
+      ':machine_name' => $machine_name,
+      ':core' => $core
+    ))->fetchAll();
+  // Check if the result is empty.
+  if (!empty($result)) {
+    $return = array();
+    foreach ($result as $res => $r) {
+      $return[sizeof($return)] = $r->major_version;
+    }
+    return $return;
+  } else {
+    // The result is empty.
+    return NULL;
+  }
+}
+
+/**
+ * Returns the entity ID of a project.
+ *
+ * @param string $machine_name The machine name of the project
+ * @param string $core The compatible core version e.g. 7.x
+ * @param int $major_version The major_version
+ */
+function samurai_get_project_entity_id($machine_name, $core, $major_version) {
+  // Query the database for the ID
+  $result = db_query("SELECT id FROM {securitysamurai_projects} WHERE
+    major_version = :major_version AND
+    machine_name = :machine_name AND
+    core = :core", array(
+      ":major_version" => $major_version,
+      ":machine_name" => $machine_name,
+      ":core" => $core
+    ))->fetchField();
+  // Check if the result is empty.
+  if (!empty($result)) {
+    return $return;
+  } else {
+    return NULL;
   }
 }
 
