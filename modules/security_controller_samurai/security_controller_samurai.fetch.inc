@@ -10,62 +10,51 @@
  * Implements hook_cron
  */
 function security_controller_samurai_cron() {
-  /////////////////////////////////////////////////////////////
-  // Security updates will be checked for every single cron run.
-  // Get the contrib projects security announcements.
+  // Retrieve the contrib sa XML
   $xml_contrib = samurai_xml_curl_request(SAMURAI_ORG_SA_CONTRIB);
-  // Check $xml_contrib isn't null before continuing.
   if (!is_null($xml_contrib)) {
     // Process the contrib projects security announcements.
     samurai_process_sa($xml_contrib, 'contrib');
   }
-  // Get the core projects security announcements.
+
+  // Retrieve the core sa XML
   $xml_core = samurai_xml_curl_request(SAMURAI_ORG_SA_CORE);
-  // Check $xml_core isn't null before continuing
   if (!is_null($xml_core)) {
     // Process the core projects security announements.
     samurai_process_sa($xml_core, 'core');
   }
-  /////////////////////////////////////////////////////////////
-  // Check for general updates of contrib projects
-  // Check every ten minutes, check 100 projects every 10 minutes
-  $check = variable_get('security_controller_samurai_contrib_check', NULL);
-  /**
-   * @thought when setting the check_offset, it can't exceed the amount of results.
-   */
+
+  // Retrieve the check offset.
   $offset = variable_get('security_controller_samurai_contrib_check_offset', NULL);
-  if ((!is_null($check) && $check <= REQUEST_TIME) && !is_null($offset)) {
-    // Get the samurai project.
-    samurai_get_project_update($machine_name, $major_version, $core, $xml = NULL);
-  } else {
-    // $check might be null
-    // $offset might be null
-    // OR it isn't time to check yet.
-  }
-  /////////////////////////////////////////////////////////////
+  // Check for general updates.
+
   // Get an array of clients that have not yet had their sites checked/need to be checked.
   $result = db_query("SELECT id FROM {securitysamurai_client}
     WHERE update_next_check <= :time",
     array(
       ':time' => REQUEST_TIME,
   ));
-  // Loop through each result, obtaining the site_update_data and processing it.
+
+  // Loop through each result
   foreach ($result as $record) {
-    // Load the client.
+    // Load the client
     $client = client_load($record->id);
-    // Get the update data from the client's site.
+
+    // -- Get the update data from the client's site.
+    // -- Decode the json encoded update data, to use as a PHP array.
+    // -- Decrypt the update data.
     $encoded_update_data = samurai_get_site_update_data($client->site_url);
-    // Decode the json encoded update data, so we can directly access the encrypted string.
     $encrypted_update_data = drupal_json_decode($encoded_update_data);
-    // Decrypt the update data.
     $decrypted_update_data = drupal_json_decode(trim(samurai_decrypt_update_data($encrypted_update_data['encrypted'], $client->encryption_key)));
-    // Get the security update count.
+    
+    // Assign values to the loaded entity
     $client->update_count = samurai_count_available_security_updates($decrypted_update_data);
-    // Process the data and make final changes to the entity.
     $client->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
     $client->update_next_check = strtotime('+24 hours');
-    // Save the entity.
+
+    // Save the entity
     entity_save('client', $client);
+    
     // Log to watchdog.
     watchdog('Security samurai', t('@name has been scanned.', array('@name' => $client->name)));
   }
@@ -78,44 +67,42 @@ function security_controller_samurai_cron() {
  * @param string $type core or contrib.
  */
 function samurai_process_sa($xml, $type) {
-  // Loop through each item in the sa $xml
+  // Loop through each item in the security announcement XML
   foreach ($xml->channel->item as $item) {
-    // Remove the tags each value. We have to do this because sometimes
-    // RSS doesn't validate as SimpleXML.
+    // RSS sometimes isn't recognised properly in SimpleXML
     foreach ($item as $key => $value) {
       $item->$key = strip_tags($value);
     }
     // The description contains everything needed and will need to be split up.
     $description = (string)$item->description;
-    kpr($item);
-    // Get the Security announcement ID from the description.
+
+    // Parse the security announcement ID.
     $sa = samurai_split_sa_data($description, 'Advisory ID:', 'Project:');
-    // Check to make sure the SA hasn't already been added to the database before continuing.
+
+    // Check the security announcement doesn't already exist.
     if (!samurai_sa_exists($sa)) {
-      // SA doesn't exist, we can continue to obtain the other required database fields.
+      // Security announcement doesn't exist.
+      //
+      // Get:
+      // -- The core version affected
+      // -- The risk level string
+      // -- Announcement time
+      // -- Vulnerability
+      // -- The solution to the vulnerabilty
       if ($type == 'contrib') {
-        // If the XML is for contrib projects.
         $project_name = samurai_split_sa_data($description, 'Project:', '(third-party module)');
-        // Now we have the project name, let's get the machine name.
-        $machine_name;
       } else {
-        // If the XML is for core.
         $project_name = 'Drupal core';
       }
-      // Get the versions affected.
       $version_aff_raw = samurai_split_sa_data($description, 'Version:', 'Date:');
-      // Process the version affected value to be a json array.
       $version_aff_json = drupal_json_encode(explode(',', $version_aff_raw));
       $version_aff = str_replace(' ', '', $version_aff_json);
-      // Get the risk level.
       $risk_level = samurai_split_sa_data($description, 'Security risk:', 'Vulnerability:');
-      // Get the time the announcement was made.
       $time = strtotime(samurai_split_sa_data($description, 'Date:', 'Security risk:'));
-      // Get the vulnerability description.
       $vulnerability = samurai_split_sa_data($description, 'Vulnerability:', 'CVE identifier(s)');
-      // Get the solution to fix the $vulnerabilty.
       $solution  = samurai_split_sa_data($description, 'Solution', 'Reported by');
-      // Create a new SA entity
+
+      // Create and save the new SA entity.
       $security_announcement = entity_create('security_announcement', array(
         'sa_id' => $sa,
         'risk_level' => $risk_level,
@@ -125,12 +112,25 @@ function samurai_process_sa($xml, $type) {
         'solution' => $solution,
         'project_name' => $project_name
       ));
-      // Save the newly created security announcement
-      $security_announcement_wrapper = entity_metadata_wrapper('security_announcement', $security_announcement);
-      $security_announcement_wrapper->save();
+      $sa_wrapped = entity_metadata_wrapper('security_announcement', $security_announcement);
+      $sa_wrapped->save();
+
+      // Log the creation of the SA entity to watchdog.
       watchdog('Security samurai', $sa . t(' New security update data'));
+
       // Check for a security update concerning the project_name from the SA.
-      samurai_check_security_update($project_name, $version_aff);
+      $machine_name = samurai_project_machine_name($project_name);
+      $core = drupal_json_decode($version_aff);
+      if (!empty($machine_name)) {
+        // Check update for each core version
+        foreach ($core as $c => $core_major) {
+          $am = samurai_get_available_major_versions($machine_name, $core_major);
+          foreach ($am as $available_major => $avm) {
+            // Retrieve the update.
+            samurai_get_project_update($machine_name, $avm, $core_major);
+          }
+        }
+      }
     } else {
       continue;
     }
@@ -148,32 +148,27 @@ function samurai_process_sa($xml, $type) {
  * @param string $core The core version that the project is for e.g. 7.x
  */
 function samurai_get_project_update($machine_name, $major_version, $core, $xml = NULL) {
-  // If $xml is NULL then retrieve the XML here.
   if (is_null($xml)) {
-    // Retrieve the XML
+    // Retrieve the update data.
     $xml = samurai_xml_curl_request(SAMURAI_ORG_UPDATE_URL . $machine_name . "/" . $core);
   }
-  // Get the latest secure version minor
+
+  // Get the latest version and secure version.
   $latest_secure_version = samurai_get_project_latest_secure_version($machine_name, $core, $major_version, $xml);
-  // Get the latest version minor.
   $latest_version = samurai_get_project_latest_version($machine_name, $core, $major_version, $xml);
-  // Load the entity and update it with the latest project versions.
-  // Get the ID of the project node
-  $result = db_query("SELECT id FROM {securitysamurai_projects} WHERE
-    major_version = :major_version AND
-    machine_name = :machine_name AND
-    core = :core", array(
-      ":major_version" => $major_version,
-      ":machine_name" => $machine_name,
-      ":core" => $core
-    ))->fetchField();
-  // Load the project entity.
+
+  // Get the entity ID of the project.
+  $result = samurai_get_project_entity_id($machine_name, $core, $major_version);
+
+  // -- Load the entity
+  // -- Update the entity fields:
+  // ---- latest_secure_minor_version
+  // ---- latest_minor_version
   $project_entity = project_load($result);
-  // Update the entity.
   $project_entity->latest_secure_minor_version = $latest_secure_version;
   $project_entity->latest_minor_version = $latest_version;
-  // Apply the Entity API wrapper.
   $project_entity = entity_metadata_wrapper('project', $project_entity);
+
   // Save the entity.
   $project_entity->save();
 }
@@ -188,12 +183,12 @@ function samurai_get_project_update($machine_name, $major_version, $core, $xml =
 function samurai_curl_request($url) {
   // Create a new curl object
   $curl = curl_init();
-  // Set the destination URL to retrieve the update data.
   curl_setopt($curl, CURLOPT_URL, $url);
-  // We want to retrieve content from the page.
   curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+  
   // Execute the request.
   $content = curl_exec($curl);
+  
   // Return the result.
   return $content;
 }
@@ -211,12 +206,10 @@ function samurai_xml_curl_request($url) {
   try {
     $xml = new SimpleXMLElement($content);
   } catch (Exception $e) {
-    // SimpleXMLElement will handle any errors itself.
-    // So we can just return NULL here.
-    return;
+    // SimpleXML handles errors itself.
+    return NULL;
   }
-  // The XML object was created successfully.
-  // Return the SimpleXMLELement object.
+  // Return the result.
   return $xml;
 }
 
@@ -228,8 +221,8 @@ function samurai_xml_curl_request($url) {
  * @return string $content The contents of the request.
  */
 function samurai_get_site_update_data($site_url) {
-  // Create a new curl object
   $content = samurai_curl_request($site_url . '/admin/reports/security_samurai');
+  
   // Return the result.
   return $content;
 }
