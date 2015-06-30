@@ -7,6 +7,7 @@ project = security_samurai_base
 dependencies[] = ctools
 dependencies[] = elysia_cron
 dependencies[] = jquery_update
+dependencies[] = module_filter
 dependencies[] = pace
 dependencies[] = require_login
 dependencies[] = security_samurai_controller
