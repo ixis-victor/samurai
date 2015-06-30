@@ -1,7 +1,0 @@
-<?php
-/**
- * @file
- * Code for the Security samurai pages feature.
- */
-
-include_once 'security_samurai_pages.features.inc';

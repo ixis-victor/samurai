@@ -1,4 +1,0 @@
-name = Security samurai Jenkins
-description = Jenkins CI integration for Security samurai
-core = 7.x
-version 0.1

@@ -8,6 +8,7 @@
   <div id="content-main-wrapper">
     <div id="content-main">
       <h4 class="publish-info">Created: <?php print date('d-m-Y H:i:s', $element->created_at); ?></h4>
+      <div id="widthsetter">
       <div class="card">
         <h2 class="title">Site information</h2>
         <?php if ($element->update_next_check > 0): ?>
@@ -43,6 +44,7 @@
           </tr>
         <?php endforeach; ?>
         </table>
+      </div>
       <?php else: ?>
         <div class="card">
           <h2 class="title">404 - No projects found :(</h2>

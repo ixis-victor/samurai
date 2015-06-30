@@ -201,10 +201,8 @@ section {
     }
   }
 
-  #left-content {
-    .card {
-      width: 70% !important;
-    }
+  #widthsetter {
+    width: 1040px;
   }
 
   .card {
@@ -263,7 +261,6 @@ section {
     .client-projects {
       margin-top: 7px;
       margin-bottom: 25px;
-      width: 72.3%
     }
     td {
       &.secure {
