@@ -34,7 +34,6 @@ include(SAMURAI_MODULE_PATH . '/security_samurai_controller.fetch.inc');
  */
 function security_samurai_controller_entity_info() {
 
-
   $info = array();
 
   // The client entity.
