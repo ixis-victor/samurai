@@ -1,0 +1,14 @@
+name = Security samurai views
+description = Views configuration for security samurai
+core = 7.x
+package = Security Samurai
+version = 7.x-1.0
+project = security_samurai_views
+dependencies[] = views
+dependencies[] = views_content
+features[ctools][] = views:views_default:3.0
+features[features_api][] = api:2
+features[views_view][] = clients
+features[views_view][] = security_announcements
+features_exclude[dependencies][ctools] = ctools
+project path = sites/samurai/modules/features
