@@ -12,7 +12,7 @@
       <h4 class="publish-info">Published: <?php print date('d-m-Y H:i:s', $element->date); ?></h4>
       <div class="card">
         <h2 class="title">Affected project</h2>
-        <p class="content"><?php print render($element->project_name);?> <?php print render(implode(',', drupal_json_decode($element->version))); ?></p>
+        <p class="content"><?php print render($element->project_name);?> <?php $element_version = implode(',', drupal_json_decode($element->version)); print render($element_version); ?></p>
       </div>
       <div class="card">
         <h2 class="title">Risk level</h2>
