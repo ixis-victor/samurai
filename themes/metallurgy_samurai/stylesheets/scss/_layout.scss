@@ -70,7 +70,6 @@ section {
   }
 
   #column-right-wrapper {
-    margin-left: 53px;
     margin-top: 79px;
   }
 
@@ -107,12 +106,10 @@ section {
 }
 
 #left-content {
-  width: 70%;
   float: left;
 }
 
 #right-content {
-  width: 30%;
   float: right;
 }
 
@@ -124,3 +121,16 @@ section {
   display: block;
   margin: 0 auto;
 }
+
+.span_1 { width: 6.25%; }
+.span_2 { width: 14.585%; }
+.span_3 { width: 22.92%; }
+.span_4 { width: 31.25%; }
+.span_5 { width: 39.58%; }
+.span_6 { width: 47.92%; }
+.span_7 { width: 56.26%; }
+.span_8 { width: 64.58%; }
+.span_9 { width: 72.92%; }
+.span_10 { width: 81.25%; }
+.span_11 { width: 89.58%; }
+.span_12 { width: 100%; }

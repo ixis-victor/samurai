@@ -8,7 +8,7 @@
     </div>
   </div>
   <div id="content-main-wrapper">
-    <div id="content-main">
+    <div id="content-main" class="span_8">
       <h4 class="publish-info">Published: <?php print date('d-m-Y H:i:s', $element->date); ?></h4>
       <div class="card">
         <h2 class="title">Affected project</h2>
@@ -29,7 +29,7 @@
     </div>
   </div>
 </div>
-<div id="right-content">
+<div id="right-content" class="span_3">
   <div id="column-right-wrapper">
     <div id="column-right">
       <div class="card">
