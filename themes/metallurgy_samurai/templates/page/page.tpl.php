@@ -76,7 +76,7 @@
   </div>
 </section>
 <?php if ($user->uid != 0): ?>
-<section id="menu-wrapper">
+<section id="menu-wrapper" class="span-2 float-left">
   <div id="menu">
     <?php print theme('links__system_main_menu', array(
       'links' => $main_menu,
@@ -103,7 +103,7 @@
   </div>
 </section>
 <?php endif; ?>
-<section id="content-wrapper">
+<section id="content-wrapper" class="span-10 float-left offset-2 padding-left">
   <div id="content">
     <?php print $messages; ?>
     <?php print render($page['content']); ?>

@@ -1,4 +1,4 @@
-<div id="left-content">
+<div class="span-8 float-left">
   <div id="content-header-wrapper">
     <div id="content-header">
       <span class="risk-<?php print samurai_parse_risk($element->risk_level); ?>">
@@ -8,7 +8,7 @@
     </div>
   </div>
   <div id="content-main-wrapper">
-    <div id="content-main" class="span_8">
+    <div id="content-main">
       <h4 class="publish-info">Published: <?php print date('d-m-Y H:i:s', $element->date); ?></h4>
       <div class="card">
         <h2 class="title">Affected project</h2>
@@ -29,7 +29,7 @@
     </div>
   </div>
 </div>
-<div id="right-content" class="span_3">
+<div class="span-4 float-left padding-left">
   <div id="column-right-wrapper">
     <div id="column-right">
       <div class="card">

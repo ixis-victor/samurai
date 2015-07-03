@@ -38,12 +38,8 @@ section {
   }
 
   &#menu-wrapper {
-    max-width: 250px;
-    min-width: 150px;
     top: 3em;
-    width: 225px;
     height: 100%;
-    float: left;
     position: fixed;
     background-color: $menu_background_color;
     border-right: $menu_right_border_width solid $menu_border_color;
@@ -60,17 +56,11 @@ section {
   }
 
   &#content-wrapper {
-    margin-top: 3.5em;
-    margin-left: 240px;
-    margin-right: 1em;
+    margin-top: 55px;
     font-family: 'Roboto', sans-serif !important;
     &.full-width {
       margin-left: 0px !important;
     }
-  }
-
-  #column-right-wrapper {
-    margin-top: 79px;
   }
 
   h1 {
@@ -122,15 +112,47 @@ section {
   margin: 0 auto;
 }
 
-.span_1 { width: 6.25%; }
-.span_2 { width: 14.585%; }
-.span_3 { width: 22.92%; }
-.span_4 { width: 31.25%; }
-.span_5 { width: 39.58%; }
-.span_6 { width: 47.92%; }
-.span_7 { width: 56.26%; }
-.span_8 { width: 64.58%; }
-.span_9 { width: 72.92%; }
-.span_10 { width: 81.25%; }
-.span_11 { width: 89.58%; }
-.span_12 { width: 100%; }
+.span-1 { width: 6.25%; }
+.span-2 { width: 14.585%; }
+.span-3 { width: 22.92%; }
+.span-4 { width: 31.25%; }
+.span-5 { width: 39.58%; }
+.span-6 { width: 47.92%; }
+.span-7 { width: 56.26%; }
+.span-8 { width: 64.58%; }
+.span-9 { width: 72.92%; }
+.span-10 { width: 81.25%; }
+.span-11 { width: 89.58%; }
+.span-12 { width: 100%; }
+
+.offset-1 { margin-left: 6.25%; }
+.offset-2 { margin-left: 14.585%; }
+.offset-3 { margin-left: 22.92%; }
+.offset-4 { margin-left: 31.25%; }
+.offset-5 { margin-left: 39.58%; }
+.offset-6 { margin-left: 47.92%; }
+.offset-7 { margin-left: 56.26%; }
+.offset-8 { margin-left: 64.58%; }
+.offset-9 { margin-left: 72.92%; }
+.offset-10 { margin-left: 81.25%; }
+
+// Average portrait tablet
+@media screen and (max-width: 768px) {
+  * { font-size: 98%; }
+  #menu-wrapper { display: none; }
+  #content-wrapper { margin-left: 0px; }
+  #content .span-4 { padding-left: 0px; }
+  .span-1,.span-2,.span-3,.span-4,.span-5,.span-6,.span-7,.span-8 { width: 100%; }
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.float-left {
+  float: left;
+}
+
+.padding-left {
+  padding-left: 1em;
+}
