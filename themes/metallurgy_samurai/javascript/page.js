@@ -39,7 +39,7 @@
           (jQuery)("#content-header").css({
             "z-index": "-1",
             "margin-top": "-90px",
-            "position": "absolute",
+            "position": "relative",
             "font-size": "100%"
           });
           // Animate the header into view.
