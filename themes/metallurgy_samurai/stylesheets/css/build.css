@@ -297,8 +297,7 @@ section {
   section #content-main {
     z-index: -10; }
     section #content-main .publish-info {
-      padding-top: 3px;
-      padding-left: 1px; }
+      padding: 1em; }
   section #widthsetter {
     width: 1040px; }
   section .card {

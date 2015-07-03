@@ -9,7 +9,7 @@
 <div class="span-8 float-left">
   <div id="content-main-wrapper">
     <div id="content-main">
-      <h4 class="publish-info">Published: <?php print date('d-m-Y H:i:s', $element->date); ?></h4>
+      <h4 class="publish-info card">Published: <?php print date('d-m-Y H:i:s', $element->date); ?></h4>
       <div class="card">
         <h2 class="title">Affected project</h2>
         <p class="content"><?php print render($element->project_name);?> <?php $element_version = implode(',', drupal_json_decode($element->version)); print render($element_version); ?></p>
