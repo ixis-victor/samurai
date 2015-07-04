@@ -297,7 +297,8 @@ section {
   section #content-main {
     z-index: -10; }
     section #content-main .publish-info {
-      padding: 1em; }
+      padding: 1em;
+      margin-top: 0px; }
   section #widthsetter {
     width: 1040px; }
   section .card {
@@ -332,10 +333,15 @@ section {
     background-color: #f1c40f; }
 
 .logo {
-  margin-left: 95px;
-  margin-top: 5px; }
+  margin-left: 10px;
+  margin-top: 3px; }
   .logo.center {
     margin-left: 49%; }
+
+.site-name {
+  display: inline-block;
+  position: absolute;
+  margin-left: 10px; }
 
 .page-client #content-main .client-projects {
   margin-top: 7px;

@@ -244,11 +244,17 @@ section {
 }
 
 .logo {
-  margin-left: 95px;
-  margin-top: 5px;
+  margin-left: 10px;
+  margin-top: 3px; 
   &.center {
     margin-left: 49%;
   }
+}
+
+.site-name {
+  display: inline-block;
+  position: absolute;
+  margin-left: 10px; 
 }
 
 .page-client {

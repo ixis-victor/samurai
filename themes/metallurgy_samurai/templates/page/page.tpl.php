@@ -73,6 +73,7 @@
 <section id="header-wrapper">
   <div id="header">
     <img class="logo" src="<?php print $logo; ?>" width="35" height="auto"></img>
+    <p class="site-name"><?php print $site_name; ?></p>
   </div>
 </section>
 <?php if ($user->uid != 0): ?>
