@@ -31,7 +31,7 @@
 
   <?php print $field->wrapper_prefix; ?>
     <?php print $field->label_html; ?>
-    <?php if ($field->label == 'Risk level'): ?>
+    <?php if ($field->handler->field_alias == 'securitysamurai_sa_risk_level'): ?>
         <span class="risk-<?php print samurai_parse_risk($field->raw); ?>">
           <?php print $field->content; ?>
         </span>

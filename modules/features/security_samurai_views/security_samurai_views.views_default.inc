@@ -171,7 +171,8 @@ function security_samurai_views_views_default_views() {
   $handler->display->display_options['fields']['risk_level']['id'] = 'risk_level';
   $handler->display->display_options['fields']['risk_level']['table'] = 'securitysamurai_sa';
   $handler->display->display_options['fields']['risk_level']['field'] = 'risk_level';
-  $handler->display->display_options['fields']['risk_level']['label'] = 'Risk level';
+  $handler->display->display_options['fields']['risk_level']['label'] = '';
+  $handler->display->display_options['fields']['risk_level']['element_label_colon'] = FALSE;
   /* Sort criterion: Security announcement: Date */
   $handler->display->display_options['sorts']['date']['id'] = 'date';
   $handler->display->display_options['sorts']['date']['table'] = 'securitysamurai_sa';

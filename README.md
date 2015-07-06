@@ -25,6 +25,11 @@
 
 # THEN AUTOMATE ALL THE THINGS!
 - Docker
+    - The module controls the amount of containers that are running.
+    - An ssh key would have to be generated and added automatically.
+        - Codebase API, GitHub API
+            - possible.
+        - This is were custom modules for github, codebase and bitbucket come in.
     - Used for spinning up an environment to run the tests on.
     - Run a script to clone the repo, run the update script, run the tests and commit up to the repo.
 - Codeception
