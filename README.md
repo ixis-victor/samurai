@@ -10,8 +10,6 @@
     - Add a core version number to the client entity type so it can be added as a filter in the client view page.
     - Send an email to all subscribed users when a security update is available with a list of affected sites.
 - Moderately important things
-    - Theme
-        - Hide the extremely long SA risk level at smaller screen widths. Replace with a shorter string.
     - Utilise views.inc to make the views look and work nicer.
     - Administrative users should be able to mark project types, or mark them to be ignored in automated security updates.
     - The 'my account' page needs theming.
