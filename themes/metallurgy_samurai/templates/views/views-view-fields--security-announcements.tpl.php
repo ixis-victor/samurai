@@ -32,8 +32,12 @@
   <?php print $field->wrapper_prefix; ?>
     <?php print $field->label_html; ?>
     <?php if ($field->handler->field_alias == 'securitysamurai_sa_risk_level'): ?>
-        <span class="risk-<?php print samurai_parse_risk($field->raw); ?>">
+        <span class="hide-1490 risk-<?php print samurai_parse_risk($field->raw); ?>">
           <?php print $field->content; ?>
+        </span>
+        <span class="show-1490 risk-<?php print samurai_parse_risk($field->raw); ?>">
+          <?php $position = strpos($field->content, ')') + 1; ?>
+          <?php print substr($field->content, 0, $position); ?>
         </span>
     <?php else: ?>
         <?php print $field->content ?>
