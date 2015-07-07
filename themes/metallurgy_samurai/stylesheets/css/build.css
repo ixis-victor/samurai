@@ -147,7 +147,7 @@ section p {
 .offset-10 {
   margin-left: 81.25%; }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 769px) {
   * {
     font-size: 98%; }
 
@@ -168,10 +168,10 @@ section p {
 @media screen and (max-width: 1490px) {
   .hide-1490 {
     display: none; } }
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 769px) {
   .show-768 {
     display: none; } }
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 769px) {
   .hide-768 {
     display: none; } }
 .inline-block {
