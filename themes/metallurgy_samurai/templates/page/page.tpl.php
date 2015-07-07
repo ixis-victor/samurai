@@ -102,6 +102,18 @@
         'heading' => t('User menu'),
       )); ?>
   </div>
+  <div id="mobile-menu" class="hide-1490 show-768">
+    <?php print theme('links__system_main_menu', array(
+      'links' => $main_menu,
+      'attributes' => array(
+        'id' => 'main-menu',
+        'class' => array(
+          'links',
+        ),
+      ), 
+      'heading' => t('Navigation'),
+    )); ?>
+  </div>
 </section>
 <?php endif; ?>
 <section id="content-wrapper" class="span-10 float-left offset-2 padding-left">
