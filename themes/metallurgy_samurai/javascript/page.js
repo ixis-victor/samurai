@@ -51,3 +51,42 @@
     }
 	});
 });
+
+// Execute when page is ready.
+(jQuery)(document).ready(function() {
+  // This code opens and closes the menu
+  var toggleopen = 0;
+  (jQuery)("#menu-open").click(function() {
+      // Hide the menu toggle and push out the menu.
+      (jQuery)("#menu-open").animate({
+        "opacity": "0"
+      }, 200);
+      (jQuery)("#menu-wrapper").animate({
+        "width": "60%",
+      }, 200);
+      (jQuery)("#mobile-menu").animate({
+        "margin-left": "0px",
+        "padding-right": "0px"
+      }, 200);
+      (jQuery)("#menu-close").animate({
+        "opacity": "1"
+      }, 200);
+  });
+
+  (jQuery)("#menu-close").click(function() {
+    // Hide the menu toggle and push in the menu.
+    (jQuery)("#menu-close").animate({
+      "opacity": "0"
+    }, 200);
+    (jQuery)("#mobile-menu").animate({
+      "margin-left": "-150px",
+      "padding-right": "50px"
+    }, 200);
+    (jQuery)("#menu-wrapper").animate({
+      "width": "50px"
+    }, 200);
+    (jQuery)("#menu-open").animate({
+      "opacity": "1"
+    }, 200);
+  })
+});

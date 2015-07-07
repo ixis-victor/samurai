@@ -102,7 +102,9 @@
         'heading' => t('User menu'),
       )); ?>
   </div>
-  <div id="mobile-menu" class="hide-1490 show-768">
+  <div id="mobile-menu" class="show-768">
+    <i class="fa fa-bars" id="menu-open"></i>
+    <i class="fa fa-times" id="menu-close"></i>
     <?php print theme('links__system_main_menu', array(
       'links' => $main_menu,
       'attributes' => array(

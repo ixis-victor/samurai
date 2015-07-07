@@ -226,6 +226,49 @@ section {
             transition: 0.2s ease; }
             section#menu-wrapper #menu ul li > a > div:hover {
               background-color: #232a2f; }
+    section#menu-wrapper #mobile-menu {
+      margin-left: -150px;
+      padding-right: 50px; }
+      section#menu-wrapper #mobile-menu #menu-open {
+        padding-left: 163px;
+        color: #fff;
+        font-size: 2em;
+        position: absolute;
+        margin-top: 10px; }
+      section#menu-wrapper #mobile-menu #menu-close {
+        opacity: 0;
+        color: #fff;
+        font-size: 2em;
+        margin-left: 92%;
+        position: absolute; }
+      section#menu-wrapper #mobile-menu h2 {
+        font-size: 10px;
+        padding-left: 1em;
+        padding-top: 1em;
+        padding-bottom: 1em;
+        margin: 0; }
+      section#menu-wrapper #mobile-menu ul {
+        padding: 0;
+        margin: 0; }
+        section#menu-wrapper #mobile-menu ul li {
+          list-style-type: none;
+          padding: 0;
+          margin: 0; }
+          section#menu-wrapper #mobile-menu ul li.active-trail > a > div, section#menu-wrapper #mobile-menu ul li.active > a > div {
+            color: white;
+            background-color: #171b1f !important; }
+          section#menu-wrapper #mobile-menu ul li > a {
+            text-decoration: none; }
+            section#menu-wrapper #mobile-menu ul li > a > div {
+              font-size: 12px;
+              padding-left: 1em;
+              padding-bottom: 0.8em;
+              padding-top: 0.8em;
+              color: #a8acb1;
+              -webkit-transition: 0.2s ease;
+              transition: 0.2s ease; }
+              section#menu-wrapper #mobile-menu ul li > a > div:hover {
+                background-color: #232a2f; }
   section #user-login-title {
     margin-top: 80px; }
   section #user-login {
