@@ -113,7 +113,6 @@
           'links',
         ),
       ), 
-      'heading' => t('Navigation'),
     )); ?>
   </div>
 </section>

@@ -54,17 +54,18 @@ section {
       margin-left: -150px;
       padding-right: 50px;
       #menu-open {
-        padding-left: 163px;
-        color: #fff;
-        font-size: 2em;
+        padding-left: 165px;
+        color: $menu_font_color;
+        font-size: 1.618em;
         position: absolute;
         margin-top: 10px;
       }
       #menu-close {
         opacity: 0;
-        color: #fff;
-        font-size: 2em;
+        color: $menu_font_color;
+        font-size: 1.618em;
         margin-left: 92%;
+        margin-top: 3px;
         position: absolute;
       }
       h2 {
