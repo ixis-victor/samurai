@@ -2,17 +2,18 @@
 core = 7.x
 
 api = 2
-projects[drupal][version] = "7.34"
+projects[drupal][version] = "7.38"
 
 ; Modules
 projects[ctools][version] = "1.6"
 projects[devel][version] = "1.5"
-projects[devel_themer][version] = "1.x-dev"
 projects[elysia_cron][version] = "2.1"
 projects[entity][version] = "1.6"
 projects[features][version] = "2.5"
+projects[fontawesome][version] = "2.1"
 projects[panels][version] = "3.5"
 projects[jquery_update][version] = "2.5"
+projects[libraries][version] = "2.2"
 projects[module_filter][version] = "2.0"
 projects[pace][version] = "1.1"
 projects[require_login][version] = "1.2"
