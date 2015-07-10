@@ -1,0 +1,52 @@
+<?php
+/**
+ * @file
+ * security_samurai_gitapi.module
+ */
+
+
+/**
+ * Implements hook_form_alter
+ */
+function security_samurai_gitapi_form_alter(&$form) {
+  
+  // Override the client form and add in some extra configuration options.
+  if ($form['#form_id'] == 'client_form') {
+    $gitapi_form = array();
+
+    $gitapi_form['security_samurai_gitapi_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Git configuration'),
+      '#description' => t('Set up git branches, clone URLs and tagging per client here.'),
+    );
+
+    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_clone_url'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Clone URL'),
+      '#description' => t('The Git URL to the repo containing the site.'),
+    );
+
+    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Branching options'),
+      '#description' => t('Configure which branches to use and where to push'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+     
+    // Maybe should be a selectbox to choose from the existing git branches.
+    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_branch_off'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Branch to create a new branch from'),
+      '#description' => t('Git branch to checkout a new branch from for the security updates'),
+    );
+
+    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_branch_'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Branch to push to'),
+      '#description' => t('After performing a successful update, push changes to a branch. Will default to [currentdate]-samurai-security.'),
+    );
+
+    $form = array_merge($form, $gitapi_form);
+  }
+}

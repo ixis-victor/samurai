@@ -4,4 +4,4 @@ core = 7.x
 version = 7.x-1.0
 
 dependencies[] = security_samurai_controller
-# dependencies[] = security_samurai_git
+# dependencies[] = security_samurai_gitapi
