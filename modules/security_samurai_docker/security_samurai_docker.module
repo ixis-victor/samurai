@@ -1,0 +1,35 @@
+<?php
+/**
+ * @file
+ * security_samurai_docker.module 
+ */
+
+/**
+ * Implements hook_menu
+ */
+function security_samurai_docker_menu() {
+  $items = array();
+
+  // Docker administration configuration page.
+  $items['admin/config/development/docker'] = array(
+    'title' => t('Docker configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('security_samurai_docker_admin_config_form'),
+    'access arguments' => array('administer samurai docker'),
+    'file' => 'security_samurai_docker.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission
+ */
+function security_samurai_docker_menu_permission() {
+  return array(
+    'administer samurai docker' => array(
+      'title' => t('Administer security samurai docker'),
+      'description' => t('Perform administration tasks for security samurai docker.'),
+    ),
+  );
+}
