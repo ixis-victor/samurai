@@ -1,0 +1,4 @@
+name = Security samurai Git API
+description = Utilises APIs provided by popular Git services.
+core = 7.x
+version = 7.x-0.1
