@@ -13,6 +13,7 @@ function security_samurai_docker_menu() {
   // Docker administration configuration page.
   $items['admin/config/development/docker'] = array(
     'title' => t('Docker configuration'),
+    'description' => 'Configuration settings related to docker container setups.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('security_samurai_docker_admin_config_form'),
     'access arguments' => array('administer samurai docker'),
