@@ -1,5 +1,4 @@
 # TODO
-
 - Important things
     - Make the theme responsive (theme is not completed in desktop yet).
     - Finish setting up elyisa cron.
@@ -20,7 +19,7 @@
 - Meh:
     - Is samurai_get_site_update_data() necessary?
 
-# Start on auti
+# Extra things to be done - after the TODO
 - Send an email to all subscribed users when a security update is available with a list of affected sites.
 - Docker
     - The module controls the amount of containers that are running.
