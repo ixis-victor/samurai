@@ -2,7 +2,7 @@
   <div id="content-header-wrapper">
     <div id="content-header">
       <h1 id="title"><?php print $element->name; ?></h1>
-      <h1 id="title-type">Client site</h1>
+      <h1 id="title-type">Site</h1>
     </div>
   </div>
   <div id="content-main-wrapper">
@@ -48,7 +48,7 @@
       <?php else: ?>
         <div class="card">
           <h2 class="title">404 - No projects found :(</h2>
-          <p class="content">Doesn't look like any projects for this client exist. Try scanning the site.</p>
+          <p class="content">Doesn't look like any projects for this site exist. Try scanning the site.</p>
         </div>
       <?php endif; ?>
     </div>

@@ -13,6 +13,7 @@ dependencies[] = require_login
 dependencies[] = security_samurai_controller
 dependencies[] = security_samurai_menu
 dependencies[] = security_samurai_pages
+dependencies[] = security_samurai_views
 dependencies[] = strongarm
 dependencies[] = views
 dependencies[] = views_content

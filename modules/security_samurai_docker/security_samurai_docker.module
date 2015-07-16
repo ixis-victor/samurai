@@ -26,7 +26,7 @@ function security_samurai_docker_menu() {
 /**
  * Implements hook_permission()
  */
-function security_samurai_docker_menu_permission() {
+function security_samurai_docker_permission() {
   return array(
     'administer samurai docker' => array(
       'title' => t('Administer security samurai docker'),
@@ -39,9 +39,9 @@ function security_samurai_docker_menu_permission() {
  * Implements hook_form_alter()
  */
 function security_samurai_docker_form_alter(&$form) {
-  
+
   // Override the client form and add in some extra configuration options.
-  if ($form['#form_id'] == 'client_form') {
+  if ($form['#form_id'] == 'client_site_form') {
     $docker_form_items = array();
 
     $docker_form_items['docker_client_form_fieldset'] = array(

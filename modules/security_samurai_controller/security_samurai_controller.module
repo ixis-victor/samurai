@@ -36,21 +36,21 @@ function security_samurai_controller_entity_info() {
 
   $info = array();
 
-  // The client entity.
-  $info['client'] = array(
-    'label' => t('Client'),
-    'base table' => 'securitysamurai_client',
+  // The site entity.
+  $info['client_site'] = array(
+    'label' => t('Site'),
+    'base table' => 'securitysamurai_site',
     'entity keys' => array(
       'id' => 'id',
       'label' => 'name',
     ),
     'uri callback' => 'entity_class_uri',
-    'entity class' => 'ClientEntity',
-    'controller class' => 'ClientEntityController',
+    'entity class' => 'SiteEntity',
+    'controller class' => 'SiteEntityController',
     'admin ui' => array(
-       'path' => 'admin/client',
+       'path' => 'site/manage',
        'controller class' => 'EntityDefaultUIController',
-       'menu wildcard' => '%client',
+       'menu wildcard' => '%site',
        'file' => 'security_samurai_controller.admin.inc',
      ),
     'module' => 'security_samurai_controller',
@@ -89,22 +89,133 @@ function security_samurai_controller_entity_info() {
     'controller class' => 'ProjectEntityController',
     'module' => 'security_samurai_controller',
     'access callback' => 'security_samurai_controller_access_callback',
-    // Default views support.
-    'views controller class' => 'EntityDefaultViewsController',
   );
 
   return $info;
 }
 
 /**
- * Implements hook_views_api()
+ * Implements hook_entity_property_info()
  */
-function security_samurai_controller_views_api() {
+function security_samurai_controller_entity_property_info() {
+  
+  $info = array();
 
-  return array(
-    'api' => 3,
-    'path' => SAMURAI_MODULE_PATH,
+  // Define type, label and description for each of the
+  // client_site entity fields
+  $info['client_site']['properties'] = array(
+
+    'id' => array(
+      'type' => 'integer',
+      'label' => t('ID'),
+      'description' => t('The unique ID number of a site.'),
+      'schema field' => 'id',
+    ),
+    'name' => array(
+      'type' => 'text',
+      'label' => t('Name'),
+      'description' => t('The name of the site.'),
+      'schema field' => 'name',
+    ),
+    'encryption_key' => array(
+      'type' => 'text',
+      'label' => t('Encryption key'),
+      'description' => t('The encryption key used for decrypting the site\'s update data.'),
+      'schema field' => 'encryption_key',
+    ),
+    'site_url' => array(
+      'type' => 'uri',
+      'label' => t('URL'),
+      'description' => t('The URL of site.'),
+      'schema field' => 'site_url',
+    ),
+    'created_at' => array(
+      'type' => 'date',
+      'label' => t('Created at'),
+      'description' => t('The timestamp of when the site entity was added to Security samurai'),
+      'schema field' => 'created_at',
+    ),
+    'updated_at' => array(
+      'type' => 'date',
+      'label' => t('Updated at'),
+      'description' => t('The timestamp of when the site entity was updated on Security samurai'),
+      'schema field' => 'updated_at',
+    ),
+    'site_update_data' => array(
+      'type' => 'string',
+      'label' => t('Update data'),
+      'description' => t('The last received module, theme and core version data.'),
+      'schema field' => 'site_update_data',
+    ),
+    'update_count' => array(
+      'type' => 'integer',
+      'label' => t('Update count'),
+      'description' => t('The number of modules on the site that have an update available.'),
+      'schema field' => 'update_count',
+    ),
+    'update_next_check' => array(
+      'type' => 'date',
+      'label' => t('Next update check'),
+      'description' => t('The next time an updated version of the \'Update data\' will be retrieved from the site'),
+      'schema field' => 'update_next_check',
+    ),
   );
+  
+  // Define type, label and description for each of the
+  // security_announcement entity fields
+  $info['security_announcement']['properties'] = array(
+
+    'id' => array(
+      'type' => 'integer',
+      'label' => t('ID'),
+      'description' => t('The unique ID number of the security announcement.'),
+      'schema field' => 'id',
+    ),
+    'sa_id' => array(
+      'type' => 'text',
+      'label' => t('SA ID'),
+      'description' => t('The security announcement ID, issued on Drupal.org.'),
+      'schema field' => 'sa_id',
+    ),
+    'risk_level' => array(
+      'type' => 'text',
+      'label' => t('Risk level'),
+      'description' => t('The risk level, includes risk information.'),
+      'schema field' => 'risk_level',
+    ),
+    'date' => array(
+      'type' => 'date',
+      'label' => t('Issue date'),
+      'description' => t('The issue date of the security announcement.'),
+      'schema field' => 'date',
+    ),
+    'version' => array(
+      'type' => 'text',
+      'label' => t('Core version'),
+      'description' => t('Compatible core versions, JSON formatted.'),
+      'schema field' => 'version',
+    ),
+    'vulnerability' => array(
+      'type' => 'text',
+      'label' => t('Vulnerability'),
+      'description' => t('The vulnerability description.'),
+      'schema field' => 'vulnerability',
+    ),
+    'solution' => array(
+      'type' => 'text',
+      'label' => t('Solution'),
+      'description' => t('The solution to fix the vulnerability.'),
+      'schema field' => 'solution',
+    ),
+    'project_name' => array(
+      'type' => 'text',
+      'label' => t('Affected project'),
+      'description' => t('The name of the project affected by the vulnerabilty.'),
+      'schema field' => 'project_name',
+    ),
+  );
+
+  return $info;
 }
 
 /**
@@ -114,10 +225,10 @@ function security_samurai_controller_menu() {
 
   $items = array();
 
-  // For entities of type 'client'
-  $items['client/%client'] = array(
-    'title' => t('Client'),
-    'page callback' => 'security_samurai_controller_client_view_entity',
+  // For entities of type 'site'
+  $items['site/%site'] = array(
+    'title' => t('Site'),
+    'page callback' => 'security_samurai_controller_site_view_entity',
     'page arguments' => array(1),
     'access arguments' => array('view security samurai update status'),
     'access callback' => TRUE
@@ -146,8 +257,8 @@ function security_samurai_controller_permission() {
     'administer security samurai' => array(
       'title' => t('Administer security samurai configuration'),
     ),
-    'administer security samurai clients' => array(
-      'title' => t('Administer security samurai clients'),
+    'administer security samurai sites' => array(
+      'title' => t('Administer security samurai sites'),
     ),
     'view security samurai update status' => array(
       'title' => t('View module update status'),
@@ -156,13 +267,13 @@ function security_samurai_controller_permission() {
 }
 
 /**
- * Access callback for viewing the client nodes.
+ * Access callback for viewing the sites nodes.
  */
-function security_samurai_controller_access_callback($op, $client_entity = NULL, $account = NULL) {
+function security_samurai_controller_access_callback($op, $site_entity = NULL, $account = NULL) {
 
   if ($op == 'view' && user_access('view security samurai update status', $account)) {
     return TRUE;
-  } elseif (user_access('administer security samurai clients', $account) || 
+  } elseif (user_access('administer security samurai sites', $account) || 
     user_access('administer security samurai', $account)) {
     return TRUE;
   }
@@ -170,25 +281,25 @@ function security_samurai_controller_access_callback($op, $client_entity = NULL,
 }
 
 /**
- * Extends the default entity class for the 'client' entity type.
+ * Extends the default entity class for the 'site' entity type.
  */
-class ClientEntity extends Entity {
+class SiteEntity extends Entity {
   /**
-   * Override the default path for the 'client' entity type.
+   * Override the default path for the 'site' entity type.
    */
   protected function defaultUri() {
 
-    return array('path' => 'client/' . $this->identifier());
+    return array('path' => 'site/' . $this->identifier());
   }
 }
 
 /**
- * Extends the EntityAPIController class for the 'client' entity type
+ * Extends the EntityAPIController class for the 'site' entity type
  *
  * @method object save()
  * @method object buildContent()
  */
-class ClientEntityController extends EntityAPIController {
+class SiteEntityController extends EntityAPIController {
   /**
    * Override the default save function to 
    */
@@ -211,33 +322,41 @@ class ClientEntityController extends EntityAPIController {
 /**
  * Implements hook_load
  *
- * Menu autoloader for dashboard/client
+ * Menu autoloader for site/%site
  */
-function client_load($id) {
+function site_load($id) {
 
-  $client = entity_load('client', array($id));
-  return array_pop($client);
+  $site = entity_load('site', array($id));
+  return array_pop($site);
 }
 
 /**
- * Load the entity of type client.
+ * Load the entity of type site.
  */
-function security_samurai_controller_client_view_entity($entity, $view_mode = 'full') {
+function security_samurai_controller_site_view_entity($entity, $view_mode = 'full') {
 
-  $entity_type = $entity->entityType();
-  $entity_id = entity_id($entity_type, $entity);
-  $entity->content = array();
-  $entity->title = filter_xss($entity->name);
-  field_attach_prepare_view($entity_type, array($entity_id => $entity), $view_mode);
-  entity_prepare_view($entity_type, array($entity_id => $entity));
-  $entity->content += field_attach_view($entity_type, $entity, $view_mode);
-  $entity->content += array(
-    '#theme'     => $entity_type,
-    '#element'   => $entity,
-    '#view_mode' => $view_mode,
-    '#language'  => LANGUAGE_NONE,
-  );
-  return $entity->content;
+  if (samurai_site_exists($entity)) {
+    
+    $entity_type = $entity->entityType();
+    $entity_id = entity_id($entity_type, $entity);
+    $entity->content = array();
+    $entity->title = filter_xss($entity->name);
+    field_attach_prepare_view($entity_type, array($entity_id => $entity), $view_mode);
+    entity_prepare_view($entity_type, array($entity_id => $entity));
+    $entity->content += field_attach_view($entity_type, $entity, $view_mode);
+    $entity->content += array(
+      '#theme'     => $entity_type,
+      '#element'   => $entity,
+      '#view_mode' => $view_mode,
+      '#language'  => LANGUAGE_NONE,
+    );
+
+    return $entity->content;
+  } else {
+
+    // Redirect the user to 404. Temporary...
+    drupal_goto('404');
+  }
 }
 
 /**
@@ -294,6 +413,7 @@ function security_samurai_controller_security_announcement_view_entity($entity, 
     '#view_mode' => $view_mode,
     '#language'  => LANGUAGE_NONE,
   );
+  
   return $entity->content;
 }
 

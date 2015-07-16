@@ -9,42 +9,42 @@
 function security_samurai_controller_schema() {
   
   $schema = array();
-  // Schema for client entities
-  $schema['securitysamurai_client'] = array(
-    'description' => 'The base table for the security samurai client entity',
+  // Schema for site entities
+  $schema['securitysamurai_site'] = array(
+    'description' => 'The base table for the security samurai site entity',
     'fields' => array(
       'id' => array(
-        'description' => 'Primary key of the client entity',
+        'description' => 'Primary key of the site entity',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'Human readable name of the client',
+        'description' => 'Human readable name of the site',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'encryption_key' => array(
-        'description' => 'The encryption key used to decrypt the update data from the client',
+        'description' => 'The encryption key used to decrypt the update data from the site',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'site_url' => array(
-        'description' => 'The client site URL',
+        'description' => 'The site site URL',
         'type' => 'varchar',
         'length' => '255',
         'not null' => TRUE,
       ),
       'created_at' => array(
-        'description' => 'The date in which the client was created',
+        'description' => 'The date in which the site was created',
         'type' => 'int',
         'length' => 10,
         'not null' => FALSE,
       ),
       'updated_at' => array(
-        'description' => 'The date in which the client was updated',
+        'description' => 'The date in which the site was updated',
         'type' => 'int',
         'length' => 10,
         'not null' => FALSE,

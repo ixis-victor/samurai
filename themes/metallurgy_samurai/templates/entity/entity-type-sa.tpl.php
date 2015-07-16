@@ -34,7 +34,7 @@
     <div id="column-right">
       <div class="card" style="margin-top: 0px;">
         <h2 class="title">Sites affected by this</h2>
-        <?php $result = samurai_get_affected_clients($element->sa_id, $element->project_name, $element->version); ?>
+        <?php $result = samurai_get_affected_sites($element->sa_id, $element->project_name, $element->version); ?>
         <?php if (!is_null($result)): ?>
           <?php print $result; ?>
         <?php else: ?>

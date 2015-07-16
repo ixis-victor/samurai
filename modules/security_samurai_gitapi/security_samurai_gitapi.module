@@ -4,6 +4,42 @@
  * security_samurai_gitapi.module
  */
 
+$gitapipath = drupal_get_path('module', 'security_samurai_gitapi');
+define('SECURITY_SAMURAI_GITAPI_PATH', $gitapipath);
+
+/**
+ * Implements hook_menu
+ */
+function security_samurai_gitapi_menu() {
+
+  $items = array();
+
+  // The GitAPI configuration page.
+  $items['admin/config/development/gitapi'] = array(
+    'title' => 'Git API configuration',
+    'description' => 'Configure accounts for connecting private repositories',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('security_samurai_gitapi_admin_config_form'),
+    'access arguments' => array('administer samurai gitapi'),
+    'file' => 'security_samurai_gitapi.admin.inc',
+  );
+
+  // Return menu items
+  return $items;
+}
+
+/**
+ * Implements hook_permission()
+ */
+function security_samurai_gitapi_permission() {
+
+  return array(
+    'administer samurai gitapi' => array(
+      'title' => t('Administer security samurai GitAPI'),
+      'description' => t('Perform administration tasks for security samurai GitAPI.'),
+    ),
+  );
+}
 
 /**
  * Implements hook_form_alter
@@ -11,7 +47,7 @@
 function security_samurai_gitapi_form_alter(&$form) {
   
   // Override the client form and add in some extra configuration options.
-  if ($form['#form_id'] == 'client_form') {
+  if ($form['#form_id'] == 'client_site_form') {
     $gitapi_form = array();
 
     $gitapi_form['security_samurai_gitapi_fieldset'] = array(

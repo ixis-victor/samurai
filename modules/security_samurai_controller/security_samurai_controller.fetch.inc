@@ -71,38 +71,38 @@ function security_samurai_controller_cron() {
   $offset = variable_get('security_samurai_controller_contrib_check_offset', NULL);
   // Check for general updates.
 
-  // Get an array of clients that have not yet had their sites checked/need to be checked.
-  $result = db_query("SELECT id FROM {securitysamurai_client}
+  // Get an array of sites that have not yet had their sites checked/need to be checked.
+  $result = db_query("SELECT id FROM {securitysamurai_site}
     WHERE update_next_check <= :time",
     array(
       ':time' => REQUEST_TIME,
   ));
 
-  // Loop through each result
+  // Loop through each result.
   foreach ($result as $record) {
-    // Load the client
-    $client = client_load($record->id);
+    // Load the site.
+    $site = site_load($record->id);
 
-    // -- Get the update data from the client's site.
+    // -- Get the update data from the site's site.
     // -- Decode the json encoded update data, to use as a PHP array.
     // -- Decrypt the update data.
-    $encoded_update_data = samurai_get_site_update_data($client->site_url);
+    $encoded_update_data = samurai_get_site_update_data($site->site_url);
     $encrypted_update_data = drupal_json_decode($encoded_update_data);
     $decrypted_update_data = drupal_json_decode(
       trim(samurai_decrypt_update_data(
             $encrypted_update_data['encrypted'],
-            $client->encryption_key)));
+            $site->encryption_key)));
     
     // Assign values to the loaded entity
-    $client->update_count = samurai_count_available_security_updates($decrypted_update_data);
-    $client->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
-    $client->update_next_check = strtotime('+24 hours');
+    $site->update_count = samurai_count_available_security_updates($decrypted_update_data);
+    $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
+    $site->update_next_check = strtotime('+24 hours');
 
     // Save the entity
-    entity_save('client', $client);
+    entity_save('site', $site);
     
     // Log to watchdog.
-    watchdog('Security samurai', t('@name has been scanned.', array('@name' => $client->name)));
+    watchdog('Security samurai', t('@name has been scanned.', array('@name' => $site->name)));
   }
 }
 
@@ -169,10 +169,14 @@ function samurai_process_sa($xml, $type) {
       $machine_name = samurai_project_machine_name($project_name);
       $core = drupal_json_decode($version_aff);
       if (!empty($machine_name)) {
+
         // Check update for each core version
         foreach ($core as $c => $core_major) {
+
           $am = samurai_get_available_major_versions($machine_name, $core_major);
+
           foreach ($am as $available_major => $avm) {
+            
             // Retrieve the update.
             samurai_get_project_update($machine_name, $avm, $core_major);
           }
@@ -224,9 +228,9 @@ function samurai_get_project_update($machine_name, $major_version, $core, $xml =
 }
 
 /**
- * Retrieve the update data from a client site.
+ * Retrieve the update data from a site site.
  *
- * @param string $site_url The site URL of a client.
+ * @param string $site_url The site URL of a site.
  *
  * @return string $content The contents of the request.
  */

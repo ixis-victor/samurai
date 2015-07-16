@@ -6,12 +6,9 @@
     - Finish the checking for general module updates.
     - Implement a function that will check samurai has access to the site before saving it. If samurai can't access the site - throw an error.
     - Update permissions for the new entity types e.g. Security announcement, Project.
-    - Client pages and security announcement pages need to be panel pages.
-    - Add a core version number to the client entity type so it can be added as a filter in the client view page.
-    - Send an email to all subscribed users when a security update is available with a list of affected sites.
+    - Add a core version number to the site entity type so it can be added as a filter in the site view page.
 - Moderately important things
-    - Utilise views.inc to make the views look and work nicer.
-    - Administrative users should be able to mark project types, or mark them to be ignored in automated security updates.
+    - Administrative users should be able to mark project types, or mark them to be ignored in automated security updates per site.
     - The 'my account' page needs theming.
     - Theme the notification messages.
 - Nice to have which probably won't get done.
@@ -23,7 +20,8 @@
 - Meh:
     - Is samurai_get_site_update_data() necessary?
 
-# THEN AUTOMATE ALL THE THINGS!
+# Start on auti
+- Send an email to all subscribed users when a security update is available with a list of affected sites.
 - Docker
     - The module controls the amount of containers that are running.
     - An ssh key would have to be generated and added automatically.
