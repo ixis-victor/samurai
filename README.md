@@ -1,7 +1,6 @@
 # TODO
 - Important things
     - Make the theme responsive (theme is not completed in desktop yet).
-    - Finish setting up elyisa cron.
     - Finish the checking for general module updates.
     - Implement a function that will check samurai has access to the site before saving it. If samurai can't access the site - throw an error.
     - Update permissions for the new entity types e.g. Security announcement, Project.
