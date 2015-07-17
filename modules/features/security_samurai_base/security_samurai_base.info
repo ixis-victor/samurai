@@ -6,6 +6,7 @@ version = 7.x-1.0
 project = security_samurai_base
 dependencies[] = ctools
 dependencies[] = elysia_cron
+dependencies[] = fontawesome
 dependencies[] = jquery_update
 dependencies[] = module_filter
 dependencies[] = pace
