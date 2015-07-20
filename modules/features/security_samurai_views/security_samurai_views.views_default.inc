@@ -124,6 +124,7 @@ function security_samurai_views_views_default_views() {
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['title'] = 'Site overview';
+  $handler->display->display_options['use_ajax'] = TRUE;
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'none';
   $handler->display->display_options['cache']['type'] = 'none';
@@ -239,6 +240,38 @@ function security_samurai_views_views_default_views() {
   $handler->display->display_options['pager']['options']['offset'] = '0';
   $handler->display->display_options['pager']['options']['id'] = '0';
   $handler->display->display_options['pager']['options']['quantity'] = '9';
+  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
+  $handler->display->display_options['defaults']['filters'] = FALSE;
+  /* Filter criterion: Site: Core major version */
+  $handler->display->display_options['filters']['core_version']['id'] = 'core_version';
+  $handler->display->display_options['filters']['core_version']['table'] = 'securitysamurai_site';
+  $handler->display->display_options['filters']['core_version']['field'] = 'core_version';
+  $handler->display->display_options['filters']['core_version']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['core_version']['expose']['operator_id'] = 'core_version_op';
+  $handler->display->display_options['filters']['core_version']['expose']['label'] = 'Core major version';
+  $handler->display->display_options['filters']['core_version']['expose']['operator'] = 'core_version_op';
+  $handler->display->display_options['filters']['core_version']['expose']['identifier'] = 'core_version';
+  $handler->display->display_options['filters']['core_version']['expose']['multiple'] = TRUE;
+  $handler->display->display_options['filters']['core_version']['is_grouped'] = TRUE;
+  $handler->display->display_options['filters']['core_version']['group_info']['label'] = 'Drupal core version';
+  $handler->display->display_options['filters']['core_version']['group_info']['identifier'] = 'core_version';
+  $handler->display->display_options['filters']['core_version']['group_info']['group_items'] = array(
+    1 => array(
+      'title' => 'Drupal 8',
+      'operator' => '=',
+      'value' => '8.x',
+    ),
+    2 => array(
+      'title' => 'Drupal 7',
+      'operator' => '=',
+      'value' => '7.x',
+    ),
+    3 => array(
+      'title' => 'Drupal 6',
+      'operator' => '=',
+      'value' => '6.x',
+    ),
+  );
   $export['sites'] = $view;
 
   return $export;

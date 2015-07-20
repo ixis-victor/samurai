@@ -309,7 +309,8 @@ function samurai_add_project(
       'latest_minor_version' => (int)$latest_minor_version,
       'latest_secure_minor_version' => (int)$latest_secure_minor_version,
       'core' => $core,
-      'supported' => $supported
+      'supported' => $supported,
+      'update_next_check' => strtotime("+24 hours")
     ));
 
     // - Save the entity.
@@ -673,7 +674,7 @@ function samurai_count_available_security_updates($update_data) {
   // Check the core version number.
   // The core array isn't structured the same as the modules and themes.
   $core_version = samurai_split_version_number($core['version']);
-  $core_secure_minor = samurai_project_secure_minor($core['machine_name'], $core_version['major'] . '.x', $core_version['major']);
+  $core_secure_minor = samurai_project_secure_minor('drupal', $core_version['major'] . '.x', $core_version['major']);
 
   if ($core_version['minor'] < $core_secure_minor) {
 
@@ -685,12 +686,34 @@ function samurai_count_available_security_updates($update_data) {
 }
 
 /**
- * Retrieve the version of a particular project from a site.
- * 
+ * Retrieve the core version of a particular site.
+ *
  * @param string $site_name The name of the site.
- * @param string $project_name The name of the project e.g. 'Drupal core'
- * @param string $site_update_data The n
+ * @param string $site_update_data The json encoded site update data.
  */
-function samurai_get_project_version_from_site($site_name, $project_name, $site_update_data = NULL) {
+function samurai_get_site_core_major($site_name, $site_update_data = NULL) {
 
+  $update_data = '';
+
+  // Get the site update data if left empty.
+  if (is_null($site_update_data)) {
+    $site_update_data = db_query("SELECT site_update_data FROM {securitysamurai_site}
+      WHERE name = :name", array(
+        ':name' => $site_name,
+      ))->fetchAll();
+
+    $update_data = '';
+    foreach ($site_update_data as $key => $value) {
+      $update_data = drupal_json_decode($value->site_update_data);
+      if (isset($update_data['drupal']['version'])) {
+        break;
+      }
+    }
+  } else {
+    $update_data = drupal_json_decode($site_update_data);
+  }
+
+  $split_version = samurai_split_version_number($update_data['drupal']['version']);
+
+  return $split_version['major'] . '.x';
 }

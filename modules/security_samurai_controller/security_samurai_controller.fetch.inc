@@ -80,6 +80,7 @@ function security_samurai_controller_cron() {
 
   // Loop through each result.
   foreach ($result as $record) {
+
     // Load the site.
     $site = client_site_load($record->id);
 
@@ -94,16 +95,44 @@ function security_samurai_controller_cron() {
             $site->encryption_key)));
     
     // Assign values to the loaded entity
-    $site->update_count = samurai_count_available_security_updates($decrypted_update_data);
     $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
+    $site->update_count = samurai_count_available_security_updates($decrypted_update_data);
     $site->update_next_check = strtotime('+24 hours');
-    // $site->core_version = samurai_get_project_site_version($site->name, 'Drupal core', $site->site_update_data);
+    $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
 
     // Save the entity
-    entity_save('site', $site);
+    entity_save('client_site', $site);
     
     // Log to watchdog.
     watchdog('Security samurai', t('@name has been scanned.', array('@name' => $site->name)));
+  }
+
+  // Get an array of projects that require checking for a general update.
+  $projects = db_query("SELECT id FROM {securitysamurai_projects}
+    WHERE update_next_check <= :time",
+    array(
+      ':time' => REQUEST_TIME,
+  ));
+
+  // Loop through each result.
+  foreach ($projects as $record) {
+    
+    // Load the project.
+    $project = project_load($record->id);
+
+    // -- Get the machine name.
+    // -- Get the major version.
+    // -- Get the compatible core version.
+    $machine_name = $project->machine_name;
+    $major_version = $project->major_version;
+    $core = $project->core;
+
+    // Save the entity with a new time to check for another update.
+    $project->update_next_check = strtotime('+24 hours');
+    entity_save('project', $project);
+
+    // Get the latest project versions.
+    samurai_get_project_update($machine_name, $major_version, $core);
   }
 }
 
@@ -223,6 +252,7 @@ function samurai_get_project_update($machine_name, $major_version, $core, $xml =
   $project_entity->latest_secure_minor_version = $latest_secure_version;
   $project_entity->latest_minor_version = $latest_version;
   $project_entity = entity_metadata_wrapper('project', $project_entity);
+  $project_entity->update_next_check = strtotime('+24 hours');
 
   // Save the entity.
   $project_entity->save();
@@ -561,6 +591,7 @@ function samurai_get_project_latest_version($machine_name, $core, $major_version
   foreach ($xml->releases->release as $release => $r) {
 
     if ($major_version == (string)$r->version_major) {
+
       // -- A match has been found for the latest major version.
       // -- Break out of the foreach loop.
       $return = (string)$r->version_patch;
