@@ -120,8 +120,8 @@
 <section id="content-wrapper" class="span-10 float-left offset-2 padding-left">
   <div id="content">
     <?php print $messages; ?>
+    <?php print render($tabs); ?>
+    <?php print render($action_links); ?>
     <?php print render($page['content']); ?>
   </div>
 </section>
-<script type="text/javascript"></script>
-
