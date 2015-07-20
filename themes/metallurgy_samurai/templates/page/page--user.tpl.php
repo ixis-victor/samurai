@@ -79,8 +79,6 @@
   <div id="content">
     <h1 id="user-login-title" class="center-text"><?php print $title ?></h1>
     <?php print $messages; ?>
-    <?php print render($tabs); ?>
-    <?php print render($action_links); ?>
     <?php print render($page['content']); ?>
   </div>
 </section>
