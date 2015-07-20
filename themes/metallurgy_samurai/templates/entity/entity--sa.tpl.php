@@ -29,18 +29,16 @@
     </div>
   </div>
 </div>
-<div class="span-4 float-left padding-left">
-  <div id="column-right-wrapper">
-    <div id="column-right">
-      <div class="card" style="margin-top: 0px;">
-        <h2 class="title">Sites affected by this</h2>
-        <?php $result = samurai_get_affected_sites($element->sa_id, $element->project_name, $element->version); ?>
-        <?php if (!is_null($result)): ?>
-          <?php print $result; ?>
-        <?php else: ?>
-          <p class="content">Doesn't look like anything is here</p>
-        <?php endif; ?>
-      </div>
+<div id="column-right-wrapper" class="span-4 float-left padding-left">
+  <div id="column-right">
+    <div class="card" style="margin-top: 0px;">
+      <h2 class="title">Sites affected by this</h2>
+      <?php $result = samurai_get_affected_sites($element->sa_id, $element->project_name, $element->version); ?>
+      <?php if (!is_null($result)): ?>
+        <?php print $result; ?>
+      <?php else: ?>
+        <p class="content">Doesn't look like anything is here</p>
+      <?php endif; ?>
     </div>
   </div>
 </div>

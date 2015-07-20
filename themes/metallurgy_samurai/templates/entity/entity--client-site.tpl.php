@@ -53,14 +53,12 @@
     </div>
   </div>
 </div>
-<div class="span-4 float-left padding-left">
-  <div id="column-right-wrapper">
-    <div id="column-right">
-      <!-- Print the block manually -->
-      <div class="card">
-        <h2 class="title">Scan the site now</h2>
-        <p class="content">button here</p>
-      </div>
+<div id="column-right-wrapper" class="span-4 float-left padding-left">
+  <div id="column-right">
+    <!-- Print the block manually -->
+    <div class="card" style="margin-top: 0px;">
+      <h2 class="title">Scan the site now</h2>
+      <p class="content">button here</p>
     </div>
   </div>
 </div>

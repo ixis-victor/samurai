@@ -139,8 +139,10 @@ section {
 // Average portrait tablet
 @media screen and (max-width: 769px) {
   * { font-size: 98%; }
-  #menu { display: none; }
+  #menu, #title-type { display: none !important; }
   #menu-wrapper { width: 50px; z-index: 1000; }
+  #content-wrapper { margin-left: 50px; }
+  #column-right-wrapper { padding-left: 0px; }
   .site-name { display: none !important; }
   .span-1,.span-2,.span-3,.span-4,.span-5,.span-6,.span-7,.span-8,.span-9,.span-10,.span-11,.span-12 { width: 81%; }
 }

@@ -18,19 +18,22 @@
  */
 function samurai_get_affected_sites($sa_id, $project_name, $core) {
 
+  // Strip whitespace from project_name
+  $project_name = trim($project_name);
+
   // Retrieve the data on the site if they have the project in the update_data
   if (samurai_sa_exists($sa_id)) {
 
     // Run the query.
     $results = db_query('SELECT * FROM {securitysamurai_site} WHERE
-      INSTR(site_update_data, :project_name)',
+      LOCATE(:project_name, site_update_data) > 0',
       array(
         ':project_name' => $project_name
       ))->fetchAll();
 
     // Decode the JSON into a PHP array.
     $core_array = drupal_json_decode($core);
-    
+
     if (!empty($results)) {
 
       $return = '';
@@ -56,7 +59,7 @@ function samurai_get_affected_sites($sa_id, $project_name, $core) {
               samurai_project_secure_minor($machine_name, $core, $split_version_contrib['major'])) {
 
               // If the core versions are correct, return the site markup.
-              $return .= '<p class="content"><a href="/site/' . $r->id . '">' . $r->name . '</a></p>';
+              $return .= '<p class="content"><a href="/client-site/' . $r->id . '">' . $r->name . '</a></p>';
             }
           }
         }

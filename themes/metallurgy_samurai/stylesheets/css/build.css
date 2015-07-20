@@ -151,12 +151,18 @@ section p {
   * {
     font-size: 98%; }
 
-  #menu {
-    display: none; }
+  #menu, #title-type {
+    display: none !important; }
 
   #menu-wrapper {
     width: 50px;
     z-index: 1000; }
+
+  #content-wrapper {
+    margin-left: 50px; }
+
+  #column-right-wrapper {
+    padding-left: 0px; }
 
   .site-name {
     display: none !important; }
@@ -377,6 +383,8 @@ section {
       margin-top: 0.4em;
       padding-bottom: 0.5em;
       border-bottom: 1px dotted #333333; }
+    section .card:last-child {
+      margin-bottom: 0.5em; }
   section .risk-highlycritical {
     padding: 2px;
     border-radius: 3px;
@@ -411,7 +419,7 @@ section {
 
 .page-client-site #content-main .client-projects {
   margin-top: 7px;
-  margin-bottom: 25px; }
+  margin-bottom: 0.5em; }
 .page-client-site #content-main td.secure {
   background-color: #f4d03f;
   color: #fff; }
