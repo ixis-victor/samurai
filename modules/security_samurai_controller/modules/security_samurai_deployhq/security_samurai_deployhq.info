@@ -1,4 +1,0 @@
-name = Security samurai DeployHQ
-description = Security samurai automation integration for DeployHQ.
-core = 7.x
-version 0.1
