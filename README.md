@@ -1,14 +1,12 @@
 # TODO
 - Important things
     - Make the theme responsive (theme is not completed in desktop yet).
-    - Finish the checking for general module updates.
-    - Add a core version number to the site entity type so it can be added as a filter in the site view page.
 - Moderately important things
     - Administrative users should be able to mark project types, or mark them to be ignored in automated security updates per site.
     - The 'my account' page needs theming.
     - Theme the notification messages.
 - Nice to have which probably won't get done.
-    - Implement a search feature.
+    - Implement a search feature. What would need searching that doesn't isn't already < 2 clicks away?
     - Combine $modules and $themes in @see _samurai_project_update_data()
     - Implement a secure_minor version to the security announcement. At the moment this is not possible - Drupal.org does not include a secure version number with it's security announcements. Only way I can think of doing this with the least amount of bugs:
         - Upon a new security update being detected (on the day of announcement) take the latest secure minor from the update data for the project.
