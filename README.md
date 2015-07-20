@@ -3,7 +3,6 @@
     - Make the theme responsive (theme is not completed in desktop yet).
 - Moderately important things
     - Administrative users should be able to mark project types, or mark them to be ignored in automated security updates per site.
-    - The 'my account' page needs theming.
     - Theme the notification messages.
 - Nice to have which probably won't get done.
     - Implement a search feature. What would need searching that doesn't isn't already < 2 clicks away?
