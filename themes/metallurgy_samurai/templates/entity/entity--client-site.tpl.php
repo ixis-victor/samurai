@@ -58,7 +58,7 @@
     <!-- Print the block manually -->
     <div class="card" style="margin-top: 0px;">
       <h2 class="title">Scan the site now</h2>
-      <p class="content">button here</p>
+      <p class="content">Coming soon...</p>
     </div>
   </div>
 </div>
