@@ -66,6 +66,12 @@ function security_samurai_controller_schema() {
         'length' => 10,
         'not null' => FALSE,
       ),
+      'core_version' => array(
+        'description' => 'The core major version i.e. 7.x, 6.x or 8.x',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
     ),
     'primary key' => array('id'),
   );

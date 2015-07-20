@@ -2,8 +2,6 @@
 - Important things
     - Make the theme responsive (theme is not completed in desktop yet).
     - Finish the checking for general module updates.
-    - Implement a function that will check samurai has access to the site before saving it. If samurai can't access the site - throw an error.
-    - Update permissions for the new entity types e.g. Security announcement, Project.
     - Add a core version number to the site entity type so it can be added as a filter in the site view page.
 - Moderately important things
     - Administrative users should be able to mark project types, or mark them to be ignored in automated security updates per site.

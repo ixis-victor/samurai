@@ -234,10 +234,10 @@ function security_samurai_pages_default_page_manager_pages() {
   $display->content = array();
   $display->panels = array();
     $pane = new stdClass();
-    $pane->pid = 'new-6da8dbb0-8701-45af-baab-7d6ec3b6e60c';
+    $pane->pid = 'new-c01104f0-ba81-4572-bc57-e339f5376dbf';
     $pane->panel = 'left';
     $pane->type = 'views_panes';
-    $pane->subtype = 'sites-site_list_panel_1';
+    $pane->subtype = 'security_announcements-securityannouncement_panel_2';
     $pane->shown = TRUE;
     $pane->access = array();
     $pane->configuration = array();
@@ -249,9 +249,9 @@ function security_samurai_pages_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $pane->uuid = '6da8dbb0-8701-45af-baab-7d6ec3b6e60c';
-    $display->content['new-6da8dbb0-8701-45af-baab-7d6ec3b6e60c'] = $pane;
-    $display->panels['left'][0] = 'new-6da8dbb0-8701-45af-baab-7d6ec3b6e60c';
+    $pane->uuid = 'c01104f0-ba81-4572-bc57-e339f5376dbf';
+    $display->content['new-c01104f0-ba81-4572-bc57-e339f5376dbf'] = $pane;
+    $display->panels['left'][0] = 'new-c01104f0-ba81-4572-bc57-e339f5376dbf';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;

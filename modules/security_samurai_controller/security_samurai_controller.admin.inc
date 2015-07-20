@@ -61,7 +61,7 @@ function client_site_form($form, &$form_state, $site = NULL) {
 /**
  * Implements hook_validate
  */
-function site_form_validate($form, $form_state) {
+function client_site_form_validate($form, $form_state) {
 
   // The encryption key must be 32 or more characters long.
   if (strlen($form_state['values']['encryption_key']) < 32) {
@@ -73,7 +73,7 @@ function site_form_validate($form, $form_state) {
 /**
  * Implements the default submit handler
  */
-function site_form_submit($form, &$form_state) {
+function client_site_form_submit($form, &$form_state) {
 
   // Decrypt the site_url from the encryption string.
   if (!isset($form_state['values']['site_url'])) {
@@ -101,7 +101,7 @@ function site_form_submit($form, &$form_state) {
     $site->save();
     drupal_set_message(t('@name has been saved.', array('@name' => $site->name)));
     watchdog('Security samurai', t('@name has been saved.', array('@name' => $site->name)));
-    $form_state['redirect'] = 'site/add';
+    $form_state['redirect'] = 'site/manage';
 
   } else {
     // Error handling.

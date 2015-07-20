@@ -45,10 +45,10 @@ function security_samurai_controller_entity_info() {
       'label' => 'name',
     ),
     'uri callback' => 'entity_class_uri',
-    'entity class' => 'SiteEntity',
-    'controller class' => 'SiteEntityController',
+    'entity class' => 'ClientSiteEntity',
+    'controller class' => 'ClientSiteEntityController',
     'admin ui' => array(
-       'path' => 'site/manage',
+       'path' => 'site/config',
        'controller class' => 'EntityDefaultUIController',
        'menu wildcard' => '%site',
        'file' => 'security_samurai_controller.admin.inc',
@@ -142,7 +142,7 @@ function security_samurai_controller_entity_property_info() {
       'schema field' => 'updated_at',
     ),
     'site_update_data' => array(
-      'type' => 'string',
+      'type' => 'text',
       'label' => t('Update data'),
       'description' => t('The last received module, theme and core version data.'),
       'schema field' => 'site_update_data',
@@ -158,6 +158,12 @@ function security_samurai_controller_entity_property_info() {
       'label' => t('Next update check'),
       'description' => t('The next time an updated version of the \'Update data\' will be retrieved from the site'),
       'schema field' => 'update_next_check',
+    ),
+    'core_version' => array(
+      'type' => 'text',
+      'label' => t('Core major version'),
+      'description' => t('The core major version e.g. 7.x'),
+      'schema field' => 'core_version',
     ),
   );
   
@@ -226,7 +232,7 @@ function security_samurai_controller_menu() {
   $items = array();
 
   // For entities of type 'site'
-  $items['site/%site'] = array(
+  $items['client-site/%site'] = array(
     'title' => t('Site'),
     'page callback' => 'security_samurai_controller_site_view_entity',
     'page arguments' => array(1),
@@ -283,13 +289,13 @@ function security_samurai_controller_access_callback($op, $site_entity = NULL, $
 /**
  * Extends the default entity class for the 'site' entity type.
  */
-class SiteEntity extends Entity {
+class ClientSiteEntity extends Entity {
   /**
    * Override the default path for the 'site' entity type.
    */
   protected function defaultUri() {
 
-    return array('path' => 'site/' . $this->identifier());
+    return array('path' => 'client-site/' . $this->identifier());
   }
 }
 
@@ -299,7 +305,7 @@ class SiteEntity extends Entity {
  * @method object save()
  * @method object buildContent()
  */
-class SiteEntityController extends EntityAPIController {
+class ClientSiteEntityController extends EntityAPIController {
   /**
    * Override the default save function to 
    */
@@ -324,9 +330,9 @@ class SiteEntityController extends EntityAPIController {
  *
  * Menu autoloader for site/%site
  */
-function site_load($id) {
+function client_site_load($id) {
 
-  $site = entity_load('site', array($id));
+  $site = entity_load('client_site', array($id));
   return array_pop($site);
 }
 
@@ -335,8 +341,6 @@ function site_load($id) {
  */
 function security_samurai_controller_site_view_entity($entity, $view_mode = 'full') {
 
-  if (samurai_site_exists($entity)) {
-    
     $entity_type = $entity->entityType();
     $entity_id = entity_id($entity_type, $entity);
     $entity->content = array();
@@ -352,11 +356,6 @@ function security_samurai_controller_site_view_entity($entity, $view_mode = 'ful
     );
 
     return $entity->content;
-  } else {
-
-    // Redirect the user to 404. Temporary...
-    drupal_goto('404');
-  }
 }
 
 /**

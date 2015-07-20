@@ -513,13 +513,12 @@ function samurai_project_machine_name($project_name) {
 function samurai_check_site_access($site_url) {
 
   // Now we must check that we have access to the site.
-  $content = samurai_curl_request($site_url);
+  $content = samurai_curl_request($site_url . '/admin/reports/security_samurai');
 
   // Check that the content returned is not empty.
   if (!empty($content)) {
 
     $decoded = drupal_json_decode($content);
-    watchdog('samurai', $decoded);
 
     if (isset($decoded['encrypted'])) {
 
@@ -680,4 +679,15 @@ function samurai_count_available_security_updates($update_data) {
 
   // Return the update counter.
   return $update_counter;
+}
+
+/**
+ * Retrieve the version of a particular project from a site.
+ * 
+ * @param string $site_name The name of the site.
+ * @param string $project_name The name of the project e.g. 'Drupal core'
+ * @param string $site_update_data The n
+ */
+function samurai_get_project_version_from_site($site_name, $project_name, $site_update_data = NULL) {
+
 }

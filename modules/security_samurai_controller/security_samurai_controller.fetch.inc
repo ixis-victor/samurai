@@ -81,7 +81,7 @@ function security_samurai_controller_cron() {
   // Loop through each result.
   foreach ($result as $record) {
     // Load the site.
-    $site = site_load($record->id);
+    $site = client_site_load($record->id);
 
     // -- Get the update data from the site's site.
     // -- Decode the json encoded update data, to use as a PHP array.
@@ -97,6 +97,7 @@ function security_samurai_controller_cron() {
     $site->update_count = samurai_count_available_security_updates($decrypted_update_data);
     $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
     $site->update_next_check = strtotime('+24 hours');
+    // $site->core_version = samurai_get_project_site_version($site->name, 'Drupal core', $site->site_update_data);
 
     // Save the entity
     entity_save('site', $site);
