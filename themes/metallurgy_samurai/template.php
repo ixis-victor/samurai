@@ -11,11 +11,11 @@ function metallurgy_samurai_theme($existing, $type, $theme, $path) {
   return array(
     'security_announcement' => array(
       'variables' => array('element' => null),
-      'template' => 'templates/entity/entity-type-sa'
+      'template' => 'templates/entity/entity--sa'
     ),
-    'client' => array(
+    'client_site' => array(
       'variables' => array('element' => null),
-      'template' => 'templates/entity/entity-type-client'
+      'template' => 'templates/entity/entity--client-site'
     ),
   );
 }

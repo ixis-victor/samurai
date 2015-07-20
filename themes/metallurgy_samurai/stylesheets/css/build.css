@@ -409,19 +409,19 @@ section {
   position: absolute;
   margin-left: 10px; }
 
-.page-client #content-main .client-projects {
+.page-client-site #content-main .client-projects {
   margin-top: 7px;
   margin-bottom: 25px; }
-.page-client #content-main td.secure {
+.page-client-site #content-main td.secure {
   background-color: #f4d03f;
   color: #fff; }
-.page-client #content-main td.unsecure {
+.page-client-site #content-main td.unsecure {
   background-color: #d65548;
   color: #fff; }
-.page-client #content-main td.unsupported {
+.page-client-site #content-main td.unsupported {
   background-color: #eb9950;
   color: #fff; }
-.page-client #content-main td.latest {
+.page-client-site #content-main td.latest {
   background-color: #36d278;
   color: #fff; }
 

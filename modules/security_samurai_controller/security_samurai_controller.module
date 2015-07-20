@@ -50,7 +50,7 @@ function security_samurai_controller_entity_info() {
     'admin ui' => array(
        'path' => 'site/config',
        'controller class' => 'EntityDefaultUIController',
-       'menu wildcard' => '%site',
+       'menu wildcard' => '%client_site',
        'file' => 'security_samurai_controller.admin.inc',
      ),
     'module' => 'security_samurai_controller',
@@ -232,7 +232,7 @@ function security_samurai_controller_menu() {
   $items = array();
 
   // For entities of type 'site'
-  $items['client-site/%site'] = array(
+  $items['client-site/%client_site'] = array(
     'title' => t('Site'),
     'page callback' => 'security_samurai_controller_site_view_entity',
     'page arguments' => array(1),

@@ -1,14 +1,13 @@
-<div id="left-content">
-  <div id="content-header-wrapper">
-    <div id="content-header">
-      <h1 id="title"><?php print $element->name; ?></h1>
-      <h1 id="title-type">Site</h1>
-    </div>
+<div class="content-title span-12 float-left">
+  <div id="content-header">
+    <h1 id="title"><?php print $element->name; ?></h1>
+    <h1 id="title-type">Site</h1>
   </div>
+</div>
+<div class="span-8 float-left">
   <div id="content-main-wrapper">
     <div id="content-main">
-      <h4 class="publish-info">Created: <?php print date('d-m-Y H:i:s', $element->created_at); ?></h4>
-      <div id="widthsetter">
+      <h4 class="publish-info card">Created: <?php print date('d-m-Y H:i:s', $element->created_at); ?></h4>
       <div class="card">
         <h2 class="title">Site information</h2>
         <?php if ($element->update_next_check > 0): ?>
@@ -54,7 +53,7 @@
     </div>
   </div>
 </div>
-<div id="right-content">
+<div class="span-4 float-left padding-left">
   <div id="column-right-wrapper">
     <div id="column-right">
       <!-- Print the block manually -->
