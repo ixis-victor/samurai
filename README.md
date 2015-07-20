@@ -6,8 +6,7 @@
     - Theme the notification messages.
 - Nice to have which probably won't get done.
     - Implement a search feature. What would need searching that doesn't isn't already < 2 clicks away?
-    - Combine $modules and $themes in @see _samurai_project_update_data()
-    - Implement a secure_minor version to the security announcement. At the moment this is not possible - Drupal.org does not include a secure version number with it's security announcements. Only way I can think of doing this with the least amount of bugs:
+    - Implement a secure_minor version to the security announcement. At the moment this is not possible - Drupal.org does not include a secure version number with it's security announcements. Only way I can think of doing this:
         - Upon a new security update being detected (on the day of announcement) take the latest secure minor from the update data for the project.
     - @see samurai_process_update_data Think of a better, more efficient way to do this.
 - Meh:
