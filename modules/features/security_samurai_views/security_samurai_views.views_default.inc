@@ -172,7 +172,7 @@ function security_samurai_views_views_default_views() {
   $handler->display->display_options['fields']['name']['table'] = 'securitysamurai_site';
   $handler->display->display_options['fields']['name']['field'] = 'name';
   $handler->display->display_options['fields']['name']['alter']['alter_text'] = TRUE;
-  $handler->display->display_options['fields']['name']['alter']['text'] = '<a href="/site/[id]">[name]</a>';
+  $handler->display->display_options['fields']['name']['alter']['text'] = '<a href="/client-site/[id]">[name]</a>';
   $handler->display->display_options['fields']['name']['element_label_colon'] = FALSE;
   /* Field: Site: Update count */
   $handler->display->display_options['fields']['update_count']['id'] = 'update_count';
