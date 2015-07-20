@@ -144,7 +144,8 @@ section {
   #content-wrapper { margin-left: 50px; }
   #column-right-wrapper { padding-left: 0px; }
   .site-name { display: none !important; }
-  .span-1,.span-2,.span-3,.span-4,.span-5,.span-6,.span-7,.span-8,.span-9,.span-10,.span-11,.span-12 { width: 81%; }
+  .span-1,.span-2,.span-3,.span-4,.span-5,.span-6,.span-7,.span-8,.span-9,.span-10,.span-11,.span-12 { width: 91%; }
+  .panel-col-first, .panel-col-last, .panel-col { width: 91% !important; .inside { margin: 0px !important; } }
 }
 
 // Hide and show 1490px
