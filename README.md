@@ -9,10 +9,11 @@
     - Implement a secure_minor version to the security announcement. At the moment this is not possible - Drupal.org does not include a secure version number with it's security announcements. Only way I can think of doing this:
         - Upon a new security update being detected (on the day of announcement) take the latest secure minor from the update data for the project.
     - @see samurai_process_update_data Think of a better, more efficient way to do this.
-    
-# Extra things to be done - after the TODO
-- Send an email to all subscribed users when a security update is available with a list of affected sites.
 - Docker
+    - Docker API via PHP...
+    - The ability to configure a client site to use nginx or apache2 in the test environments (same for OS as well).
+    - Docker containers are exposed as entities in Drupal.
+        - Easier to manipulate and keep more connected with Drupal.
     - The module controls the amount of containers that are running.
     - An ssh key would have to be generated and added automatically.
         - Codebase API, GitHub API

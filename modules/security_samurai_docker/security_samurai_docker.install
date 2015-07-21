@@ -1,0 +1,87 @@
+<?php
+/**
+ * @file
+ * security_samurai_docker.install
+ */
+
+/**
+ * Implements hook_schema()
+ */
+function security_samurai_docker_schema() {
+	
+	$schema = array();
+
+	// Schema for Docker images
+	$schema['securitysamurai_dockerimages'] = array(
+		'description' => 'Security samurai docker image information',
+		'fields' => array(
+			'id' => array(
+				'description' => 'Primary key of the image.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+			),
+			'name' => array(
+				'description' => 'Human-readable name of the docker container',
+				'type' => 'varchar',
+				'length' => '255',
+				'not null' => FALSE,
+			),
+			'image_id' => array(
+				'description' => 'The ID of the image.',
+			),
+			'creation_date' => array(
+				'decsription' => 'The creation date of the image',
+			),
+		),
+	);
+
+	// Schema for Docker containers
+	$schema['securitysamurai_dockercontainers'] = array(
+		'description' => 'Security samurai docker container information',
+		'fields' => array(
+			'id' => array(
+				'description' => 'Primary key of the container.',
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'container_id' => array(
+				'description' => 'The id of the container.',
+			),
+			'image_name' => array(
+				'description' => 'The name of the image.',
+			),
+			'assigned_ports' => array(
+				'description' => 'The assigned ports the container has.',
+			),
+			'status' => array(
+				'description' => 'The status of the container. UP or DOWN.',
+			),
+			'creation_date' => array(
+				'description' => 'The creation date of the container',
+			),
+		),
+	);
+
+	// Schema for bridge between sites and containers
+	
+	// The idea of this table is so that in future sites can be prioritised
+	// and containers downloaded if an error is picked up during the  
+	$schema['securitysamurai_dockersites'] = array(
+		'description' => 'The bridge between security samurai sites and docker',
+		'fields' => array(
+			'container_id' => array(
+				'description' => 'The container ID.',
+			),
+			'image_id' => array(
+				'description' => 'The image ID.',
+			),
+			'site_id' => array(
+				'description' => 'The corresponding site ID within securitysamurai_site.',
+			),
+		),
+	);
+
+	return $schema;
+}

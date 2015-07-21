@@ -9,6 +9,7 @@
 function security_samurai_controller_schema() {
   
   $schema = array();
+  
   // Schema for site entities
   $schema['securitysamurai_site'] = array(
     'description' => 'The base table for the security samurai site entity',
