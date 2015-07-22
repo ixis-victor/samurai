@@ -29,3 +29,6 @@ drush dis -y overlay
 
 # Revert all features:
 drush fra -y
+
+# Remove the Home menu item:
+drush sql-query "DELETE FROM `menu_links` WHERE menu_name='main-menu' AND link_path='<front>' AND link_title='Home';" 

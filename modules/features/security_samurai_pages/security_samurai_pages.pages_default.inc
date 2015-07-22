@@ -192,7 +192,7 @@ function security_samurai_pages_default_page_manager_pages() {
   $page->path = 'security-announcement';
   $page->access = array();
   $page->menu = array(
-    'type' => 'none',
+    'type' => 'normal',
     'title' => 'Security announcements',
     'name' => 'main-menu',
     'weight' => '0',
