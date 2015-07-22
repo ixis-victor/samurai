@@ -9,7 +9,7 @@
 function security_samurai_controller_schema() {
   
   $schema = array();
-  
+
   // Schema for site entities
   $schema['securitysamurai_site'] = array(
     'description' => 'The base table for the security samurai site entity',
@@ -41,13 +41,13 @@ function security_samurai_controller_schema() {
       'created_at' => array(
         'description' => 'The date in which the site was created',
         'type' => 'int',
-        'length' => 10,
+        'length' => '10',
         'not null' => FALSE,
       ),
       'updated_at' => array(
         'description' => 'The date in which the site was updated',
         'type' => 'int',
-        'length' => 10,
+        'length' => '10',
         'not null' => FALSE,
       ),
       'site_update_data' => array(
@@ -58,13 +58,13 @@ function security_samurai_controller_schema() {
       'update_count' => array(
         'description' => 'The counter for available security updates',
         'type' => 'int',
-        'length' => 10,
+        'length' => '10',
         'not null' => FALSE,
       ),
       'update_next_check' => array(
         'description' => 'The last time an update was checked',
         'type' => 'int',
-        'length' => 10,
+        'length' => '10',
         'not null' => FALSE,
       ),
       'core_version' => array(
@@ -76,6 +76,7 @@ function security_samurai_controller_schema() {
     ),
     'primary key' => array('id'),
   );
+
   // Schema for project entities
   $schema['securitysamurai_projects'] = array(
     'description' => 'Data for every project ever retrieved',
@@ -113,7 +114,7 @@ function security_samurai_controller_schema() {
       'latest_secure_minor_version' => array(
         'description' => 'The latest secure project minor version',
         'type' => 'int',
-        'length' => 10,
+        'length' => '10',
         'not null' => FALSE,
       ),
       'core' => array(
@@ -131,18 +132,19 @@ function security_samurai_controller_schema() {
       'project_type' => array(
         'description' => 'The type of project. e.g. Contrib Custom Theme',
         'type' => 'varchar',
-        'length' => '255',
+        'length' => '20',
         'not null' => TRUE,
       ),
       'update_next_check' => array(
         'description' => 'The next time to check for an update for this project',
         'type' => 'int',
-        'length' => 10,
+        'length' => '10',
         'not null' => FALSE,
       ),
     ),
     'primary key' => array('id'),
   );
+
   // Schema for security announcement entities
   $schema['securitysamurai_sa'] = array(
     'description' => 'The security announcment data',
@@ -156,7 +158,7 @@ function security_samurai_controller_schema() {
       'sa_id' => array(
         'description' => 'The SA identifier',
         'type' => 'varchar',
-        'length' => '255',
+        'length' => '40',
         'not null' => TRUE,
       ),
       'risk_level' => array(
@@ -168,17 +170,17 @@ function security_samurai_controller_schema() {
       'date' => array(
         'description' => 'The date the security announcment was made',
         'type' => 'int',
-        'length' => 10,
+        'length' => '10',
         'not null' => TRUE,
       ),
       'version' => array(
         'description' => 'JSON array of affected versions',
         'type' => 'varchar',
-        'length' => '255',
+        'length' => '20',
         'not null' => TRUE,
       ),
       'vulnerability' => array(
-        'description' => 'JSON array of vulnerabilities',
+        'description' => 'The vulnerability which causes a security update',
         'type' => 'text',
         'not null' => TRUE,
       ),

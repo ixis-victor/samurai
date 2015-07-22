@@ -36,7 +36,7 @@ function security_samurai_docker_schema() {
 			'creation_date' => array(
 				'decsription' => 'The creation date of the image',
 				'type' => 'int',
-				'length' => 10,
+				'length' => '10',
 				'not null' => TRUE,
 			),
 		),
@@ -73,13 +73,13 @@ function security_samurai_docker_schema() {
 			'status' => array(
 				'description' => 'The status of the container. UP or DOWN.',
 				'type' => 'int',
-				'length' => 1,
+				'length' => '1',
 				'not null' => TRUE,
 			),
 			'creation_date' => array(
 				'description' => 'The creation date of the container',
 				'type' => 'int',
-				'length' => 10,
+				'length' => '10',
 				'not null' => TRUE,
 			),
 		),
@@ -106,7 +106,7 @@ function security_samurai_docker_schema() {
 			'site_id' => array(
 				'description' => 'The corresponding site ID within securitysamurai_site.',
 				'type' => 'varchar',
-				'length',
+				'length' => '255',
 				'not null' => TRUE,
 			),
 		),
