@@ -1,6 +1,7 @@
 # TODO
 - Important things
     - Make the theme responsive (theme is not completed in desktop yet).
+    - Go through each of the hook_schema implementations, optimizing every column
 - Moderately important things
     - Administrative users should be able to mark project types, or mark them to be ignored in automated security updates per site.
     - Theme the notification messages.
