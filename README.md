@@ -20,7 +20,7 @@ In it's current state, Samurai has basic security update checking and site manag
    $ cd ../ && drush make sites/samurai/samurai.make -y
    ```
 4. Run the Drupal installation with the standard profile.
-5. Connect to your Virtual machine, and run the samurai.sh script in the Samurai directory:<br/ >
+5. Connect to your Virtual machine, and run the samurai.sh script in the ```samurai``` directory:<br/ >
    ```
    $ cd sites/samurai && ./samurai.sh
    ```
