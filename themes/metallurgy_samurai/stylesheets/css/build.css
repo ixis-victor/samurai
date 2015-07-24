@@ -385,32 +385,46 @@ section {
       max-width: 400px;
       min-width: 400px;
       margin: 0 auto; }
+  section .action-links,
   section .card {
     margin-top: 0.5em;
     padding: 0.5em 1em;
     background-color: #fff;
     border-radius: 3px;
     box-shadow: 0px 1px 0px #aaaaaa; }
+    section .action-links.messages,
     section .card.messages {
       background-image: none;
       box-shadow: 0px 1px 0px #aaaaaa;
       border: none;
       padding: 0.5em 0.75em;
       color: #FFF; }
+      section .action-links.messages.error,
       section .card.messages.error {
         background-color: #d35400; }
+      section .action-links.messages.status,
       section .card.messages.status {
         background-color: #27ae60; }
+      section .action-links.messages.warning,
       section .card.messages.warning {
         background-color: #f4d03f; }
+      section .action-links.messages ul li,
       section .card.messages ul li {
         list-style-type: none; }
+    section .action-links .title,
     section .card .title {
       margin-top: 0.4em;
       padding-bottom: 0.5em;
       border-bottom: 1px dotted #333333; }
+    section .action-links:last-child,
     section .card:last-child {
       margin-bottom: 0.5em; }
+  section .action-links {
+    display: inline-block;
+    width: auto;
+    margin-bottom: 10px; }
+    section .action-links li {
+      list-style-type: none; }
   section .risk-highlycritical {
     padding: 2px;
     border-radius: 3px;

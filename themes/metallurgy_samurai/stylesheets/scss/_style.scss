@@ -272,6 +272,7 @@ section {
     }
   }
 
+  .action-links,
   .card {
     &.messages {
       background-image: none;
@@ -305,6 +306,15 @@ section {
     background-color: #fff;
     border-radius: $border-radius;
     box-shadow: $box_shadow;
+  }
+
+  .action-links {
+    li {
+      list-style-type: none;
+    }
+    display: inline-block;
+    width: auto;
+    margin-bottom: 10px;
   }
 
   .risk-highlycritical {

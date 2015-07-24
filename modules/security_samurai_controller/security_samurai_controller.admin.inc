@@ -101,7 +101,7 @@ function client_site_form_submit($form, &$form_state) {
     $site->save();
     drupal_set_message(t('@name has been saved.', array('@name' => $site->name)));
     watchdog('Security samurai', t('@name has been saved.', array('@name' => $site->name)));
-    $form_state['redirect'] = 'site/manage';
+    $form_state['redirect'] = 'site/config';
 
   } else {
     // Error handling.

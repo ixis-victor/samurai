@@ -79,7 +79,9 @@
   <div id="content">
     <h1 id="user-login-title" class="center-text"><?php print $title ?></h1>
     <div class="login-messages">
-    	<?php print $messages; ?>
+      <?php if (!empty($messages)): ?>
+    	 <?php print $messages; ?>
+      <?php endif; ?>
 	</div>
     <?php print render($page['content']); ?>
   </div>

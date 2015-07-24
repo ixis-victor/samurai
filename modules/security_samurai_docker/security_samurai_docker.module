@@ -42,26 +42,34 @@ function security_samurai_docker_form_alter(&$form) {
 
   // Override the client form and add in some extra configuration options.
   if ($form['#form_id'] == 'client_site_form') {
-    $docker_form_items = array();
 
-    $docker_form_items['docker_client_form_fieldset'] = array(
+    $form['docker_site_form_fieldset'] = array(
       '#type' => 'fieldset',
       '#title' => t('Docker configuration'),
       '#description' => t('Docker is used for creating test environments when applying the security updates. The below configuration options are custom to this client.'),
     );
 
-    $docker_form_items['docker_client_form_fieldset']['docker_client_form_pre_install'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Pre-Drupal installation script'),
-      '#description' => t('Link to a script to run before the Drupal installation has been set up. Accepts Git URLs, if the repo is private please make sure you have correctly configured the API keys and account.'),
+    $form['docker_site_form_fieldset']['docker_site_form_makefile_check'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Will Docker need to run a make file?'),
+      '#description' => t('Will Docker need to run a make file to download code/modules/assets?'),
     );
 
-    $docker_form_items['docker_client_form_fieldset']['docker_client_form_post_install'] = array(
+    $form['docker_site_form_fieldset']['docker_site_form_makefile_location'] = array(
       '#type' => 'textfield',
-      '#title' => t('Post-Drupal installation script'),
-      '#description' => t('Link to a script to run after the Drupal installation has been set up. Accepts Git URLs, if the repo is private please make sure you have correctly configured the API keys and account.'),
+      '#title' => t('The location and name of the make file in the Git repository'),
+      '#description' => t('Example: samurai/samurai.make'),
     );
 
-    $form = array_merge($form, $docker_form_items);
+    $form['#submit'][] = 'security_samurai_docker_client_site_form_submit';
   }
+}
+
+/**
+ * Implements form_submit()
+ * The form submit handler for security_samurai_docker form alterations.
+ */
+function security_samurai_docker_client_site_form_submit($form_id, &$form_state) {
+
+  // Get the client_site ID
 }
