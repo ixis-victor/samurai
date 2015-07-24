@@ -40,6 +40,7 @@ function security_samurai_docker_schema() {
 				'not null' => TRUE,
 			),
 		),
+    'primary key' => array('id'),
 	);
 
 	// Schema for Docker containers
@@ -83,6 +84,7 @@ function security_samurai_docker_schema() {
 				'not null' => TRUE,
 			),
 		),
+    'primary key' => array('id'),
 	);
 
 	// Schema for bridge between sites and containers
@@ -91,6 +93,12 @@ function security_samurai_docker_schema() {
 	$schema['securitysamurai_dockersites'] = array(
 		'description' => 'The bridge between security samurai sites and docker',
 		'fields' => array(
+      'id' => array(
+        'description' => 'The field ID',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
 			'container_id' => array(
 				'description' => 'The container ID.',
 				'type' => 'varchar',
@@ -110,6 +118,7 @@ function security_samurai_docker_schema() {
 				'not null' => TRUE,
 			),
 		),
+    'primary key' => array('id'),
 	);
 
 	return $schema;
