@@ -125,7 +125,7 @@
     <?php if (!empty($tabs)): ?>
       <?php print render($tabs); ?>
     <?php endif; ?>
-    <?php if (!empty($action_links)); ?>
+    <?php if (!empty($action_links)): ?>
       <?php print render($action_links); ?>
     <?php endif; ?>
     <?php print render($page['content']); ?>
