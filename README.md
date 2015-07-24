@@ -1,4 +1,9 @@
-# W.I.P
+
+# Version 0.1
+
+## W.I.P
+
+In it's current state, Samurai has basic security update checking and site management.
 
 ### Installation
 
@@ -14,4 +19,10 @@
    ```
    $ cd ../ && drush make sites/samurai/samurai.make -y
    ```
-4. Install Drupal and enable the security_sammurai_base feature module.
+4. Run the Drupal installation with the standard profile.
+5. Connect to your Virtual machine, and run the samurai.sh script in the Samurai directory:<br/ >
+   ```
+   $ cd sites/samurai && ./samurai.sh
+   ```
+
+
