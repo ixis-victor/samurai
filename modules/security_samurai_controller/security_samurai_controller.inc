@@ -226,7 +226,6 @@ function samurai_get_available_major_versions($machine_name, $core) {
 
   // Check if the result is empty.
   if (!empty($result)) {
-
     $return = array();
     foreach ($result as $res => $r) {
 
@@ -263,7 +262,7 @@ function samurai_get_project_entity_id($machine_name, $core, $major_version) {
   // Check if the result is empty.
   if (!empty($result)) {
 
-    return $return;
+    return $result;
   } else {
 
     return NULL;

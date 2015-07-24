@@ -31,4 +31,7 @@ drush dis -y overlay
 drush fra -y
 
 # Remove the Home menu item:
-drush sql-query "DELETE FROM `menu_links` WHERE menu_name='main-menu' AND link_path='<front>' AND link_title='Home';" 
+drush sql-query "DELETE FROM menu_links WHERE menu_name='main-menu' AND link_path='<front>' AND link_title='Home';" 
+
+# Clear the cache
+drush cc all

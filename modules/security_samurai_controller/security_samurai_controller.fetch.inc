@@ -67,10 +67,6 @@ function security_samurai_controller_cron() {
     samurai_process_sa($xml_core, 'core');
   }
 
-  // Retrieve the check offset.
-  $offset = variable_get('security_samurai_controller_contrib_check_offset', NULL);
-  // Check for general updates.
-
   // Get an array of sites that have not yet had their sites checked/need to be checked.
   $result = db_query("SELECT id FROM {securitysamurai_site}
     WHERE update_next_check <= :time",
@@ -112,7 +108,7 @@ function security_samurai_controller_cron() {
     WHERE update_next_check <= :time",
     array(
       ':time' => REQUEST_TIME,
-  ));
+  ))->fetchAll();
 
   // Loop through each result.
   foreach ($projects as $record) {
@@ -162,9 +158,9 @@ function samurai_process_sa($xml, $type) {
       //
       // Get:
       // -- The core version affected
-      // -- The risk level string
-      // -- Announcement time
-      // -- Vulnerability
+      // -- The risk level as a string
+      // -- Time of announcement time
+      // -- Vulnerability description
       // -- The solution to the vulnerabilty
       if ($type == 'contrib') {
         $project_name = samurai_split_sa_data($description, 'Project:', '(third-party module)');
@@ -187,7 +183,8 @@ function samurai_process_sa($xml, $type) {
         'version' => $version_aff,
         'vulnerability' => $vulnerability,
         'solution' => $solution,
-        'project_name' => $project_name
+        'project_name' => $project_name,
+        'secure_minor' => 'EMPTY'
       ));
       $sa_wrapped = entity_metadata_wrapper('security_announcement', $security_announcement);
       $sa_wrapped->save();
@@ -196,7 +193,6 @@ function samurai_process_sa($xml, $type) {
       watchdog('Security samurai', $sa . t(' New security update data'));
 
       // Check for a security update concerning the project_name from the SA.
-      $machine_name = samurai_project_machine_name($project_name);
       $core = drupal_json_decode($version_aff);
       if (!empty($machine_name)) {
 
@@ -205,10 +201,14 @@ function samurai_process_sa($xml, $type) {
 
           $am = samurai_get_available_major_versions($machine_name, $core_major);
 
-          foreach ($am as $available_major => $avm) {
-            
-            // Retrieve the update.
-            samurai_get_project_update($machine_name, $avm, $core_major);
+          if (is_array($am)) {
+            foreach ($am as $available_major) {
+      
+              // Retrieve the update.
+              samurai_get_project_update($machine_name, $available_major, $core_major);
+            }
+          } else {
+            samurai_get_project_update($machine_name, $am, $core_major);
           }
         }
       }
@@ -248,11 +248,14 @@ function samurai_get_project_update($machine_name, $major_version, $core, $xml =
   // -- Update the entity fields:
   // ---- latest_secure_minor_version
   // ---- latest_minor_version
+
+  var_dump($result) and die();
+
   $project_entity = project_load($result);
   $project_entity->latest_secure_minor_version = $latest_secure_version;
   $project_entity->latest_minor_version = $latest_version;
-  $project_entity = entity_metadata_wrapper('project', $project_entity);
   $project_entity->update_next_check = strtotime('+24 hours');
+  $project_entity = entity_metadata_wrapper('project', $project_entity);
 
   // Save the entity.
   $project_entity->save();
@@ -662,6 +665,8 @@ function samurai_get_project_latest_secure_version($machine_name, $core, $major_
         ':core' => $core
       ));
 
+    $return = array();
+
     // Check result isn't empty.
     if (!empty($result)) {
       foreach ($result as $key => $value) {
@@ -679,7 +684,7 @@ function samurai_get_project_latest_secure_version($machine_name, $core, $major_
                 if ($term == 'Security update') {
 
                   // The latest secure version has been found.
-                  $return = (string)$r->version_patch;
+                  $return[(string)$r->major_version] = (string)$r->version_patch;
 
                   // Break out of the foreach loop.
                   break;
