@@ -248,9 +248,6 @@ function samurai_get_project_update($machine_name, $major_version, $core, $xml =
   // -- Update the entity fields:
   // ---- latest_secure_minor_version
   // ---- latest_minor_version
-
-  var_dump($result) and die();
-
   $project_entity = project_load($result);
   $project_entity->latest_secure_minor_version = $latest_secure_version;
   $project_entity->latest_minor_version = $latest_version;

@@ -8,7 +8,7 @@
 /**
  * Implements hook_form
  */
-function security_samurai_docker_admin_config_form($form, &$form_state, $client = NULL) {
+function security_samurai_docker_admin_config_form($form, &$form_state) {
 
   $form = array();
 

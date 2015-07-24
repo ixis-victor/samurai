@@ -258,8 +258,8 @@ function security_samurai_controller_menu() {
  */
 function security_samurai_controller_permission() {
 
+  // Return the security samurai controller permissions.s
   return array(
-    // Currently there is no configuration - will this be needed?
     'administer security samurai' => array(
       'title' => t('Administer security samurai configuration'),
     ),

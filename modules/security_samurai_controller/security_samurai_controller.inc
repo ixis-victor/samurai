@@ -716,3 +716,23 @@ function samurai_get_site_core_major($site_name, $site_update_data = NULL) {
 
   return $split_version['major'] . '.x';
 }
+
+/**
+ * Returns a site id from the database.
+ *
+ * @param string $site_name The site name as present in the database.
+ */
+function samurai_get_site_id($site_name) {
+
+  // Query the database and return the result.
+  $result = db_query('SELECT id FROM {securitysamurai_site} WHERE
+    name = :name', array(
+      ':name' => $site_name
+    ))->fetchField();
+
+  if (!empty($result)) {
+    return $result;
+  } else {
+    return NULL;
+  }
+}
