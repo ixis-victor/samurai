@@ -124,7 +124,7 @@ section {
     }
     width: 400px;
     padding: 2em;
-    margin: 45px auto;
+    margin: 30px auto;
     box-shadow: $box_shadow;
     border-radius: $border-radius;
     background-color: #fff;
@@ -262,7 +262,36 @@ section {
     width: 1040px;
   }
 
+  .login-messages {
+    padding-left: 5px;
+    padding-right: 5px;
+    .card.messages {
+      max-width: 400px;
+      min-width: 400px;
+      margin: 0 auto;
+    }
+  }
+
   .card {
+    &.messages {
+      background-image: none;
+      box-shadow: $box-shadow;
+      border: none;
+      padding: 0.5em 0.75em;
+      color: #FFF;
+      &.error {
+        background-color: $status_red;
+      }
+      &.status {
+        background-color: $status_green;
+      }
+      &.warning {
+        background-color: $status_yellow;
+      }
+      ul li {
+        list-style-type: none
+      }
+    }
     .title {
       margin-top: 0.4em;
       padding-bottom: 0.5em;
@@ -351,4 +380,5 @@ section {
 .content-title {
   padding-bottom: 20px;
 }
+
 

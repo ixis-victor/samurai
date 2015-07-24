@@ -78,7 +78,9 @@
 <section id="content-wrapper" class="full-width">
   <div id="content">
     <h1 id="user-login-title" class="center-text"><?php print $title ?></h1>
-    <?php print $messages; ?>
+    <div class="login-messages">
+    	<?php print $messages; ?>
+	</div>
     <?php print render($page['content']); ?>
   </div>
 </section>

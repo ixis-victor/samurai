@@ -6,6 +6,7 @@
 
 
 include drupal_get_path('theme', 'metallurgy_samurai') . '/includes/menu.inc';
+include drupal_get_path('theme', 'metallurgy_samurai') . '/includes/theme.inc';
 
 function metallurgy_samurai_theme($existing, $type, $theme, $path) {
   return array(
