@@ -22,7 +22,7 @@ function docker_container_form($form, &$form_state) {
     '#type' => 'select',
     '#title' => t('Site to use'),
     '#decsription' => t('The site to set up on the container, all Git configuration is carried over from the site.'),
-    // '#options' => samurai_get_all_sites(),
+    '#options' => samurai_get_sites(),
   );
 
   $form['docker_container_form_branch'] = array(
@@ -31,7 +31,17 @@ function docker_container_form($form, &$form_state) {
     '#description' => t('The git branch to deploy the code from to the new container.'),
     // Will need to be done via ajax.
     // '#options' => samurai_gitapi_get_branches
+    '#options' => array(
+      '1',
+    ),
   );
+
+  $form['docker_container_form_submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit')
+  );
+
+  $form['#submit'][] = 'docker_container_form_submit';
 
   return $form;
 }
@@ -41,5 +51,7 @@ function docker_container_form($form, &$form_state) {
  */
 function docker_container_form_submit($form_id, &$form_state) {
 
+  $docker = new Docker;
+  $docker->execute_command("f249d15672b5", "ls -lash");
   // Docker PHP API needs finishing before moving any more forward with this.
 }

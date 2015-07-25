@@ -696,8 +696,8 @@ function samurai_get_site_core_major($site_name, $site_update_data = NULL) {
 
   // Get the site update data if left empty.
   if (is_null($site_update_data)) {
-    $site_update_data = db_query("SELECT site_update_data FROM {securitysamurai_site}
-      WHERE name = :name", array(
+    $site_update_data = db_query('SELECT site_update_data FROM {securitysamurai_site}
+      WHERE name = :name', array(
         ':name' => $site_name,
       ))->fetchAll();
 
@@ -732,6 +732,28 @@ function samurai_get_site_id($site_name) {
 
   if (!empty($result)) {
     return $result;
+  } else {
+    return NULL;
+  }
+}
+
+/**
+ * Returns a list of sites in an array.
+ */
+function samurai_get_sites() {
+
+  // Query the database.
+  $result = db_query('SELECT name FROM {securitysamurai_site}')->fetchAll();
+
+  if (!empty($result)) {
+
+    // Return the result as an array, and not
+    // the object it was received as.
+    $return = array();
+    foreach ($result as $name) {
+      $return[] = $name->name;
+    }
+    return $return;
   } else {
     return NULL;
   }
