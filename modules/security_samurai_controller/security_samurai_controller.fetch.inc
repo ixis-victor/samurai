@@ -13,16 +13,22 @@
  *
  * @return string $content The content of the page.
  */
+
+ if (variable_get('samurai_debug', FALSE)) {
+  curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+  curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+}
+
 function samurai_curl_request($url) {
 
   // Create a new curl object
   $curl = curl_init();
   curl_setopt($curl, CURLOPT_URL, $url);
   curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-  
+
   // Execute the request.
   $content = curl_exec($curl);
-  
+
   // Return the result.
   return $content;
 }
@@ -89,7 +95,7 @@ function security_samurai_controller_cron() {
       trim(samurai_decrypt_update_data(
             $encrypted_update_data['encrypted'],
             $site->encryption_key)));
-    
+
     // Assign values to the loaded entity
     $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
     $site->update_count = samurai_count_available_security_updates($decrypted_update_data);
@@ -98,7 +104,7 @@ function security_samurai_controller_cron() {
 
     // Save the entity
     entity_save('client_site', $site);
-    
+
     // Log to watchdog.
     watchdog('Security samurai', t('@name has been scanned.', array('@name' => $site->name)));
   }
@@ -112,7 +118,7 @@ function security_samurai_controller_cron() {
 
   // Loop through each result.
   foreach ($projects as $record) {
-    
+
     // Load the project.
     $project = project_load($record->id);
 
@@ -203,7 +209,7 @@ function samurai_process_sa($xml, $type) {
 
           if (is_array($am)) {
             foreach ($am as $available_major) {
-      
+
               // Retrieve the update.
               samurai_get_project_update($machine_name, $available_major, $core_major);
             }
@@ -268,7 +274,7 @@ function samurai_get_project_update($machine_name, $major_version, $core, $xml =
 function samurai_get_site_update_data($site_url) {
 
   $content = samurai_curl_request($site_url . '/admin/reports/security_samurai');
-  
+
   // Return the result.
   return $content;
 }
@@ -286,7 +292,7 @@ function samurai_process_update_data($decrypted_update_data) {
   $modules = $decrypted_update_data['modules'];
   $themes = $decrypted_update_data['themes'];
   $core = $decrypted_update_data['core'];
-  
+
   // Process the core section.
   if (!empty($core)) {
     // -- Humam readable name.
@@ -382,14 +388,14 @@ function samurai_process_update_data($decrypted_update_data) {
           $m_core,
           $m_split_version['major'],
           $m_xml);
- 
+
         // Assign NULL values to version checks.
         $m_latest_minor = $m_split_version['minor'];
         $m_latest_minor_secure = $m_split_version['minor'];
-        
+
         // First check that the project isn't custom.
         if ($m_type['type'] != 'module_custom') {
-          
+
           // -- Retrieve the latest secure minor version of the module.
           // -- Retrieve the latest minor version of the module.
           $m_latest_minor_secure = samurai_get_project_latest_secure_version(
@@ -438,7 +444,7 @@ function samurai_process_update_data($decrypted_update_data) {
       // Don't retrieve project information if the project is already in the
       // database.
       if (!samurai_project_exists($t_machine_name, $t_core, $t_split_version['major'])) {
-        
+
         // Request the update history XML.
         $t_xml = samurai_xml_curl_request(
           SAMURAI_ORG_UPDATE_URL . $t_machine_name  . '/' . $t_core);
@@ -588,6 +594,7 @@ function samurai_get_project_latest_version($machine_name, $core, $major_version
   // Loop through each release entry looking for the corresponding major version
   // with the latest minor version.
   $return = '';
+  if(is_array($xml))
   foreach ($xml->releases->release as $release => $r) {
 
     if ($major_version == (string)$r->version_major) {
@@ -614,7 +621,7 @@ function samurai_get_project_latest_version($machine_name, $core, $major_version
  * @return string $return The latest available secure minor version
  */
 function samurai_get_project_latest_secure_version($machine_name, $core, $major_version = NULL, $xml = NULL) {
-  
+
   // Check if the project XML has been passed.
   if (is_null($xml)) {
     $xml = samurai_xml_curl_request(SAMURAI_ORG_UPDATE_URL . $machine_name . '/' . $core);
@@ -628,6 +635,7 @@ function samurai_get_project_latest_secure_version($machine_name, $core, $major_
 
     // Loop through each release entry looking for the corresponding major
     // version with the term 'security update'
+    if(is_array($xml))
     foreach ($xml->releases->release as $release => $r) {
 
       if ($major_version == (string)$r->version_major) {
