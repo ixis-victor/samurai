@@ -26,3 +26,7 @@ projects[encrypt][version] = "2.0"
 
 ; Themes
 projects[adminimal_theme][version] = "1.21"
+
+libraries[materialize][download][type] = get
+libraries[materialize][download][url] = http://materializecss.com/bin/materialize-v0.97.0.zip
+libraries[materialize][destination] = libraries
