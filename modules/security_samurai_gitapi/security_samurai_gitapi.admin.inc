@@ -122,6 +122,14 @@ function security_samurai_gitapi_admin_config_form_submit($form_id, &$form_state
 
     // Create a request for the SSH keys, we will only be using the response code.
 		$reply = $samurai_bitbucket->getSshKeys();
+    $branches = $samurai_bitbucket->getBranches('westminstercc', 'wcc');
+
+    $decoded = json_decode($branches['content']);
+    $branch_names = array();
+    foreach ($decoded as $branch => $b) {
+      $branch_names[] = $branch;
+    }
+    variable_set('samurai_debug', $branch_names);
 
     // User is unathorised.
 		if ($reply['response']['http_code'] == 401) {

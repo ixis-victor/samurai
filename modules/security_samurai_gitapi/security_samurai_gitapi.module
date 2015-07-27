@@ -8,6 +8,32 @@ $gitapipath = drupal_get_path('module', 'security_samurai_gitapi');
 define('SECURITY_SAMURAI_GITAPI_PATH', $gitapipath);
 
 /**
+ * Implements hook_entity_info
+ */
+function security_samurai_gitapi_entity_info() {
+
+  $info = array();
+
+  // The gitinfo entity.
+  $info['gitinfo'] = array(
+    'label' => t('Git info'),
+    'base table' => 'securitysamurai_gitinfo',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'name',
+    ),
+    'uri callback' => 'entity_class_uri',
+    'entity class' => 'GitInfoEntity',
+    'controller class' => 'GitApiEntityController',
+    'module' => 'security_samurai_gitapi',
+    // Default views support.
+    'views controller class' => 'EntityDefaultViewsController',
+  );
+
+  return $info;
+}
+
+/**
  * Implements hook_menu
  */
 function security_samurai_gitapi_menu() {
@@ -55,13 +81,21 @@ function security_samurai_gitapi_form_alter(&$form) {
       '#title' => t('Git configuration'),
       '#description' => t('Set up git branches, clone URLs and tagging per client here.'),
     );
-
+    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_service'] = array(
+      '#type' => 'select',
+      '#title' => t('Service'),
+      '#description' => t('The Git service to use.'),
+      '#options' => array(
+        1 => t('GitHub'),
+        2 => t('BitBucket'),
+        3 => t('Codebase'),
+      ),
+    );
     $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_clone_url'] = array(
       '#type' => 'textfield',
       '#title' => t('Clone URL'),
       '#description' => t('The Git URL to the repo containing the site.'),
     );
-
     $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset'] = array(
       '#type' => 'fieldset',
       '#title' => t('Branching options'),
@@ -69,20 +103,40 @@ function security_samurai_gitapi_form_alter(&$form) {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
     );
-     
-    // Maybe should be a selectbox to choose from the existing git branches.
-    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_branch_off'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Branch to create a new branch from'),
-      '#description' => t('Git branch to checkout a new branch from for the security updates'),
+    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['securoty_samurai_gitapi_model'] = array(
+      '#type' => 'select',
+      '#title' => t('The Git branching model to use'),
+      '#description' => t('Determines how branches are created and merged.'),
+      '#options' => array(
+        1 => t('Git flow'),
+        2 => t('Standard DEV -> STAGE -> PROD'),
+      ),
+      '#ajax' => array(
+        'callback' => 'security_samurai_git_branch_model_callback',
+      ),
     );
+    // From here the options will be:
+    // - User selects Git flow
+    // -- Branch to create a feature branch off of.
+    // -- Branch to merge that feature branch to after tests pass.
+    // - User selects standard
+    // -- User selects dev branch
+    // -- User selects stage branch
+    // -- User selects prod branch
 
-    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_branch_'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Branch to push to'),
-      '#description' => t('After performing a successful update, push changes to a branch. Will default to [currentdate]-samurai-security.'),
-    );
 
     $form = array_merge($form, $gitapi_form);
   }
+}
+
+/**
+ * Ajax callback for alterations to the client_site_form.
+ */
+function security_samurai_git_branch_model_callback($form, $form_state) {
+  $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_test'] = array(
+    '#type' => 'textfield',
+    '#value' => 'test' . $form_state['securoty_samurai_gitapi_model'],
+  );
+
+  return $form;
 }
