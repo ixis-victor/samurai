@@ -110,4 +110,11 @@ class samurai_bitbucket {
     return $content;
   }
 
+  /**
+   * Get Branches
+   */
+  public function getBranches() {
+
+  }
+
 }

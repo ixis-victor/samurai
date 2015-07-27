@@ -119,6 +119,8 @@ function security_samurai_gitapi_admin_config_form_submit($form_id, &$form_state
 
 		// Create a new samurai_bitbucket object.
 		$samurai_bitbucket = new samurai_bitbucket($bitbucket_user, $bitbucket_pass);
+
+    // Create a request for the SSH keys, we will only be using the response code.
 		$reply = $samurai_bitbucket->getSshKeys();
 
     // User is unathorised.
@@ -126,7 +128,9 @@ function security_samurai_gitapi_admin_config_form_submit($form_id, &$form_state
       // Return the error.
       form_set_error('security_samurai_gitapi_bitbucket_user',
         'Failed to authenticate with bitbucket, incorrect user/password combination');
-		}
+		} else {
+      drupal_set_message('Succeeded in communicating with bitbucket.');
+    }
 	}
 
   if (!empty($codebase_apikey)) {
@@ -146,4 +150,6 @@ function security_samurai_gitapi_admin_config_form_submit($form_id, &$form_state
 
     // Set the Drupal variable for github
   }
+
+  drupal_set_message('Settings have been saved.');
 }

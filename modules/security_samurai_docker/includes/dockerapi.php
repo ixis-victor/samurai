@@ -98,7 +98,7 @@ class Docker {
    * Create a new container.
    *
    * @param string $image_name The name of the image to create a container from.
-   * @param array $assigned_ports The assigned ports e.g. 80 => 3000.
+   * @param array $assigned_ports The assigned ports e.g. array(3000 => 80).
    */
   public static function create_container($image_name = NULL, $assigned_ports = NULL) {
     
@@ -170,7 +170,6 @@ class Docker {
     // Construct the command.
     $command = 'docker stop ' . $container_id;
 
-
     // - Escape shell metascharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
@@ -217,9 +216,6 @@ class Docker {
    * @param string $output_file_location The location to save the container.
    */
   public static function export_container($container_id = NULL, $output_file_location) {
-
-    // Structure
-    // docker export {container_id} > {output_file_location}
 
     if (is_null($container_id) && !is_null($this->container_id)) {
       // If container_id is NULL, get the class' value of the variable.
