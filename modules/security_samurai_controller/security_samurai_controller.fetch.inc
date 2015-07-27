@@ -13,16 +13,16 @@
  *
  * @return string $content The content of the page.
  */
-
- if (variable_get('samurai_debug', FALSE)) {
-  curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
-  curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-}
-
 function samurai_curl_request($url) {
 
   // Create a new curl object
   $curl = curl_init();
+
+  if (variable_get('samurai_debug', FALSE)) {
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+  }
+
   curl_setopt($curl, CURLOPT_URL, $url);
   curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 

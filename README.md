@@ -26,3 +26,6 @@ In it's current state, Samurai has basic security update checking and site manag
    ```
 
 
+## Requirements
+
+Docker version 1.7.0
