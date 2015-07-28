@@ -7,8 +7,8 @@
 class samurai_bitbucket {
 
   // Define the class variables.
-  public $password = '';
-  public $username = '';
+  private $password = '';
+  private $username = '';
   private $http = NULL;
   private $url = '';
   private $headers = array();
@@ -46,7 +46,7 @@ class samurai_bitbucket {
     // Define the curl options.
     curl_setopt($this->http, CURLOPT_URL, $this->url . $url);
     curl_setopt($this->http, CURLOPT_RETURNTRANSFER, TRUE);
-    curl_setopt($this->http, CURLOPT_HEADER, TRUE);
+    curl_setopt($this->http, CURLOPT_HEADER, FALSE);
     curl_setopt($this->http, CURLOPT_SSL_VERIFYPEER, $this->verify_ssl);
     curl_setopt($this->http, CURLOPT_USERAGENT, $this->user_agent);
     curl_setopt($this->http, CURLOPT_VERBOSE, $this->debug_verbose);
@@ -112,9 +112,15 @@ class samurai_bitbucket {
 
   /**
    * Get Branches
+   *
+   * @param string $repo_account The account that manages the repo.
+   * @param string $repo_name The name of the repo.
    */
-  public function getBranches() {
+  public function getBranches($repo_account, $repo_name) {
 
+    // Create the curl request
+    $content = $this->curl('1.0/repositories/' . $repo_account . '/' . $repo_name . '/branches/', 'GET');
+    return $content;
   }
 
 }

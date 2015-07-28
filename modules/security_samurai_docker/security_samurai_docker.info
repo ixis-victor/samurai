@@ -5,6 +5,5 @@ version = 7.x-1.0
 package = Security Samurai
 
 dependencies[] = security_samurai_controller
-dependencies[] = security_samurai_gitapi
 
 files[] = includes/dockerapi.php
