@@ -125,22 +125,10 @@ section {
     width: 400px;
     padding: 2em;
     margin: 30px auto;
-    box-shadow: $box_shadow;
-    border-radius: $border-radius;
-    background-color: #fff;
   }
 
   form {
     input {
-      &[type="textarea"],
-      &[type="text"],
-      &[type="password"] {
-        border: 1px solid $text_input_border_color;
-        border-radius: $text_input_border_radius;
-        padding: $text_input_padding;
-        outline: none !important;
-        margin-left: 0;
-      }
       &[type="submit"] {
         -webkit-transition: 0.3s ease;
         -moz-transition: 0.3s ease;
@@ -205,7 +193,7 @@ section {
     }
   }
   .view-footer { 
-    margin-top: 5px;
+    margin-top: 1em;
   }
   .item-list {
     .pager {
@@ -226,7 +214,8 @@ section {
   }
 
   #content-header {
-    margin-top: 1em;
+    margin-top: 0.3em;
+    margin-bottom: 0em;
     #title {
       display: inline;
       font-weight: bold;
@@ -276,9 +265,8 @@ section {
   .card {
     &.messages {
       background-image: none;
-      box-shadow: $box-shadow;
-      border: none;
       padding: 0.5em 0.75em;
+      border: none;
       color: #FFF;
       &.error {
         background-color: $status_red;
@@ -293,19 +281,17 @@ section {
         list-style-type: none
       }
     }
-    .title {
-      margin-top: 0.4em;
-      padding-bottom: 0.5em;
-      border-bottom: 1px dotted #333;
+    .card-title {
+      color: #333;
     }
     &:last-child {
       margin-bottom: 0.5em;
     }
     margin-top: 0.5em;
-    padding: 0.5em 1em;
+    a {
+      color: #333 !important
+    }
     background-color: #fff;
-    border-radius: $border-radius;
-    box-shadow: $box_shadow;
   }
 
   .action-links {

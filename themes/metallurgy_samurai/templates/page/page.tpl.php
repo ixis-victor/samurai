@@ -131,5 +131,15 @@
       </div>
     <?php endif; ?>
     <?php print render($page['content']); ?>
+    <div class="fixed-action-btn" style="bottom: 45px; right: 24px;">
+      <a class="btn-floating btn-large red">
+        <i onclick="location.href='site/config/add'" class="large material-icons">add</i>
+      </a>
+      <ul>
+        <li>
+          <a class="btn-floating green">
+            <i onclick="location.href='site'" class="material-icons">code</i></i></a></li>
+      </ul>
+  </div>
   </div>
 </section>

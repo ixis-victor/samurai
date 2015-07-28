@@ -70,6 +70,7 @@ section {
   h2 {
     margin: 0.9em 0;
     font-size: 1.2em;
+    line-height: 1rem;
     &.pane-title {
       font-weight: 400;
     }
@@ -173,4 +174,7 @@ section {
 }
 .margin-right {
   margin-right: 1em;
+}
+select {
+  display: block;
 }
