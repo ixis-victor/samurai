@@ -20,13 +20,12 @@ function metallurgy_samurai_theme($existing, $type, $theme, $path) {
     ),
   );
 }
-?>
-<!DOCTYPE html>
-  <html>
-    <head>
-      <!--Import materialize.css-->
-      <link type="text/css" rel="stylesheet" href="sites/all/libraries/materialize/css/materialize.min.css"  media="screen,projection"/>
 
+function metallurgy_samurai_preprocess_html(&$variables) {
+  drupal_add_css(libraries_get_path('materialize') . '/css/materialize.min.css');
+  drupal_add_js(libraries_get_path('materialize') . '/js/materialize.min.js');
+}
+/*
       <!--Let browser know website is optimized for mobile-->
       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     </head>
@@ -46,3 +45,4 @@ function metallurgy_samurai_theme($existing, $type, $theme, $path) {
       <li><a class="btn-floating green"><i onclick="location.href='site'" class="material-icons">code</i></i></a></li>
     </ul>
   </div>
+*/

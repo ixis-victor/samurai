@@ -50,7 +50,8 @@ section h1 {
   font-size: 1.4em; }
 section h2 {
   margin: 0.9em 0;
-  font-size: 1.2em; }
+  font-size: 1.2em;
+  line-height: 1rem; }
   section h2.pane-title {
     font-weight: 400; }
 section h3 {
@@ -342,7 +343,7 @@ section {
       section .view-content .views-row .views-field {
         padding: 0.1em 0; }
   section .view-footer {
-    margin-top: 5px; }
+    margin-top: 1em; }
   section .item-list .pager {
     margin-top: 5px; }
     section .item-list .pager .pager-current {
@@ -352,7 +353,8 @@ section {
   section a {
     color: #333; }
   section #content-header {
-    margin-top: 1em; }
+    margin-top: 0.3em;
+    margin-bottom: 0em; }
     section #content-header #title {
       display: inline;
       font-weight: bold;
@@ -388,14 +390,10 @@ section {
   section .action-links,
   section .card {
     margin-top: 0.5em;
-    padding: 0.5em 1em;
-    background-color: #fff;
-    border-radius: 3px;
-    box-shadow: 0px 1px 0px #aaaaaa; }
+    background-color: #fff; }
     section .action-links.messages,
     section .card.messages {
       background-image: none;
-      box-shadow: 0px 1px 0px #aaaaaa;
       border: none;
       padding: 0.5em 0.75em;
       color: #FFF; }
@@ -411,14 +409,15 @@ section {
       section .action-links.messages ul li,
       section .card.messages ul li {
         list-style-type: none; }
-    section .action-links .title,
-    section .card .title {
-      margin-top: 0.4em;
-      padding-bottom: 0.5em;
-      border-bottom: 1px dotted #333333; }
+    section .action-links .card-title,
+    section .card .card-title {
+      color: #333; }
     section .action-links:last-child,
     section .card:last-child {
       margin-bottom: 0.5em; }
+    section .action-links a,
+    section .card a {
+      color: #333333 !important; }
   section .action-links {
     display: inline-block;
     width: auto;

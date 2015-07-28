@@ -9,17 +9,19 @@
     <div id="content-main">
       <h4 class="publish-info card">Created: <?php print date('d-m-Y H:i:s', $element->created_at); ?></h4>
       <div class="card">
-        <h2 class="title">Site information</h2>
-        <?php if ($element->update_next_check > 0): ?>
-          <p class="content">The site will be scanned for new projects automatically at <?php print date('d-m-Y H:i:s', $element->update_next_check); ?>.</p>
-        <?php else: ?>
-          <p class="content">The site will be scanned on the next cron run (less than 5 minutes).</p>
-        <?php endif; ?>
+        <div class="card-content">
+        <span class="card-title">Site information</span>
+          <?php if ($element->update_next_check > 0): ?>
+            <p>The site will be scanned for new projects automatically at <?php print date('d-m-Y H:i:s', $element->update_next_check); ?>.</p>
+          <?php else: ?>
+            <p>The site will be scanned on the next cron run (less than 5 minutes).</p>
+          <?php endif; ?>
+        </div>
       </div>
       <!-- print a theme grid right here. -->
       <?php $grid_data = samurai_render_update_data($element->site_update_data); ?>
       <?php if (!is_null($grid_data)): ?>
-        <table class="client-projects">
+        <table class="client-projects card">
           <thead>
             <tr>
               <th>Name</th>
@@ -46,8 +48,10 @@
       </div>
       <?php else: ?>
         <div class="card">
-          <h2 class="title">404 - No projects found :(</h2>
-          <p class="content">Doesn't look like any projects for this site exist. Try scanning the site.</p>
+          <div class="card-content">
+            <span class="card-title">No projects found</span>
+            <p class="content">Doesn't look like any projects for this site exist. Try scanning the site.</p>
+          </div>
         </div>
       <?php endif; ?>
     </div>
@@ -57,8 +61,10 @@
   <div id="column-right">
     <!-- Print the block manually -->
     <div class="card" style="margin-top: 0px;">
-      <h2 class="title">Scan the site now</h2>
-      <p class="content">Coming soon...</p>
+      <div class="card-content">
+        <span class="card-title">Scan the site now</span>
+        <p class="content">Coming soon...</p>
+      </div>
     </div>
   </div>
 </div>

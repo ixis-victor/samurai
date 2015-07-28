@@ -23,7 +23,7 @@
         });
         // Animate the header into view.
         (jQuery)("#content-header").animate({
-          "margin-top": "-43px"
+          "margin-top": "-50px"
         }, 200);
       }
 		}
@@ -44,7 +44,7 @@
           });
           // Animate the header into view.
           (jQuery)('#content-header').animate({
-            "margin-top": "1em"
+            "margin-top": "0.3em"
           }, 200);
         }, 200);
       }
