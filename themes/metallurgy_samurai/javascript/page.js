@@ -17,13 +17,16 @@
         // Animate the header title
         (jQuery)("#content-header").css({
           "z-index": "100",
-          "margin-top": "-90px",
+          "margin-top": "-200px",
           "position": "fixed",
           "font-size": "85%"
         });
+        (jQuery)("section#content-wrapper").css({
+          "margin-top": "130px",
+        });
         // Animate the header into view.
         (jQuery)("#content-header").animate({
-          "margin-top": "-50px"
+          "margin-top": "-143px"
         }, 200);
       }
 		}
@@ -31,22 +34,19 @@
     if (top < 60) {
       if (animated == 1) {
         animated = 0;
-        (jQuery)("#content-header").animate({
-          "margin-top": "-90px"
-        }, 200);
         window.setTimeout(function() {
+          (jQuery)("section#content-wrapper").css({
+            "margin-top": "55px",
+          });
           // Animate the header title
           (jQuery)("#content-header").css({
             "z-index": "-1",
             "margin-top": "-90px",
             "position": "relative",
-            "font-size": "100%"
-          });
-          // Animate the header into view.
-          (jQuery)('#content-header').animate({
+            "font-size": "100%",
             "margin-top": "0.3em"
-          }, 200);
-        }, 200);
+          });
+        }, 0);
       }
     }
 	});
