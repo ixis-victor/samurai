@@ -25,7 +25,6 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>Type</th>
               <th>Installed version</th>
               <th>Latest version</th>
               <th>Latest secure version</th>
@@ -34,7 +33,6 @@
         <?php foreach($grid_data as $data): ?>
           <tr>
             <td><?php print $data['name']; ?></td>
-            <td><?php print $data['type']; ?></td>
             <td <?php 
               if (isset($data['status'])) {
                 print 'class="' . $data['status'] . '"';

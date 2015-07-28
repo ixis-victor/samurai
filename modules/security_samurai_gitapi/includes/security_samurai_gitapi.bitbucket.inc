@@ -97,7 +97,7 @@ class samurai_bitbucket {
    */
   public function addSshKey($key_string, $key_identifier) {
 
-    // 
+    // Not yet implemented
   }
 
   /**
@@ -105,7 +105,8 @@ class samurai_bitbucket {
    */
   public function getSshKeys() {
 
-    // Create the curl request
+    // - Create the curl request.
+    // - Return the content and the response.
     $content = $this->curl('1.0/users/' . $this->username . '/ssh-keys', 'GET');
     return $content;
   }
@@ -118,7 +119,8 @@ class samurai_bitbucket {
    */
   public function getBranches($repo_account, $repo_name) {
 
-    // Create the curl request
+    // - Create the curl request.
+    // - Return the content and the response.
     $content = $this->curl('1.0/repositories/' . $repo_account . '/' . $repo_name . '/branches/', 'GET');
     return $content;
   }
