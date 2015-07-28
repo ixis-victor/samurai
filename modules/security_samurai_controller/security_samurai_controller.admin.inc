@@ -14,6 +14,16 @@ function client_site_form($form, &$form_state, $site = NULL) {
   
   $form = array();
 
+  $form['#prefix'] = '<div class="card">';
+  $form['#suffix'] = '</div>';
+  $form['#attributes'] = array(
+    'class' => array('card-content'),
+  );
+
+  $form['title'] = array(
+    '#markup' => '<span class="card-title">' . t('Add site') . '</span>',
+  );
+
   // The human readable name to give the site.
   $form['name'] = array(
     '#title' => t('Site name'),
