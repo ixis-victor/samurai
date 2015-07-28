@@ -594,15 +594,15 @@ function samurai_get_project_latest_version($machine_name, $core, $major_version
   // Loop through each release entry looking for the corresponding major version
   // with the latest minor version.
   $return = '';
-  if(is_array($xml))
-  foreach ($xml->releases->release as $release => $r) {
+  foreach ($xml->releases as $release => $rel) {
+    foreach ($rel as $key => $r) {
+      if ($major_version == (string)$r->version_major) {
 
-    if ($major_version == (string)$r->version_major) {
-
-      // -- A match has been found for the latest major version.
-      // -- Break out of the foreach loop.
-      $return = (string)$r->version_patch;
-      break;
+        // -- A match has been found for the latest major version.
+        // -- Break out of the foreach loop.
+        $return = (string)$r->version_patch;
+        break;
+      }
     }
   }
 
@@ -627,6 +627,8 @@ function samurai_get_project_latest_secure_version($machine_name, $core, $major_
     $xml = samurai_xml_curl_request(SAMURAI_ORG_UPDATE_URL . $machine_name . '/' . $core);
   }
 
+  variable_set('samurai_debug', json_encode($xml));
+
   // Set the scope of the return variable.
   $return = '';
 
@@ -635,30 +637,30 @@ function samurai_get_project_latest_secure_version($machine_name, $core, $major_
 
     // Loop through each release entry looking for the corresponding major
     // version with the term 'security update'
-    if(is_array($xml))
-    foreach ($xml->releases->release as $release => $r) {
+    foreach ($xml->releases as $release => $rel) {
+      foreach ($rel as $key => $r) {
+        if ($major_version == (string)$r->version_major) {
+          // The terms are often not ordered the same.
+          // Check each term entry.
+          if (!empty($r->terms)) {
+            foreach ($r->terms->term as $term => $t) {
 
-      if ($major_version == (string)$r->version_major) {
-        // The terms are often not ordered the same.
-        // Check each term entry.
-        if (!empty($r->terms)) {
-          foreach ($r->terms->term as $term => $t) {
+              $term_value = (string)$t->value;
+              if ($term_value == 'Security update') {
 
-            $term_value = (string)$t->value;
-            if ($term_value == 'Security update') {
+                // Latest secure version has been found
+                $return = (string)$r->version_patch;
 
-              // Latest secure version has been found
-              $return = (string)$r->version_patch;
-
-              // Break out of the foreach loop.
-              break;
+                // Break out of the foreach loop.
+                break;
+              }
             }
           }
-        }
-        // Break out of the foreach loop.
-        if (strlen($return) > 0) {
-          break;
-        }
+          // Break out of the foreach loop.
+          if (strlen($return) > 0) {
+            break;
+          }
+        } 
       }
     }
   } else {
@@ -678,27 +680,28 @@ function samurai_get_project_latest_secure_version($machine_name, $core, $major_
 
         // Loop through each release entry looking for the corresponding major
         // version with the term 'security update'
-        foreach ($xml->releases->release as $release => $r) {
+        foreach ($xml->releases->release as $release => $rel) {
+          foreach ($rel as $key => $r) {
+            if ($value == (string)$r->major_version) {
+              // The terms are oftem not ordered the same.
+              // Check each term entry.
+              if (!empty($r->terms)) {
+                foreach ($r->terms->term as $term => $t) {
 
-          if ($value == (string)$r->major_version) {
-            // The terms are oftem not ordered the same.
-            // Check each term entry.
-            if (!empty($r->terms)) {
-              foreach ($r->terms->term as $term => $t) {
+                  if ($term == 'Security update') {
 
-                if ($term == 'Security update') {
+                    // The latest secure version has been found.
+                    $return[(string)$r->major_version] = (string)$r->version_patch;
 
-                  // The latest secure version has been found.
-                  $return[(string)$r->major_version] = (string)$r->version_patch;
-
-                  // Break out of the foreach loop.
-                  break;
+                    // Break out of the foreach loop.
+                    break;
+                  }
                 }
               }
-            }
-            // Break out of the foreach loop.
-            if (strlen($return) > 0) {
-              break;
+              // Break out of the foreach loop.
+              if (strlen($return) > 0) {
+                break;
+              }
             }
           }
         }

@@ -291,20 +291,11 @@ section {
   section #user-login {
     width: 400px;
     padding: 2em;
-    margin: 30px auto;
-    box-shadow: 0px 1px 0px #aaaaaa;
-    border-radius: 3px;
-    background-color: #fff; }
+    margin: 30px auto; }
     section #user-login label {
       margin-bottom: 0.1em; }
     section #user-login .form-required {
       display: none; }
-  section form input[type="textarea"], section form input[type="text"], section form input[type="password"] {
-    border: 1px solid #dddddd;
-    border-radius: 3px;
-    padding: 0.3em;
-    outline: none !important;
-    margin-left: 0; }
   section form input[type="submit"] {
     -webkit-transition: 0.3s ease;
     -moz-transition: 0.3s ease;
@@ -397,8 +388,8 @@ section {
     section .action-links.messages,
     section .card.messages {
       background-image: none;
-      border: none;
       padding: 0.5em 0.75em;
+      border: none;
       color: #FFF; }
       section .action-links.messages.error,
       section .card.messages.error {

@@ -63,7 +63,7 @@
     <div class="card" style="margin-top: 0px;">
       <div class="card-content">
         <span class="card-title">Scan the site now</span>
-        <p class="content">Coming soon...</p>
+        <p class="content">Currently unavailable.</p>
       </div>
     </div>
   </div>

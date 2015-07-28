@@ -80,9 +80,12 @@
     <h1 id="user-login-title" class="center-text"><?php print $title ?></h1>
     <div class="login-messages">
       <?php if (!empty($messages)): ?>
-    	 <?php print $messages; ?>
+    	  <?php print $messages; ?>
       <?php endif; ?>
-	</div>
+	  </div>
+    <?php $page['content']['system_main']['#attributes']['class'] = array('card'); ?>
     <?php print render($page['content']); ?>
   </div>
 </section>
+
+<?php //var_dump($page['content']['system_main']['#attributes']); ?>
