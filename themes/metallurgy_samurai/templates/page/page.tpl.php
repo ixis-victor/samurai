@@ -132,13 +132,16 @@
     <?php endif; ?>
     <?php print render($page['content']); ?>
     <div class="fixed-action-btn" style="bottom: 45px; right: 24px;">
-      <a class="btn-floating btn-large red">
-        <i onclick="location.href='site/config/add'" class="large material-icons">add</i>
+      <a class="btn-floating btn-large samurai-blue">
+        <i class="large material-icons">add</i>
       </a>
       <ul>
         <li>
-          <a class="btn-floating green">
-            <i onclick="location.href='site'" class="material-icons">code</i></i></a></li>
+          <a onclick="location.href='/site/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Add site"><i class="material-icons" style="color: #333;">playlist_add</i></a>
+        </li>
+        <li>
+          <a onclick="location.href='/site/config'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Manage sites"><i class="material-icons" style="color: #333;">device_hub</i></a>
+        </li>
       </ul>
   </div>
   </div>

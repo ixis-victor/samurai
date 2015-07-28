@@ -376,5 +376,10 @@ section {
 .content-title {
   padding-bottom: 20px;
 }
-
+.samurai-blue {
+  background-color: $menu_background_color;
+  &:hover {
+    background-color: lighten($menu_background_color, 10%);
+  }
+}
 

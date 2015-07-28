@@ -468,3 +468,8 @@ section {
 
 .content-title {
   padding-bottom: 20px; }
+
+.samurai-blue {
+  background-color: #2d353c; }
+  .samurai-blue:hover {
+    background-color: #434f59; }
