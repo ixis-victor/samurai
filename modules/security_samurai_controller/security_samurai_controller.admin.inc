@@ -38,7 +38,7 @@ function client_site_form($form, &$form_state, $site = NULL) {
     '#title' => t('Encryption key'),
     '#type' => 'textfield',
     '#default_value' => isset($site->encryption_key) ? $site->encryption_key : '',
-    '#description' => t('The key provided by the site site.'),
+    '#description' => t('The key provided by the site.'),
     '#required' => TRUE,
   );
 

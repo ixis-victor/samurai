@@ -103,7 +103,7 @@ function security_samurai_gitapi_form_alter(&$form) {
       '#collapsible' => TRUE,
       '#collapsed' => TRUE,
     );
-    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['securoty_samurai_gitapi_model'] = array(
+    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_model'] = array(
       '#type' => 'select',
       '#title' => t('The Git branching model to use'),
       '#description' => t('Determines how branches are created and merged.'),
@@ -135,7 +135,7 @@ function security_samurai_gitapi_form_alter(&$form) {
 function security_samurai_git_branch_model_callback($form, $form_state) {
   $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_test'] = array(
     '#type' => 'textfield',
-    '#value' => 'test' . $form_state['securoty_samurai_gitapi_model'],
+    '#value' => 'test',
   );
 
   return $form;
