@@ -205,6 +205,9 @@ section p {
 .margin-right {
   margin-right: 1em; }
 
+select {
+  display: block; }
+
 section {
   font-weight: 300; }
   section#header-wrapper {
