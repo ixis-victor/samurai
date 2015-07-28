@@ -132,7 +132,7 @@
     <?php endif; ?>
     <?php print render($page['content']); ?>
     <div class="fixed-action-btn" style="bottom: 45px; right: 24px;">
-      <a class="btn-floating btn-large samurai-blue">
+      <a class="btn-floating btn-large samurai-blue waves-effect waves-light">
         <i class="large material-icons">add</i>
       </a>
       <ul>

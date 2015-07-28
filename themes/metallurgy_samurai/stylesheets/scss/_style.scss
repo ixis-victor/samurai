@@ -1,8 +1,5 @@
 section {
   font-weight: 300;
-  &#header-wrapper {
-    z-index: 1;
-  }
   
   &#menu-wrapper {
     color: $menu_font_color;
@@ -129,6 +126,19 @@ section {
 
   form {
     input {
+      &[type=text],
+      &[type=password],
+      &[type=email],
+      &[type=url],
+      &[type=date],
+      &[type=tel],
+      &[type=number],
+      &[type=search] {
+        &:focus {
+          border-color: $menu_background_color;
+          box-shadow: 0 1px 0 0 $menu_background_color;
+        }
+      }
       &[type="submit"] {
         -webkit-transition: 0.3s ease;
         -moz-transition: 0.3s ease;
@@ -376,10 +386,22 @@ section {
 .content-title {
   padding-bottom: 20px;
 }
+
 .samurai-blue {
   background-color: $menu_background_color;
   &:hover {
     background-color: lighten($menu_background_color, 10%);
   }
+}
+
+.card.popup {
+  transition: box-shadow 0.2s ease;
+}
+
+.card.popup:hover {
+  z-index: 9;
+  -webkit-box-shadow: 0 12px 15px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+  -moz-box-shadow: 0 12px 15px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+  box-shadow: 0 12px 15px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
 }
 

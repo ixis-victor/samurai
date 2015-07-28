@@ -8,7 +8,7 @@
   <div id="content-main-wrapper">
     <div id="content-main">
       <h4 class="publish-info card">Created: <?php print date('d-m-Y H:i:s', $element->created_at); ?></h4>
-      <div class="card">
+      <div class="card popup">
         <div class="card-content">
         <span class="card-title">Site information</span>
           <?php if ($element->update_next_check > 0): ?>
@@ -21,7 +21,7 @@
       <!-- print a theme grid right here. -->
       <?php $grid_data = samurai_render_update_data($element->site_update_data); ?>
       <?php if (!is_null($grid_data)): ?>
-        <table class="client-projects card">
+        <table class="client-projects card popup">
           <thead>
             <tr>
               <th>Name</th>
@@ -47,7 +47,7 @@
         </table>
       </div>
       <?php else: ?>
-        <div class="card">
+        <div class="card popup">
           <div class="card-content">
             <span class="card-title">No projects found</span>
             <p class="content">Doesn't look like any projects for this site exist. Try scanning the site.</p>
@@ -60,7 +60,7 @@
 <div id="column-right-wrapper" class="span-4 float-left padding-left">
   <div id="column-right">
     <!-- Print the block manually -->
-    <div class="card" style="margin-top: 0px;">
+    <div class="card popup" style="margin-top: 0px;">
       <div class="card-content">
         <span class="card-title">Scan the site now</span>
         <p class="content">Currently unavailable.</p>

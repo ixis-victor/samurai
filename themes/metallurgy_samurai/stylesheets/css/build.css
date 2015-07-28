@@ -39,7 +39,8 @@ section#header-wrapper {
   position: fixed;
   background-color: white;
   border-bottom: 1px solid #aaaaaa;
-  top: 0; }
+  top: 0;
+  z-index: 1000; }
 section#content-wrapper {
   margin-top: 55px;
   font-family: "Roboto", sans-serif !important; }
@@ -210,8 +211,6 @@ select {
 
 section {
   font-weight: 300; }
-  section#header-wrapper {
-    z-index: 1; }
   section#menu-wrapper {
     color: #6d7983; }
     section#menu-wrapper #menu h2 {
@@ -296,6 +295,9 @@ section {
       margin-bottom: 0.1em; }
     section #user-login .form-required {
       display: none; }
+  section form input[type=text]:focus, section form input[type=password]:focus, section form input[type=email]:focus, section form input[type=url]:focus, section form input[type=date]:focus, section form input[type=tel]:focus, section form input[type=number]:focus, section form input[type=search]:focus {
+    border-color: #2d353c;
+    box-shadow: 0 1px 0 0 #2d353c; }
   section form input[type="submit"] {
     -webkit-transition: 0.3s ease;
     -moz-transition: 0.3s ease;
@@ -473,3 +475,12 @@ section {
   background-color: #2d353c; }
   .samurai-blue:hover {
     background-color: #434f59; }
+
+.card.popup {
+  transition: box-shadow 0.2s ease; }
+
+.card.popup:hover {
+  z-index: 9;
+  -webkit-box-shadow: 0 12px 15px 0 rgba(0, 0, 0, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
+  -moz-box-shadow: 0 12px 15px 0 rgba(0, 0, 0, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
+  box-shadow: 0 12px 15px 0 rgba(0, 0, 0, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19); }

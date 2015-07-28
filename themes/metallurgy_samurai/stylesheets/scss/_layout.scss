@@ -53,6 +53,7 @@ section {
     background-color: $header_background_color;
     border-bottom: 1px solid $header_border_color;
     top: 0;
+    z-index: 1000;
   }
 
   &#content-wrapper {
