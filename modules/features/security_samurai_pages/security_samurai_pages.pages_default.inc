@@ -276,7 +276,7 @@ function security_samurai_pages_default_page_manager_pages() {
   $page->task = 'page';
   $page->admin_title = 'sites';
   $page->admin_description = '';
-  $page->path = 'site';
+  $page->path = 'client-site';
   $page->access = array();
   $page->menu = array(
     'type' => 'normal',
@@ -327,7 +327,7 @@ function security_samurai_pages_default_page_manager_pages() {
     ),
   );
   $display->cache = array();
-  $display->title = 'Clients';
+  $display->title = 'Sites';
   $display->uuid = '1c5c992f-efbd-4b42-b482-543407db6bda';
   $display->content = array();
   $display->panels = array();

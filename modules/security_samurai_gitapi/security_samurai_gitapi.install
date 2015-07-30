@@ -56,7 +56,27 @@ function security_samurai_gitapi_schema() {
         'length' => 255,
         'not null' => FALSE,
       ),
-      ''
+      'dev_branch' => array(
+        'description' => 'The dev branch for the standard workflow',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'stage_branch' => array(
+        'description' => 'The stage branch for the standard workflow',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'prod_branch' => array(
+        'description' => 'The production branch for the standard workflow',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
     ),
+    'primary key' => array('id'),
   );
+
+  return $schema;
 }

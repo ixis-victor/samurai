@@ -4,6 +4,18 @@
  * Menu theme functions
  */
 
+
+/**
+ * Implements theme_menu_tree_MENU_NAME
+ */
+function metallurgy_samurai_menu_tree__menu_top_menu($variables) {
+  return $variables['tree'];
+}
+
+
+/**
+ * Implements theme_links
+ */
 function metallurgy_samurai_links($variables) {
   $links = $variables['links'];
   $attributes = $variables['attributes'];

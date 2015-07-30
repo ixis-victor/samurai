@@ -1,9 +1,3 @@
-<div class="content-title span-12 float-left">
-  <div id="content-header">
-    <h1 id="title"><?php print $element->name; ?></h1>
-    <h1 id="title-type">Site</h1>
-  </div>
-</div>
 <div class="span-8 float-left">
   <div id="content-main-wrapper">
     <div id="content-main">

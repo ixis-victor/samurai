@@ -23,14 +23,51 @@ function security_samurai_gitapi_entity_info() {
       'label' => 'name',
     ),
     'uri callback' => 'entity_class_uri',
-    'entity class' => 'GitInfoEntity',
-    'controller class' => 'GitApiEntityController',
+    'entity class' => 'Entity',
+    'controller class' => 'GitInfoEntityController',
     'module' => 'security_samurai_gitapi',
     // Default views support.
     'views controller class' => 'EntityDefaultViewsController',
   );
 
   return $info;
+}
+
+/**
+ * Extends the EntityAPIController class for the 'site' entity type
+ *
+ * @method object save()
+ * @method object buildContent()
+ */
+class GitInfoEntityController extends EntityAPIController {
+  /**
+   * Override the default save function to 
+   */
+  public function save($entity, DatabaseTransaction $transaction = NULL) {
+
+    if (isset($entity->is_new)) {
+      $entity->created_at = REQUEST_TIME;
+    }
+    $entity->updated_at = REQUEST_TIME;
+    return parent::save($entity, $transaction);
+  }
+
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+    return $build;
+  }
+}
+
+/**
+ * Implements hook_load
+ *
+ * Menu autoloader for site/%site
+ */
+function gitinfo_load($id) {
+
+  $site = entity_load('gitinfo', array($id));
+  return array_pop($site);
 }
 
 /**
@@ -101,20 +138,31 @@ function security_samurai_gitapi_form_alter(&$form) {
       '#title' => t('Branching options'),
       '#description' => t('Configure which branches to use and where to push'),
       '#collapsible' => TRUE,
+      '#collapse-icon' => '',
       '#collapsed' => TRUE,
+      '#prefix' => '<div id="gitapi_wrapper">',
+      '#suffix' => '</div>',
+      '#attributes' => array(
+        'class' => array('flatten'),
+      ),
     );
     $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_model'] = array(
       '#type' => 'select',
       '#title' => t('The Git branching model to use'),
       '#description' => t('Determines how branches are created and merged.'),
       '#options' => array(
-        1 => t('Git flow'),
-        2 => t('Standard DEV -> STAGE -> PROD'),
+        1 => t('Please choose an option'),
+        2 => t('Git flow'),
+        3 => t('Standard DEV -> STAGE -> PROD'),
       ),
       '#ajax' => array(
         'callback' => 'security_samurai_git_branch_model_callback',
+        'method' => 'replace',
+        'wrapper' => 'gitapi_wrapper',
+        'effect' => 'slide',
       ),
     );
+    // $gitapi_form['securtity_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_']
     // From here the options will be:
     // - User selects Git flow
     // -- Branch to create a feature branch off of.
@@ -133,10 +181,97 @@ function security_samurai_gitapi_form_alter(&$form) {
  * Ajax callback for alterations to the client_site_form.
  */
 function security_samurai_git_branch_model_callback($form, $form_state) {
-  $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_test'] = array(
-    '#type' => 'textfield',
-    '#value' => 'test',
-  );
+  variable_set('samurai_debug', $form_state['values']);
+
+  $gitapi_model = $form_state['values']['security_samurai_gitapi_model'];
+  $clone_url = $form_state['values']['security_samurai_gitapi_clone_url'];
+  $service = $form_state['values']['security_samurai_gitapi_service'];
+
+  $form = array();
+
+  switch ($gitapi_model) {
+    case 2:
+      $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Branching options'),
+        '#description' => t('Configure which branches to use and where to push'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#prefix' => '<div id="gitapi_wrapper">',
+        '#suffix' => '</div>',
+        '#attributes' => array(
+          'class' => array('flatten'),
+        ),
+      );
+      $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_model'] = array(
+        '#type' => 'select',
+        '#title' => t('The Git branching model to use'),
+        '#description' => t('Determines how branches are created and merged.'),
+        '#options' => array(
+          1 => t('Please choose an option'),
+          2 => t('Git flow'),
+          3 => t('Standard DEV -> STAGE -> PROD'),
+        ),
+        '#ajax' => array(
+          'callback' => 'security_samurai_git_branch_model_callback',
+          'method' => 'replace',
+          'wrapper' => 'gitapi_wrapper',
+          'effect' => 'slide',
+        ),
+      );
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_test'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<div id="gitapi_wrapper">',
+      );
+      break;
+    
+    case 3:
+      $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Branching options'),
+        '#description' => t('Configure which branches to use and where to push'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+        '#prefix' => '<div id="gitapi_wrapper">',
+        '#suffix' => '</div>',
+        '#attributes' => array(
+          'class' => array('flatten'),
+        ),
+      );
+      $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_model'] = array(
+        '#type' => 'select',
+        '#title' => t('The Git branching model to use'),
+        '#description' => t('Determines how branches are created and merged.'),
+        '#options' => array(
+          1 => t('Please choose an option'),
+          2 => t('Git flow'),
+          3 => t('Standard DEV -> STAGE -> PROD'),
+        ),
+        '#ajax' => array(
+          'callback' => 'security_samurai_git_branch_model_callback',
+          'method' => 'replace',
+          'wrapper' => 'gitapi_wrapper',
+          'effect' => 'slide',
+        ),
+      );
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_devbranch'] = array(
+        '#type' => 'select',
+        '#title' => t('Dev branch'),
+        '#options' => array(
+          1 => 'Please select one',
+          2 => 'Dev',
+        ),
+      );
+      $form['security_samurai_gitapi_fieldset']['securtity_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_stagebranch'] = array(
+        '#type' => 'select',
+        '#title' => t('Stage branch'),
+        '#options' => array(
+          1 => 'Please select one',
+          2 => 'Stage',
+        ),
+      );
+      break;
+  }
 
   return $form;
 }

@@ -46,15 +46,26 @@ function metallurgy_samurai_fieldset($variables) {
   _form_set_class($element, array('form-wrapper'));
 
   $element['#attributes']['class'][] = 'collapsible';
+  if ($element['#collapsed'] == FALSE) {
+    $element['#attributes']['class'][] = 'active';
+  }
   $element['#attributes']['data-collapsible'][] = 'expandable';
 
   $output = '<ul' . drupal_attributes($element ['#attributes']) . '>';
-  $output .= '<li>';
+  if ($element['#collapsed'] == TRUE) {
+    $output .= '<li>';
+  } else {
+    $output .= '<li class="active">';
+  }
   if (!empty($element ['#title'])) {
     // Always wrap fieldset legends in a SPAN for CSS positioning.
     $output .= '<div class="collapsible-header"><span class="fieldset-legend">' . $element ['#title'] . '</span></div>';
   }
-  $output .= '<div class="collapsible-body" style="padding: 1em;">';
+  if ($element['#collapsed'] == FALSE && !empty($element['#collapsed'])) {
+    $output .= '<div class="collapsible-body" style="padding: 1em;display: block;">';
+  } else {
+    $output .= '<div class="collapsible-body" style="padding: 1em;">';
+  }
   if (!empty($element ['#description'])) {
     $output .= '<div class="fieldset-description">' . $element ['#description'] . '</div>';
   }

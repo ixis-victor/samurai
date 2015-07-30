@@ -70,10 +70,9 @@
  */
 ?>
 
-<section id="header-wrapper">
+<section id="header-wrapper" class="offset-2">
   <div id="header">
-    <img class="logo" src="<?php print $logo; ?>" width="35" height="auto"></img>
-    <p class="site-name"><?php print $site_name; ?></p>
+    <h1><?php print $title ?></h1>
   </div>
 </section>
 <?php if ($user->uid != 0): ?>
@@ -137,10 +136,10 @@
       </a>
       <ul>
         <li>
-          <a onclick="location.href='/site/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Add site"><i class="material-icons" style="color: #333;">playlist_add</i></a>
+          <a onclick="location.href='/client-site/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Add site"><i class="material-icons" style="color: #333;">playlist_add</i></a>
         </li>
         <li>
-          <a onclick="location.href='/site/config'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Manage sites"><i class="material-icons" style="color: #333;">device_hub</i></a>
+          <a onclick="location.href='/client-site/config'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Manage sites"><i class="material-icons" style="color: #333;">device_hub</i></a>
         </li>
       </ul>
   </div>

@@ -48,7 +48,7 @@ function security_samurai_controller_entity_info() {
     'entity class' => 'ClientSiteEntity',
     'controller class' => 'ClientSiteEntityController',
     'admin ui' => array(
-       'path' => 'site/config',
+       'path' => 'client-site/config',
        'controller class' => 'EntityDefaultUIController',
        'menu wildcard' => '%client_site',
        'file' => 'security_samurai_controller.admin.inc',
@@ -355,6 +355,8 @@ function security_samurai_controller_site_view_entity($entity, $view_mode = 'ful
       '#language'  => LANGUAGE_NONE,
     );
 
+    drupal_set_title($entity->title);
+
     return $entity->content;
 }
 
@@ -413,6 +415,8 @@ function security_samurai_controller_security_announcement_view_entity($entity, 
     '#language'  => LANGUAGE_NONE,
   );
   
+  drupal_set_title($entity->title);
+
   return $entity->content;
 }
 

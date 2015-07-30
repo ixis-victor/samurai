@@ -14,18 +14,21 @@ function client_site_form($form, &$form_state, $site = NULL) {
   
   $form = array();
 
-  $form['#prefix'] = '<div class="card">';
-  $form['#suffix'] = '</div>';
-  $form['#attributes'] = array(
-    'class' => array('card-content'),
+  $form['client_site_form_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Site details'),
+    '#collapsed' => FALSE,
+    '#attributes' => array(
+      'class' => array('active'),
+    ),
   );
 
-  $form['title'] = array(
+  $form['client_site_form_fieldset']['title'] = array(
     '#markup' => '<span class="card-title">' . t('Add site') . '</span>',
   );
 
   // The human readable name to give the site.
-  $form['name'] = array(
+  $form['client_site_form_fieldset']['name'] = array(
     '#title' => t('Site name'),
     '#type' => 'textfield',
     '#default_value' => isset($site->name) ? $site->name : '',
@@ -34,7 +37,7 @@ function client_site_form($form, &$form_state, $site = NULL) {
   );
 
   // The encryption key.
-  $form['encryption_key'] = array(
+  $form['client_site_form_fieldset']['encryption_key'] = array(
     '#title' => t('Encryption key'),
     '#type' => 'textfield',
     '#default_value' => isset($site->encryption_key) ? $site->encryption_key : '',
@@ -46,7 +49,7 @@ function client_site_form($form, &$form_state, $site = NULL) {
   // If it isn't, then the site has not been submitted before and the site_url
   // will be extracted from the enryption_key
   if (isset($site->site_url)) {
-    $form['site_url'] = array(
+    $form['client_site_form_fieldset']['site_url'] = array(
       '#title' => t('Site URL'),
       '#type' => 'textfield',
       '#default_value' => isset($site->site_url) ? $site->site_url : '',
