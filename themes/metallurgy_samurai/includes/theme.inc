@@ -61,7 +61,7 @@ function metallurgy_samurai_fieldset($variables) {
     // Always wrap fieldset legends in a SPAN for CSS positioning.
     $output .= '<div class="collapsible-header"><span class="fieldset-legend">' . $element ['#title'] . '</span></div>';
   }
-  if ($element['#collapsed'] == FALSE && !empty($element['#collapsed'])) {
+  if ($element['#collapsed'] == FALSE) {
     $output .= '<div class="collapsible-body" style="padding: 1em;display: block;">';
   } else {
     $output .= '<div class="collapsible-body" style="padding: 1em;">';

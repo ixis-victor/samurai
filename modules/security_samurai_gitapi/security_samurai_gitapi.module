@@ -117,6 +117,7 @@ function security_samurai_gitapi_form_alter(&$form) {
       '#type' => 'fieldset',
       '#title' => t('Git configuration'),
       '#description' => t('Set up git branches, clone URLs and tagging per client here.'),
+      '#collapsed' => TRUE,
     );
     $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_service'] = array(
       '#type' => 'select',

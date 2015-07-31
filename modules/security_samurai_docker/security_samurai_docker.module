@@ -155,6 +155,7 @@ function security_samurai_docker_form_alter(&$form) {
       '#type' => 'fieldset',
       '#title' => t('Docker configuration'),
       '#description' => t('Docker is used for creating test environments when applying the security updates. The below configuration options are custom to this client.'),
+      '#collapsed' => TRUE,
     );
 
     $form['docker_site_form_fieldset']['docker_site_form_chosenos'] = array(
