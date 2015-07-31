@@ -72,7 +72,8 @@
 
 <section id="header-wrapper" class="offset-2">
   <div id="header">
-    <h1><?php print $title ?></h1>
+    <h1>Samurai</h1>
+    <h3><?php print $title ?></h3>
   </div>
 </section>
 <?php if ($user->uid != 0): ?>

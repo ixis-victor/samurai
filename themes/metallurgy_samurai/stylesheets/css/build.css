@@ -43,6 +43,11 @@ section#header-wrapper {
   section#header-wrapper #header {
     padding: 0.5em;
     padding-left: 1em; }
+    section#header-wrapper #header h1 {
+      font-weight: 400; }
+    section#header-wrapper #header h1,
+    section#header-wrapper #header h3 {
+      display: inline-block; }
 section#content-wrapper {
   margin-top: -3em;
   font-family: "Roboto", sans-serif !important; }

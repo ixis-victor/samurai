@@ -54,6 +54,13 @@ section {
     top: 0;
     z-index: 1000;
     #header {
+      h1 {
+        font-weight: 400;
+      }
+      h1,
+      h3 {
+        display: inline-block;
+      }
       padding: 0.5em;
       padding-left: 1em;
     }
