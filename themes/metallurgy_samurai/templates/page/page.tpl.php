@@ -70,8 +70,8 @@
  */
 ?>
 
-<section id="header-wrapper" class="offset-2">
-  <div id="header">
+<section id="header-wrapper">
+  <div id="header" class="offset-2">
     <h1>Samurai</h1>
     <h3><?php print $title ?></h3>
   </div>
