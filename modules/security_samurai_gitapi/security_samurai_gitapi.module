@@ -136,32 +136,37 @@ function security_samurai_gitapi_form_alter(&$form) {
     );
     $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset'] = array(
       '#type' => 'fieldset',
-      '#title' => t('Branching options'),
-      '#description' => t('Configure which branches to use and where to push'),
+      '#title' => t('Git workflow'),
+      '#description' => t('The workflow you define here can be custom to each site. The steps are followed top to bottom.'),
       '#collapsible' => TRUE,
-      '#collapse-icon' => '',
       '#collapsed' => TRUE,
-      '#prefix' => '<div id="gitapi_wrapper">',
-      '#suffix' => '</div>',
       '#attributes' => array(
         'class' => array('flatten'),
       ),
     );
     $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_model'] = array(
       '#type' => 'select',
-      '#title' => t('The Git branching model to use'),
-      '#description' => t('Determines how branches are created and merged.'),
+      '#title' => t('Add step'),
       '#options' => array(
-        1 => t('Please choose an option'),
-        2 => t('Git flow'),
-        3 => t('Standard DEV -> STAGE -> PROD'),
+        0 => '- Add a step to the Git workflow -',
+        1 => 'Create a new Samurai branch from an existing branch',
+        2 => 'Merge an existing branch in to an existing branch',
+        3 => 'Merge the Samurai branch in to an existing branch',
+        4 => 'Run security updates and tests',
+        5 => 'Delete the samurai branch',
+        6 => 'Commit changes to the Samurai branch',
+        7 => 'Commit changes to an existing branch',
       ),
       '#ajax' => array(
         'callback' => 'security_samurai_git_branch_model_callback',
-        'method' => 'replace',
+        'method' => 'append',
         'wrapper' => 'gitapi_wrapper',
         'effect' => 'slide',
       ),
+    );
+    $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_add_more'] = array(
+      '#type' => 'markup',
+      '#markup' => '<div id="gitapi_wrapper"></div>',
     );
     // $gitapi_form['securtity_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_']
     // From here the options will be:
@@ -173,6 +178,7 @@ function security_samurai_gitapi_form_alter(&$form) {
     // -- User selects stage branch
     // -- User selects prod branch
 
+    $gitapi_form['gitapi_workflow_steps'] = array();
 
     $form = array_merge($form, $gitapi_form);
   }
@@ -182,93 +188,115 @@ function security_samurai_gitapi_form_alter(&$form) {
  * Ajax callback for alterations to the client_site_form.
  */
 function security_samurai_git_branch_model_callback($form, $form_state) {
-  variable_set('samurai_debug', $form_state['values']);
 
   $gitapi_model = $form_state['values']['security_samurai_gitapi_model'];
   $clone_url = $form_state['values']['security_samurai_gitapi_clone_url'];
   $service = $form_state['values']['security_samurai_gitapi_service'];
 
+  // Needs a way of counting the steps so they displayed to the user
+  // once the way of counting steps is done - replace $form['step_count']
+
   $form = array();
 
   switch ($gitapi_model) {
-    case 2:
-      $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Branching options'),
-        '#description' => t('Configure which branches to use and where to push'),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        '#prefix' => '<div id="gitapi_wrapper">',
-        '#suffix' => '</div>',
-        '#attributes' => array(
-          'class' => array('flatten'),
-        ),
-      );
-      $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_model'] = array(
-        '#type' => 'select',
-        '#title' => t('The Git branching model to use'),
-        '#description' => t('Determines how branches are created and merged.'),
-        '#options' => array(
-          1 => t('Please choose an option'),
-          2 => t('Git flow'),
-          3 => t('Standard DEV -> STAGE -> PROD'),
-        ),
-        '#ajax' => array(
-          'callback' => 'security_samurai_git_branch_model_callback',
-          'method' => 'replace',
-          'wrapper' => 'gitapi_wrapper',
-          'effect' => 'slide',
-        ),
-      );
-      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_test'] = array(
+    case 1:
+      // Create a new samurai branch from an existing branch.
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_title'] = array(
         '#type' => 'markup',
-        '#prefix' => '<div id="gitapi_wrapper">',
+        '#markup' => '<b>' . t('CREATE A NEW SAMURAI BRANCH FROM AN EXISTING BRANCH') . '</b>',
+      );
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_' . $form['step_count'] . '_option_' . $gitapi_model . '_phase_1'] = array(
+        '#type' => 'select',
+        '#description' => t('Create a new Samurai branch from an existing branch.'),
+        '#options' => array(
+          1 => 'dev',
+          2 => 'stage',
+        ),
+      );
+      break;  
+    case 2:
+      // Merge an existing branch in to an existing branch.
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_title'] = array(
+        '#type' => 'markup',
+        '#markup' => '<b>' . t('MERGE AN EXISTING BRANCH IN TO AN EXISTING BRANCH') . '</b>',
+      );
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_' . $form['step_count'] . '_option_' . $gitapi_model . '_phase_1'] = array(
+        '#type' => 'select',
+        '#description' => t('Existing branch to merge in to another existing branch.'),
+        '#options' => array(
+          1 => 'dev',
+          2 => 'stage',
+        ),
+      );
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_' . $form['step_count'] . '_option_' . $gitapi_model . '_phase_2'] = array(
+        '#type' => 'select',
+        '#description' => t('Existing branch that will be merged in to.'),
+        '#options' => array(
+          1 => 'dev',
+          2 => 'stage',
+        ),
       );
       break;
-    
     case 3:
-      $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Branching options'),
-        '#description' => t('Configure which branches to use and where to push'),
-        '#collapsible' => TRUE,
-        '#collapsed' => TRUE,
-        '#prefix' => '<div id="gitapi_wrapper">',
-        '#suffix' => '</div>',
-        '#attributes' => array(
-          'class' => array('flatten'),
+      // Merge the samurai branch in to an existing branch.
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_title'] = array(
+        '#type' => 'markup',
+        '#markup' => '<b>' . t('MERGE THE SAMURAI BRANCH IN TO AN EXISTING BRANCH') . '</b>',
+      );
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_' . $form['step_count'] . '_option_' . $gitapi_model . '_phase_1'] = array(
+        '#type' => 'select',
+        '#description' => t('Existing branch that will be merged in to.'),
+        '#options' => array(
+          1 => 'dev',
+          2 => 'stage',
         ),
       );
-      $gitapi_form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_model'] = array(
-        '#type' => 'select',
-        '#title' => t('The Git branching model to use'),
-        '#description' => t('Determines how branches are created and merged.'),
-        '#options' => array(
-          1 => t('Please choose an option'),
-          2 => t('Git flow'),
-          3 => t('Standard DEV -> STAGE -> PROD'),
-        ),
-        '#ajax' => array(
-          'callback' => 'security_samurai_git_branch_model_callback',
-          'method' => 'replace',
-          'wrapper' => 'gitapi_wrapper',
-          'effect' => 'slide',
-        ),
+      break;
+    case 4:
+      // Run the security updates and tests.
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_title'] = array(
+        '#type' => 'markup',
+        '#markup' => '<b>' . t('RUN THE SECURITY UPDATES AND TESTS') . '</b>',
       );
-      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_devbranch'] = array(
-        '#type' => 'select',
-        '#title' => t('Dev branch'),
-        '#options' => array(
-          1 => 'Please select one',
-          2 => 'Dev',
-        ),
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_' . $form['step_count'] . '_option_' . $gitapi_model . '_phase_1'] = array(
+          '#type' => 'hidden',
+          '#value' => 'run',
       );
-      $form['security_samurai_gitapi_fieldset']['securtity_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_stagebranch'] = array(
+      break;
+    case 5:
+      // Delete the samurai branch
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_title'] = array(
+        '#type' => 'markup',
+        '#markup' => '<b>' . t('DELETE THE SAMURAI BRANCH') . '</b>',
+      );
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_' . $form['step_count'] . '_option_' . $gitapi_model . '_phase_1'] = array(
+        '#type' => 'hidden',
+        '#value' => 'delete',
+      );
+      break;
+    case 6:
+      // Commit changes to the Samurai branch
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_title'] = array(
+        '#type' => 'markup',
+        '#markup' => '<b>' . t('COMMIT CHANGES TO THE SAMURAI BRANCH') . '</b>'
+      );
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_' . $form['step_count'] . '_option_' . $gitapi_model . '_phase_1'] = array(
+        '#type' => 'hidden',
+        '#value' => 'commit',
+      );
+      break;
+    case 7:
+      // Commit changes to an existing branch
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_title'] = array(
+        '#type' => 'markup',
+        '#markup' => '<b>' . t('COMMIT CHANGES TO AN EXISTING BRANCH') . '</b>',
+      );
+      $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['gitapi_step_' . $form['step_count'] . '_option_' . $gitapi_model . '_phase_1'] = array(
         '#type' => 'select',
-        '#title' => t('Stage branch'),
+        '#description' => t('Existing branch to commit the changes to'),
         '#options' => array(
-          1 => 'Please select one',
-          2 => 'Stage',
+          1 => 'dev',
+          2 => 'stage',
         ),
       );
       break;

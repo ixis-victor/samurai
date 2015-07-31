@@ -499,3 +499,14 @@ section {
 
 .collapsible-body {
   background-color: #FFF; }
+
+#gitapi_wrapper div {
+  background-color: #EEEEEE;
+  margin: 10px 0; }
+  #gitapi_wrapper div b {
+    padding-left: 10px;
+    padding-top: 10px; }
+  #gitapi_wrapper div .form-item {
+    padding-left: 10px;
+    padding-bottom: 10px;
+    padding-right: 10px; }
