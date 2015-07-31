@@ -58,8 +58,13 @@ function metallurgy_samurai_fieldset($variables) {
     $output .= '<li class="active">';
   }
   if (!empty($element ['#title'])) {
-    // Always wrap fieldset legends in a SPAN for CSS positioning.
-    $output .= '<div class="collapsible-header"><span class="fieldset-legend">' . $element ['#title'] . '</span></div>';
+    if (!empty($element['#fieldset_icon'])) {
+      // Always wrap fieldset legends in a SPAN for CSS positioning.
+      $output .= '<div class="collapsible-header"><i class="material-icons">' . $element['#fieldset_icon'] . '</i><span class="fieldset-legend">' . $element ['#title'] . '</span></div>';
+    } else {
+      // Always wrap fieldset legends in a SPAN for CSS positioning.
+      $output .= '<div class="collapsible-header"><span class="fieldset-legend">' . $element ['#title'] . '</span></div>';
+    }
   }
   if ($element['#collapsed'] == FALSE) {
     $output .= '<div class="collapsible-body" style="padding: 1em;display: block;">';
