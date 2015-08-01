@@ -1,0 +1,327 @@
+<?php
+/**
+ * @file
+ * security_samurai_docker.module 
+ */
+
+/**
+ * Implements hook_entity_info()
+ */
+function security_samurai_docker_entity_info() {
+  
+  $entity = array();
+
+  // The entity info for the docker_container entity type.
+  $entity['docker_container'] = array(
+    'label' => t('Docker containers'),
+    'base table' => 'securitysamurai_dockercontainers',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'container_id',
+    ),
+    'uri callback' => 'entity_class_uri',
+    'entity class' => 'DockerContainersEntity',
+    'controller class' => 'DockerContainersEntityController',
+    'admin ui' => array(
+      'path' => 'docker/containers/config',
+      'controller class' => 'EntityDefaultUIController',
+      'menu wildcard' => '%docker_containers',
+      'file' => 'security_samurai_docker_container.inc',
+     ),
+    'module' => 'security_samurai_docker',
+    'access callback' => 'security_samurai_docker_containers_access_callback',
+    // Default views support.
+    'views controller class' => 'EntityDefaultViewsController',
+  );
+
+  // The entity info for the docker_image entity type.
+  $entity['docker_image'] = array(
+    'label' => t('Docker images'),
+    'base table' => 'securitysamurai_dockerimages',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'image_id',
+    ),
+    'uri callback' => 'entity_class_uri',
+    'entity class' => 'DockerImagesEntity',
+    'controller class' => 'DockerImagesEntityController',
+    'admin ui' => array(
+      'path' => 'docker/images/config',
+      'controller class' => 'EntityDefaultUIController',
+      'menu wildcard' => '%docker_images',
+      'file' => 'security_samurai_docker_image.inc',
+    ),
+    'module' => 'security_samurai_docker',
+    'access callback' => 'security_samurai_docker_images_access_callback',
+    // Default views support.
+    'views controller class' => 'EntityDefaultViewsController',
+  );
+
+  return $entity;
+}
+
+/**
+ * Implements hook_permission()
+ */
+function security_samurai_docker_permission() {
+
+  // Return the security samurai docker permissions
+  return array(
+    'administer security samurai docker images' => array(
+      'title' => t('Administer security samurai docker images'),
+    ),
+    'administer security samurai docker containers' => array(
+      'title' => t('Administer security samurai docker containers'),
+    ),
+    'view security samurai docker images' => array(
+      'title' => t('View docker image\'s history and configuration'),
+    ),
+    'view security samruai docker containers' => array(
+      'title' => t('View docker container\'s history and configuration'),
+    ),
+  );
+}
+
+/**
+ * Access callback for viewing docker image history and configuration
+ */
+function security_samurai_docker_images_access_callback($op, $docker_image = NULL, $account = NULL) {
+  if ($op == 'view' && user_access('view security samurai docker images', $account)) {
+    return TRUE;
+  } elseif (user_access('administer security samurai images', $account) || 
+    user_access('administer security samurai', $account)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Access callback for viewing docker container history and configuration
+ */
+function security_samurai_docker_containers_access_callback($op, $docker_container = NULL, $account = NULL) {
+  if ($op == 'view' && user_access('view security samurai docker containers', $account)) {
+    return TRUE;
+  } elseif (user_access('administer security samurai containers', $account) || 
+    user_access('administer security samurai', $account)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_menu()
+ */
+function security_samurai_docker_menu() {
+  $items = array();
+
+  // Docker administration configuration page.
+  $items['admin/config/development/docker'] = array(
+    'title' => t('Docker configuration'),
+    'description' => 'Configuration settings related to docker container setups.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('security_samurai_docker_admin_config_form'),
+    'access arguments' => array('administer security samurai docker'),
+    'file' => 'security_samurai_docker.admin.inc',
+  );
+
+  // Docker containers view entity pages
+  $items['docker/container/%docker_containers'] = array(
+    'title' => t('Docker container'),
+    'page callback' => 'security_samurai_docker_container_view_entity',
+    'page arguments' => array(2),
+    'access arguments' => array('view security samurai docker containers'),
+  );
+
+  // Docker images view entity pages
+  $items['docker/image/%docker_images'] = array(
+    'title' => t('Docker image'),
+    'page callback' => 'security_samurai_docker_image_view_entity',
+    'page arguments' => array(2),
+    'access arguments' => array('view security samurai docker images')
+  );
+
+  return $items;
+}
+
+/**
+ * Client form step 2
+ */
+function client_site_form_step_2($form, $form_state) {
+
+    $form['docker_site_form_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Docker configuration'),
+      '#description' => t('Docker is used for creating test environments when applying the security updates. The below configuration options are custom to this client.'),
+      '#collapsed' => FALSE,
+      '#fieldset_icon' => 'cloud',
+    );
+
+    $form['docker_site_form_fieldset']['docker_site_form_chosenos'] = array(
+      '#type' => 'select',
+      '#title' => t('Docker container OS'),
+      '#description' => t('What operating system would you like the Docker container to use when running your site?'),
+      '#options' => array(
+        'ubuntu-14.04',
+        ),
+    );
+
+    $form['docker_site_form_fieldset']['docker_site_form_phpversion'] = array(
+      '#type' => 'select',
+      '#title' => t('Docker container PHP version'),
+      '#description' => t('What PHP version would you like the Docker container to install when running your site?'),
+      '#options' => array(
+        'Please select one',
+        'PHP 5.5 latest',
+        'PHP 5.4 latest',
+        'PHP 5.3 latest',
+        ),
+    );
+
+    $form['form_back'] = array(
+      '#type' => 'submit',
+      '#value' => 'Back'
+    );
+
+    $form['form_next'] = array(
+      '#type' => 'submit',
+      '#value' => 'Next',
+    );
+
+    // Return the form components.
+    return $form;
+}
+
+/**
+ * Form validation handler for the Docker step of the client_site_form
+ */
+function client_site_form_step_2_validate($form, $form_state) {
+
+}
+
+/**
+ * Form submit handler for the Docker step of the client_site_form
+ */
+function client_site_form_submit_details_step_2($form_id, &$form_state) {
+
+  // Set the useful form_state to shorter variables.
+  $site_name = $form_state['values']['name'];
+
+  // Get the client_site ID
+  $client_site_id = samurai_get_site_id($site_name);
+}
+
+/**
+ * Extends the default entity class for the 'project' entity type.
+ */
+class DockerContainersEntity extends Entity {
+
+  protected function defaultUri() {
+
+    return array('path' => 'docker/container/' . $this->identifier());
+  }
+}
+
+/**
+ * Extends the EntityAPIController class for the 'project' entity type
+ *
+ * @method object buildContent()
+ */
+class DockerContainersEntityController extends EntityAPIController {
+
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+    return $build;
+  }
+}
+
+/**
+ * Implements hook_load
+ *
+ * Menu autoloader for project entities.
+ */
+function docker_container_load($id) {
+
+  $docker_entity = entity_load('docker_containers', array($id));
+  return array_pop($docker_entity);
+}
+
+/**
+ * Load the entity of type docker_container.
+ */
+function security_samurai_docker_container_view_entity($entity, $view_mode = 'full') {
+
+    $entity_type = $entity->entityType();
+    $entity_id = entity_id($entity_type, $entity);
+    $entity->content = array();
+    $entity->title = filter_xss($entity->name);
+    field_attach_prepare_view($entity_type, array($entity_id => $entity), $view_mode);
+    entity_prepare_view($entity_type, array($entity_id => $entity));
+    $entity->content += field_attach_view($entity_type, $entity, $view_mode);
+    $entity->content += array(
+      '#theme'     => $entity_type,
+      '#element'   => $entity,
+      '#view_mode' => $view_mode,
+      '#language'  => LANGUAGE_NONE,
+    );
+
+    return $entity->content;
+}
+
+/**
+ * Extends the default entity class for the 'project' entity type.
+ */
+class DockerImagesEntity extends Entity {
+
+  protected function defaultUri() {
+
+    return array('path' => 'docker/image/' . $this->identifier());
+  }
+}
+
+/**
+ * Extends the EntityAPIController class for the 'project' entity type
+ *
+ * @method object buildContent()
+ */
+class DockerImagesEntityController extends EntityAPIController {
+
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+    return $build;
+  }
+}
+
+/**
+ * Implements hook_load
+ *
+ * Menu autoloader for project entities.
+ */
+function docker_image_load($id) {
+
+  $docker_entity = entity_load('docker_containers', array($id));
+  return array_pop($docker_entity);
+}
+
+/**
+ * Load the entity of type docker_image.
+ */
+function security_samurai_docker_images_view_entity($entity, $view_mode = 'full') {
+
+    $entity_type = $entity->entityType();
+    $entity_id = entity_id($entity_type, $entity);
+    $entity->content = array();
+    $entity->title = filter_xss($entity->name);
+    field_attach_prepare_view($entity_type, array($entity_id => $entity), $view_mode);
+    entity_prepare_view($entity_type, array($entity_id => $entity));
+    $entity->content += field_attach_view($entity_type, $entity, $view_mode);
+    $entity->content += array(
+      '#theme'     => $entity_type,
+      '#element'   => $entity,
+      '#view_mode' => $view_mode,
+      '#language'  => LANGUAGE_NONE,
+    );
+
+    return $entity->content;
+}

@@ -1,0 +1,7 @@
+example
+
+
+docker build -t jkswoods/samuraitesting .
+docker run -d -i -t -p 3000:80 jkswoods/samuraitesting
+docker exec f249d15672b5 service apache2 start
+docker exec f249d15672b5 mkdir .ssh
