@@ -12,35 +12,104 @@
  */
 function client_site_form($form, &$form_state, $site = NULL) {
   
+
+  // If no current step is defined, set it to the first one.
+  if (!isset($form_state['step'])) $form_state['step'] = 'client_site_form_step_1';
+
   $form = array();
+
+  switch ($form_state['step']) {
+
+    case 'client_site_form_step_1':
+      return client_site_form_step_1($form, $form_state, $site = NULL);
+      break;
+    case 'client_site_form_step_2':
+      return client_site_form_step_2($form, $form_state);
+      break;
+    case 'client_site_form_step_3':
+      return client_site_form_step_3($form, $form_state);
+      break;
+    default:
+      return client_site_form_step_1($form, $form_state);
+      break;
+  }
+}
+
+/**
+ * Return the next step function name
+ */
+function client_site_form_move_to_next($form, $form_state) {
+
+  switch ($form_state['step']) {
+
+    case 'client_site_form_step_1':
+      return 'client_site_form_step_2';
+      break;
+    case 'client_site_form_step_2':
+      return 'client_site_form_step_3';
+      break;
+  }
+}
+
+/**
+ * Return the previous step function name
+ */
+function client_site_form_move_to_previous($form, $form_state) {
+
+  switch ($form_state['step']) {
+
+    case 'client_site_form_step_3':
+      return 'client_site_form_step_2';
+      break;
+    case 'client_site_form_step_2':
+      return 'client_site_form_step_1';
+      break;
+  }
+}
+
+/**
+ * Client form step 1
+ */
+function client_site_form_step_1($form, $form_state, $site = NULL) {
 
   $form['client_site_form_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Site details'),
     '#collapsed' => FALSE,
+    '#fieldset_icon' => 'explore',
     '#attributes' => array(
       'class' => array('active'),
     ),
   );
 
-  $form['client_site_form_fieldset']['title'] = array(
-    '#markup' => '<span class="card-title">' . t('Add site') . '</span>',
-  );
-
   // The human readable name to give the site.
+  if (isset($site->name)) {
+    $name_default = $site->name;
+  } else if (isset($form_state['values']['name'])) {
+    $name_default = $form_state['values']['name'];
+  } else {
+    $name_default = '';
+  }
   $form['client_site_form_fieldset']['name'] = array(
     '#title' => t('Site name'),
     '#type' => 'textfield',
-    '#default_value' => isset($site->name) ? $site->name : '',
+    '#default_value' => $name_default,
     '#description' => t('The name of the site.'),
     '#required' => TRUE,
   );
 
   // The encryption key.
+  if (isset($site->encryption_key)) {
+    $encryption_default = $site->encryption_key;
+  } else if (isset($form_state['values']['encryption_key'])) {
+    $encryption_default = $form_state['values']['encryption_key'];
+  } else {
+    $encryption_default = '';
+  }
   $form['client_site_form_fieldset']['encryption_key'] = array(
     '#title' => t('Encryption key'),
     '#type' => 'textfield',
-    '#default_value' => isset($site->encryption_key) ? $site->encryption_key : '',
+    '#default_value' => $encryption_default,
     '#description' => t('The key provided by the site.'),
     '#required' => TRUE,
   );
@@ -59,12 +128,9 @@ function client_site_form($form, &$form_state, $site = NULL) {
   }
 
   // Default form submit actions.
-  $form['actions'] = array(
-    '#type' => 'actions',
-    'submit' => array(
-      '#type' => 'submit',
-      '#value' => isset($site->id) ? t('Update site') : t('Add site'),
-    ),
+  $form['form_next'] = array(
+    '#type' => 'submit',
+    '#value' => 'Next',
   );
 
   // Return the form components.
@@ -74,19 +140,96 @@ function client_site_form($form, &$form_state, $site = NULL) {
 /**
  * Implements hook_validate
  */
-function client_site_form_validate($form, $form_state) {
+function client_site_form_validate($form, &$form_state) {
 
-  // The encryption key must be 32 or more characters long.
-  if (strlen($form_state['values']['encryption_key']) < 32) {
-    // Error handling.
-    form_set_error('encryption_key', t('Please enter a valid encryption key.'));
+  if ($form_state['triggering_element']['#value'] == 'Back') {
+    return;
+  }
+
+  switch ($form_state['step']) {
+
+    case 'client_site_form_step_1':
+      return client_site_form_step_1_validate($form, $form_state);
+      break;
+    case 'client_site_form_step_2':
+      return client_site_form_step_2_validate($form, $form_state);
+      break;
+    case 'client_site_form_step_3':
+      return client_site_form_step_3_validate($form, $form_state);
+      break;
   }
 }
 
 /**
- * Implements the default submit handler
+ * Form validation handler for the site details step of the client_site_form
+ */
+function client_site_form_step_1_validate($form, $form_state) {
+
+  // // The encryption key must be 32 or more characters long.
+  // if (strlen($form_state['values']['encryption_key']) < 32) {
+  //   // Error handling.
+  //   return form_set_error('encryption_key', t('Please enter a valid encryption key.'));
+  // }
+}
+
+/**
+ * The client_site_form form submit handler
  */
 function client_site_form_submit($form, &$form_state) {
+
+  switch ($form_state['step']) {
+
+    case 'client_site_form_step_3':
+      $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
+      if ($form_state['triggering_element']['#value'] != 'Back') {
+        client_site_form_submit_details($form, $form_state);
+        $form_state['complete'] = TRUE;
+      }
+      break;
+    default:
+      $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
+      $form_state['new_step'] = client_site_form_move_to_next($form, $form_state);
+      break;
+  }
+
+  if (isset($form_state['complete'])) drupal_goto('/client-site/config');
+
+  if ($form_state['triggering_element']['#value'] == 'Back') {
+    $form_state['new_step'] = client_site_form_move_to_previous($form, $form_state);
+    $form_state['values'] = $form_state['multistep_values'][$form_state['new_step']];
+  }
+
+  if (isset($form_state['multistep_values']['form_build_id'])) {
+    $form_state['values']['form_build_id'] = $form_state['multistep_values']['form_build_id'];
+  }
+  $form_state['multistep_values']['form_build_id'] = $form_state['values']['form_build_id'];
+  $form_state['step'] = $form_state['new_step'];
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Call the submit handlers for each step.
+ */
+function client_site_form_submit_details($form, $form_state) {
+
+  $form_state_step_1['values'] = $form_state['multistep_values']['client_site_form_step_1'];
+  $form_state_step_2['values'] = $form_state['multistep_values']['client_site_form_step_2'];
+  $form_state_step_3['values'] = $form_state['multistep_values']['client_site_form_step_3'];
+
+  // Submit step 1
+  client_site_form_submit_details_step_1($form, $form_state_step_1);
+
+  // Submit step 2
+  client_site_form_submit_details_step_2($form, $form_state_step_2);
+
+  // Submit step 3
+  client_site_form_submit_details_step_3($form, $form_state_step_3);
+}
+
+/**
+ * Form submit handler for the site details step of the client_site_form
+ */
+function client_site_form_submit_details_step_1($form, $form_state) {
 
   // Decrypt the site_url from the encryption string.
   if (!isset($form_state['values']['site_url'])) {
@@ -104,6 +247,8 @@ function client_site_form_submit($form, &$form_state) {
   }
 
   // Check that samurai can access the site site.
+
+  // Move this part to the validation
   if (samurai_check_site_access($form_state['values']['site_url'])) {
 
     // -- Save the entity.
@@ -115,10 +260,5 @@ function client_site_form_submit($form, &$form_state) {
     drupal_set_message(t('@name has been saved.', array('@name' => $site->name)));
     watchdog('Security samurai', t('@name has been saved.', array('@name' => $site->name)));
     $form_state['redirect'] = 'site/config';
-
-  } else {
-    // Error handling.
-    form_set_error('encryption_key', t('Samurai wasn\'t to establish a connection to the site.'));
   }
 }
-

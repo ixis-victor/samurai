@@ -1,9 +1,0 @@
-name = Security samurai Docker
-description = Provides functions to spin up docker containers 
-core = 7.x
-version = 7.x-1.0
-package = Security Samurai
-
-dependencies[] = security_samurai_controller
-
-files[] = includes/dockerapi.php
