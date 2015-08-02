@@ -72,7 +72,7 @@ function client_site_form_move_to_previous($form, $form_state) {
  */
 function client_site_form_step_1($form, $form_state, $site = NULL) {
 
-  $form['client_site_form_fieldset'] = array(
+  $form['client_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Site details'),
     '#collapsed' => FALSE,
@@ -90,7 +90,7 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
   } else {
     $name_default = '';
   }
-  $form['client_site_form_fieldset']['name'] = array(
+  $form['client_fieldset']['name'] = array(
     '#title' => t('Site name'),
     '#type' => 'textfield',
     '#default_value' => $name_default,
@@ -106,7 +106,7 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
   } else {
     $encryption_default = '';
   }
-  $form['client_site_form_fieldset']['encryption_key'] = array(
+  $form['client_fieldset']['encryption_key'] = array(
     '#title' => t('Encryption key'),
     '#type' => 'textfield',
     '#default_value' => $encryption_default,
@@ -118,7 +118,7 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
   // If it isn't, then the site has not been submitted before and the site_url
   // will be extracted from the enryption_key
   if (isset($site->site_url)) {
-    $form['client_site_form_fieldset']['site_url'] = array(
+    $form['client_fieldset']['site_url'] = array(
       '#title' => t('Site URL'),
       '#type' => 'textfield',
       '#default_value' => isset($site->site_url) ? $site->site_url : '',
@@ -165,11 +165,22 @@ function client_site_form_validate($form, &$form_state) {
  */
 function client_site_form_step_1_validate($form, $form_state) {
 
-  // // The encryption key must be 32 or more characters long.
-  // if (strlen($form_state['values']['encryption_key']) < 32) {
-  //   // Error handling.
-  //   return form_set_error('encryption_key', t('Please enter a valid encryption key.'));
-  // }
+  // The encryption key must be 32 or more characters long.
+  if (strlen($form_state['values']['encryption_key']) < 32) {
+    // Error handling.
+    return form_set_error('encryption_key', t('Please enter a valid encryption key.'));
+  }
+
+  // Retrieve the site_url.
+  $encryptionsiteurl = $form_state['values']['encryption_key'];
+  $site_url = substr($encryptionsiteurl, 32);
+  $site_url = base64_decode($site_url);
+
+  // Attempt connection to the site.
+  if (samurai_check_site_access($site_url)) {
+    return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and 
+      Samurai is configured properly to access the site'));
+  }
 }
 
 /**
@@ -189,6 +200,9 @@ function client_site_form_submit($form, &$form_state) {
     default:
       $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
       $form_state['new_step'] = client_site_form_move_to_next($form, $form_state);
+      if (isset($form_state['multistep_values'][$form_state['new_step']])) {
+        $form_state['values'] = $form_state['multistep_values'][$form_state['new_step']];
+      }
       break;
   }
 
@@ -233,32 +247,29 @@ function client_site_form_submit_details_step_1($form, $form_state) {
 
   // Decrypt the site_url from the encryption string.
   if (!isset($form_state['values']['site_url'])) {
+
     $encryptionsiteurl = $form_state['values']['encryption_key'];
     $site_url = substr($encryptionsiteurl, 32);
     $encryption_string = substr($encryptionsiteurl, 0, 32);
     $form_state['values']['encryption_key'] = $encryption_string;
     $form_state['values']['site_url'] = base64_decode($site_url);
   }
-  // We need to check if the site is being updated or saved.
+
+  // Check if the site is being updated or saved.
   if (!samurai_site_exists($form_state['values']['name'], $form_state['values']['site_url'])) {
+
     // Set the update_next_check to 0, so the updates are checked 
-    // on the next cron execution.
+    // on the next cron execution - every minute.
     $form_state['values']['update_next_check'] = 0;
   }
-
-  // Check that samurai can access the site site.
-
-  // Move this part to the validation
-  if (samurai_check_site_access($form_state['values']['site_url'])) {
-
-    // -- Save the entity.
-    // -- Print notification messages.
-    // -- Log to watchdoge.
-    // -- Redirect to site/add.
-    $site = entity_ui_form_submit_build_entity($form, $form_state);
-    $site->save();
-    drupal_set_message(t('@name has been saved.', array('@name' => $site->name)));
-    watchdog('Security samurai', t('@name has been saved.', array('@name' => $site->name)));
-    $form_state['redirect'] = 'site/config';
-  }
+  
+  // -- Save the entity.
+  // -- Print notification messages.
+  // -- Log to watchdoge.
+  // -- Redirect to site/add.
+  $site = entity_ui_form_submit_build_entity($form, $form_state);
+  $site->save();
+  drupal_set_message(t('@name has been saved.', array('@name' => $site->name)));
+  watchdog('Security samurai', t('@name has been saved.', array('@name' => $site->name)));
+  $form_state['redirect'] = 'site/config';
 }

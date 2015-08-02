@@ -108,70 +108,71 @@ function security_samurai_gitapi_permission() {
  * Client form step 3
  */
 function client_site_form_step_3($form, $form_state) {
-  
-    if (empty($form_state['current_step'])) {
-      $form_state['current_step'] = 1;
-    }
 
-    $form['security_samurai_gitapi_fieldset'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Git configuration'),
-      '#description' => t('Set up git branches, clone URLs and tagging per client here.'),
-      '#fieldset_icon' => 'code',
-      '#collapsed' => FALSE,
-    );
-    $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_service'] = array(
-      '#type' => 'select',
-      '#title' => t('Service'),
-      '#description' => t('The Git service to use.'),
-      '#options' => array(
-        1 => t('GitHub'),
-        2 => t('BitBucket'),
-        3 => t('Codebase'),
-      ),
-    );
-    $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_clone_url'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Clone URL'),
-      '#description' => t('The Git URL to the repo containing the site.'),
-    );
-    $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Git workflow'),
-      '#description' => t('The workflow you define here can be custom to each site. The steps are followed top to bottom.'),
-      '#collapsible' => TRUE,
-      '#collapsed' => TRUE,
-      '#fieldset_icon' => 'group_work',
-      '#attributes' => array(
-        'class' => array('flatten'),
-      ),
-    );
-    $form['security_samurai_gitapi_fieldset']['security_samurai_gitapi_branch_fieldset']['security_samurai_gitapi_model'] = array(
-      '#type' => 'select',
-      '#title' => t('Add step'),
-      '#options' => array(
-        0 => '- Add a step to the Git workflow -',
-        1 => 'Create a new Samurai branch from an existing branch',
-        2 => 'Check out to an existing branch',
-        3 => 'Merge an existing branch in to an existing branch',
-        4 => 'Merge the Samurai branch in to an existing branch',
-        5 => 'Run security updates and tests',
-        6 => 'Delete the samurai branch',
-        7 => 'Commit changes to the Samurai branch',
-        8 => 'Commit changes to an existing branch',
-      ),
-    );
-    $form['#attached']['js'] = array(
-      drupal_get_path('module', 'security_samurai_gitapi') . '/security_samurai_gitapi.js',
-    );
-    $form['form_back'] = array(
-      '#type' => 'submit',
-      '#value' => 'Back'
-    );
-    $form['form_next'] = array(
-      '#type' => 'submit',
-      '#value' => 'Submit',
-    );
+  // Container for the GitAPI elements.
+  $form['gitapi_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Git configuration'),
+    '#description' => t('Set up git branches, clone URLs and tagging per client here.'),
+    '#fieldset_icon' => 'code',
+    '#collapsed' => FALSE,
+  );
+  // The Git service.
+  $form['gitapi_fieldset']['gitapi_service'] = array(
+    '#type' => 'select',
+    '#title' => t('Service'),
+    '#description' => t('The Git service to use.'),
+    '#options' => array(
+      0 => t('- Please select one -'),
+      1 => t('GitHub'),
+      2 => t('BitBucket'),
+      3 => t('Codebase'),
+    ),
+  );
+  // The repo clone URL.
+  $form['gitapi_fieldset']['gitapi_clone_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Clone URL'),
+    '#description' => t('The Git URL to the repo containing the site.'),
+  );
+  // Fieldset for setting Git workflow.
+  $form['gitapi_fieldset']['gitapi_branch_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Git workflow'),
+    '#description' => t('The workflow you define here can be custom to each site. The steps are followed top to bottom.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#fieldset_icon' => 'group_work',
+    '#attributes' => array(
+      'class' => array('flatten'),
+    ),
+  );
+  // Think of a better way to do this...
+  $form['gitapi_fieldset']['gitapi_branch_fieldset']['gitapi_model'] = array(
+    '#type' => 'select',
+    '#title' => t('Add step'),
+    '#options' => array(
+      0 => '- Add a step to the Git workflow -',
+      1 => 'Create a new Samurai branch from an existing branch',
+      2 => 'Check out to an existing branch',
+      3 => 'Merge an existing branch in to an existing branch',
+      4 => 'Merge the Samurai branch in to an existing branch',
+      5 => 'Run security updates and tests',
+      6 => 'Delete the samurai branch',
+      7 => 'Commit changes to the Samurai branch',
+      8 => 'Commit changes to an existing branch',
+    ),
+  );
+  // Form back button.
+  $form['form_back'] = array(
+    '#type' => 'submit',
+    '#value' => 'Back'
+  );
+  // Form submit button.
+  $form['form_next'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
 
     return $form;
 }
@@ -181,6 +182,10 @@ function client_site_form_step_3($form, $form_state) {
  */
 function client_site_form_step_3_validate($form, $form_state) {
 
+  // Check a Git service has been selected.
+  if ($form_state['values']['gitapi_service'] == 0) {
+    return form_set_error('gitapi_service', t('Select a Git service'));
+  }
 }
 
 /**
@@ -188,4 +193,5 @@ function client_site_form_step_3_validate($form, $form_state) {
  */
 function client_site_form_submit_details_step_3($form, $form_state) {
 
+  
 }

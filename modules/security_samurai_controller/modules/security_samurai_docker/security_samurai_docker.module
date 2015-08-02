@@ -148,47 +148,57 @@ function security_samurai_docker_menu() {
  */
 function client_site_form_step_2($form, $form_state) {
 
-    $form['docker_site_form_fieldset'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('Docker configuration'),
-      '#description' => t('Docker is used for creating test environments when applying the security updates. The below configuration options are custom to this client.'),
-      '#collapsed' => FALSE,
-      '#fieldset_icon' => 'cloud',
-    );
+  // Container for the docker elements
+  $form['docker_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Docker configuration'),
+    '#description' => t('Docker is used for creating test environments when applying the security updates. 
+      The below configuration options are custom to this client.'),
+    '#collapsed' => FALSE,
+    '#fieldset_icon' => 'cloud',
+  );
+  // Select PHP version to run.
+  $form['docker_fieldset']['docker_chosenos'] = array(
+    '#type' => 'select',
+    '#title' => t('Docker container OS'),
+    '#description' => t('What operating system would you like the Docker container to use?'),
+    '#options' => array(
+      'ubuntu-14.04',
+    ),
+  );
+  // Select docker PHP version
+  if (isset($form_state['values']['docker_phpversion'])) {
+    $phpversion_default = $form_state['values']['docker_phpversion'];
+  } elseif (isset($docker->phpversion)) {
+    // Placeholder, will eventually be filled.
+  } else {
+    $phpversion_default = '';
+  }
+  $form['docker_fieldset']['docker_phpversion'] = array(
+    '#type' => 'select',
+    '#title' => t('Docker container PHP version'),
+    '#description' => t('What PHP version would you like the Docker container to install when running your site?'),
+    '#default_value' => $phpversion_default,
+    '#options' => array(
+      0 => '- Please select one -',
+      1 => 'PHP 5.5 latest',
+      2 => 'PHP 5.4 latest',
+      3 => 'PHP 5.3 latest',
+    ),
+  );
+  // Form back button.
+  $form['form_back'] = array(
+    '#type' => 'submit',
+    '#value' => 'Back'
+  );
+  // Form next button.
+  $form['form_next'] = array(
+    '#type' => 'submit',
+    '#value' => 'Next',
+  );
 
-    $form['docker_site_form_fieldset']['docker_site_form_chosenos'] = array(
-      '#type' => 'select',
-      '#title' => t('Docker container OS'),
-      '#description' => t('What operating system would you like the Docker container to use when running your site?'),
-      '#options' => array(
-        'ubuntu-14.04',
-        ),
-    );
-
-    $form['docker_site_form_fieldset']['docker_site_form_phpversion'] = array(
-      '#type' => 'select',
-      '#title' => t('Docker container PHP version'),
-      '#description' => t('What PHP version would you like the Docker container to install when running your site?'),
-      '#options' => array(
-        'Please select one',
-        'PHP 5.5 latest',
-        'PHP 5.4 latest',
-        'PHP 5.3 latest',
-        ),
-    );
-
-    $form['form_back'] = array(
-      '#type' => 'submit',
-      '#value' => 'Back'
-    );
-
-    $form['form_next'] = array(
-      '#type' => 'submit',
-      '#value' => 'Next',
-    );
-
-    // Return the form components.
-    return $form;
+  // Return the form components.
+  return $form;
 }
 
 /**
@@ -196,6 +206,10 @@ function client_site_form_step_2($form, $form_state) {
  */
 function client_site_form_step_2_validate($form, $form_state) {
 
+  // Check the docker PHP version is selected.
+  if ($form_state['values']['docker_phpversion'] == 0) {
+    return form_set_error('docker_phpversion', t('Select a PHP version'));
+  }
 }
 
 /**
@@ -204,7 +218,7 @@ function client_site_form_step_2_validate($form, $form_state) {
 function client_site_form_submit_details_step_2($form_id, &$form_state) {
 
   // Set the useful form_state to shorter variables.
-  $site_name = $form_state['values']['name'];
+  $site_name = $form_state['mutlistep_values']['client_site_form_step_1']['name'];
 
   // Get the client_site ID
   $client_site_id = samurai_get_site_id($site_name);

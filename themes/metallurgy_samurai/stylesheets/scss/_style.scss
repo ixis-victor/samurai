@@ -138,6 +138,11 @@ section {
           border-color: $menu_background_color;
           box-shadow: 0 1px 0 0 $menu_background_color;
         }
+        &.error {
+          border-top: none;
+          border-left: none;
+          border-right: none;
+        }
       }
       &[type="submit"] {
         -webkit-transition: 0.3s ease;
@@ -433,4 +438,8 @@ section {
 
 .form-item-security-samurai-gitapi-model {
   display: inline-block;
+}
+
+#edit-form-back {
+  margin-right: 1em;
 }

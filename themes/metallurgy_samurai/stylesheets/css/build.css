@@ -305,6 +305,10 @@ section {
   section form input[type=text]:focus, section form input[type=password]:focus, section form input[type=email]:focus, section form input[type=url]:focus, section form input[type=date]:focus, section form input[type=tel]:focus, section form input[type=number]:focus, section form input[type=search]:focus {
     border-color: #2d353c;
     box-shadow: 0 1px 0 0 #2d353c; }
+  section form input[type=text].error, section form input[type=password].error, section form input[type=email].error, section form input[type=url].error, section form input[type=date].error, section form input[type=tel].error, section form input[type=number].error, section form input[type=search].error {
+    border-top: none;
+    border-left: none;
+    border-right: none; }
   section form input[type="submit"] {
     -webkit-transition: 0.3s ease;
     -moz-transition: 0.3s ease;
@@ -513,3 +517,6 @@ section {
 
 .form-item-security-samurai-gitapi-model {
   display: inline-block; }
+
+#edit-form-back {
+  margin-right: 1em; }
