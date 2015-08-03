@@ -23,7 +23,7 @@ function security_samurai_docker_entity_info() {
     'entity class' => 'DockerContainersEntity',
     'controller class' => 'DockerContainersEntityController',
     'admin ui' => array(
-      'path' => 'docker/containers/config',
+      'path' => 'jobs/containers/config',
       'controller class' => 'EntityDefaultUIController',
       'menu wildcard' => '%docker_containers',
       'file' => 'security_samurai_docker_container.inc',
@@ -46,7 +46,7 @@ function security_samurai_docker_entity_info() {
     'entity class' => 'DockerImagesEntity',
     'controller class' => 'DockerImagesEntityController',
     'admin ui' => array(
-      'path' => 'docker/images/config',
+      'path' => 'jobs/images/config',
       'controller class' => 'EntityDefaultUIController',
       'menu wildcard' => '%docker_images',
       'file' => 'security_samurai_docker_image.inc',
