@@ -124,49 +124,11 @@ section {
   margin: 0 auto;
 }
 
-.span-1 { width: 6.25%; }
-.span-2 { width: 14.585%; }
-.span-3 { width: 22.92%; }
-.span-4 { width: 31.25%; }
-.span-5 { width: 39.58%; }
-.span-6 { width: 47.92%; }
-.span-7 { width: 56.26%; }
-.span-8 { width: 64.58%; }
-.span-9 { width: 72.92%; }
-.span-10 { width: 81.25%; }
-.span-11 { width: 89.58%; }
-.span-12 { width: 100%; }
-
-.offset-1 { margin-left: 6.25%; }
-.offset-2 { margin-left: 14.585%; }
-.offset-3 { margin-left: 22.92%; }
-.offset-4 { margin-left: 31.25%; }
-.offset-5 { margin-left: 39.58%; }
-.offset-6 { margin-left: 47.92%; }
-.offset-7 { margin-left: 56.26%; }
-.offset-8 { margin-left: 64.58%; }
-.offset-9 { margin-left: 72.92%; }
-.offset-10 { margin-left: 81.25%; }
-
 // Average portrait tablet
 @media screen and (max-width: 769px) {
-  * { font-size: 98%; }
-  #menu, #title-type { display: none !important; }
-  #menu-wrapper { width: 50px; z-index: 1000; }
-  #content-wrapper { margin-left: 50px; }
-  #column-right-wrapper { padding-left: 0px; }
-  .site-name { display: none !important; }
-  .span-1,.span-2,.span-3,.span-4,.span-5,.span-6,.span-7,.span-8,.span-9,.span-10,.span-11,.span-12 { width: 85%; }
-  .panel-col-first, .panel-col-last, .panel-col { width: 91% !important; .inside { margin: 0px !important; } }
+  * { font-size: 98.5%; }
+  .panel-col-first, .panel-col-last, .panel-col { width: 100% !important; .inside { margin: 0px !important; } }
 }
-
-// Hide and show 1490px
-@media screen and (min-width: 1491px) { .show-1490 { display: none; } }
-@media screen and (max-width: 1490px) { .hide-1490 { display: none; } }
-
-// Hide and show 768px
-@media screen and (min-width: 770px) { .show-768 { display: none; } }
-@media screen and (max-width: 769px) { .hide-768 { display: none; } }
 
 .inline-block {
   display: inline-block;

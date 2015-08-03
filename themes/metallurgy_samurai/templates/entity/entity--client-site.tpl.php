@@ -1,4 +1,5 @@
-<div class="span-8 float-left">
+<div class="row">
+<div class="col s12 m8 l8">
   <div id="content-main-wrapper">
     <div id="content-main">
       <h4 class="publish-info card">Created: <?php print date('d-m-Y H:i:s', $element->created_at); ?></h4>
@@ -48,15 +49,15 @@
       <?php endif; ?>
     </div>
   </div>
-</div>
-<div id="column-right-wrapper" class="span-4 float-left padding-left">
+<div id="column-right-wrapper" class="col s12 m4 l4">
   <div id="column-right">
     <!-- Print the block manually -->
-    <div class="card popup" style="margin-top: 0px;">
+    <div class="card popup">
       <div class="card-content">
         <span class="card-title">Scan the site now</span>
         <p class="content">Currently unavailable.</p>
       </div>
     </div>
   </div>
+</div>
 </div>

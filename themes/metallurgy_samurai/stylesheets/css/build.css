@@ -90,111 +90,14 @@ section p {
   display: block;
   margin: 0 auto; }
 
-.span-1 {
-  width: 6.25%; }
-
-.span-2 {
-  width: 14.585%; }
-
-.span-3 {
-  width: 22.92%; }
-
-.span-4 {
-  width: 31.25%; }
-
-.span-5 {
-  width: 39.58%; }
-
-.span-6 {
-  width: 47.92%; }
-
-.span-7 {
-  width: 56.26%; }
-
-.span-8 {
-  width: 64.58%; }
-
-.span-9 {
-  width: 72.92%; }
-
-.span-10 {
-  width: 81.25%; }
-
-.span-11 {
-  width: 89.58%; }
-
-.span-12 {
-  width: 100%; }
-
-.offset-1 {
-  margin-left: 6.25%; }
-
-.offset-2 {
-  margin-left: 14.585%; }
-
-.offset-3 {
-  margin-left: 22.92%; }
-
-.offset-4 {
-  margin-left: 31.25%; }
-
-.offset-5 {
-  margin-left: 39.58%; }
-
-.offset-6 {
-  margin-left: 47.92%; }
-
-.offset-7 {
-  margin-left: 56.26%; }
-
-.offset-8 {
-  margin-left: 64.58%; }
-
-.offset-9 {
-  margin-left: 72.92%; }
-
-.offset-10 {
-  margin-left: 81.25%; }
-
 @media screen and (max-width: 769px) {
   * {
-    font-size: 98%; }
-
-  #menu, #title-type {
-    display: none !important; }
-
-  #menu-wrapper {
-    width: 50px;
-    z-index: 1000; }
-
-  #content-wrapper {
-    margin-left: 50px; }
-
-  #column-right-wrapper {
-    padding-left: 0px; }
-
-  .site-name {
-    display: none !important; }
-
-  .span-1, .span-2, .span-3, .span-4, .span-5, .span-6, .span-7, .span-8, .span-9, .span-10, .span-11, .span-12 {
-    width: 85%; }
+    font-size: 98.5%; }
 
   .panel-col-first, .panel-col-last, .panel-col {
-    width: 91% !important; }
+    width: 100% !important; }
     .panel-col-first .inside, .panel-col-last .inside, .panel-col .inside {
       margin: 0px !important; } }
-@media screen and (min-width: 1491px) {
-  .show-1490 {
-    display: none; } }
-@media screen and (max-width: 1490px) {
-  .hide-1490 {
-    display: none; } }
-@media screen and (min-width: 770px) {
-  .show-768 {
-    display: none; } }
-@media screen and (max-width: 769px) {
-  .hide-768 {
-    display: none; } }
 .inline-block {
   display: inline-block; }
 
@@ -239,7 +142,7 @@ section {
         section#menu-wrapper #menu ul li > a {
           text-decoration: none; }
           section#menu-wrapper #menu ul li > a > div {
-            font-size: 14px;
+            font-size: 13px;
             padding-left: 1em;
             padding-bottom: 0.8em;
             padding-top: 0.8em;
@@ -248,50 +151,6 @@ section {
             transition: 0.2s ease; }
             section#menu-wrapper #menu ul li > a > div:hover {
               background-color: #232a2f; }
-    section#menu-wrapper #mobile-menu {
-      margin-left: -150px;
-      padding-right: 50px; }
-      section#menu-wrapper #mobile-menu #menu-open {
-        padding-left: 165px;
-        color: #6d7983;
-        font-size: 1.618em;
-        position: absolute;
-        margin-top: 10px; }
-      section#menu-wrapper #mobile-menu #menu-close {
-        opacity: 0;
-        color: #6d7983;
-        font-size: 1.618em;
-        margin-left: 92%;
-        margin-top: 3px;
-        position: absolute; }
-      section#menu-wrapper #mobile-menu h2 {
-        font-size: 10px;
-        padding-left: 1em;
-        padding-top: 1em;
-        padding-bottom: 1em;
-        margin: 0; }
-      section#menu-wrapper #mobile-menu ul {
-        padding: 0;
-        margin: 0; }
-        section#menu-wrapper #mobile-menu ul li {
-          list-style-type: none;
-          padding: 0;
-          margin: 0; }
-          section#menu-wrapper #mobile-menu ul li.active-trail > a > div, section#menu-wrapper #mobile-menu ul li.active > a > div {
-            color: white;
-            background-color: #171b1f !important; }
-          section#menu-wrapper #mobile-menu ul li > a {
-            text-decoration: none; }
-            section#menu-wrapper #mobile-menu ul li > a > div {
-              font-size: 12px;
-              padding-left: 1em;
-              padding-bottom: 0.8em;
-              padding-top: 0.8em;
-              color: #a8acb1;
-              -webkit-transition: 0.2s ease;
-              transition: 0.2s ease; }
-              section#menu-wrapper #mobile-menu ul li > a > div:hover {
-                background-color: #232a2f; }
   section #user-login-title {
     margin-top: 80px; }
   section #user-login {
@@ -334,6 +193,7 @@ section {
       background-color: #fff;
       border-bottom: 1px solid #aeaeae; }
     section table tbody tr td {
+      border-radius: 0px;
       background-color: #fff;
       padding: 0.5em;
       font-family: "Roboto", sans-serif; }
@@ -520,3 +380,48 @@ section {
 
 #edit-form-back {
   margin-right: 1em; }
+
+#menu-mobile-wrapper {
+  color: #6d7983; }
+  #menu-mobile-wrapper #menu-open {
+    position: absolute;
+    top: 1em;
+    left: 1em;
+    font-size: 1.2em; }
+  #menu-mobile-wrapper #menu {
+    margin-left: -300px;
+    top: 0;
+    position: absolute;
+    z-index: 1001;
+    background-color: #2d353c;
+    height: 100%;
+    width: 40%;
+    max-width: 300px; }
+  #menu-mobile-wrapper h2 {
+    font-size: 10px;
+    padding-left: 1em;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    margin: 0; }
+  #menu-mobile-wrapper ul {
+    padding: 0;
+    margin: 0; }
+    #menu-mobile-wrapper ul li {
+      list-style-type: none;
+      padding: 0;
+      margin: 0; }
+      #menu-mobile-wrapper ul li.active-trail > a > div, #menu-mobile-wrapper ul li.active > a > div {
+        color: white;
+        background-color: #171b1f !important; }
+      #menu-mobile-wrapper ul li > a {
+        text-decoration: none; }
+        #menu-mobile-wrapper ul li > a > div {
+          font-size: 12px;
+          padding-left: 1em;
+          padding-bottom: 0.8em;
+          padding-top: 0.8em;
+          color: #a8acb1;
+          -webkit-transition: 0.2s ease;
+          transition: 0.2s ease; }
+          #menu-mobile-wrapper ul li > a > div:hover {
+            background-color: #232a2f; }

@@ -1,4 +1,5 @@
-<div class="span-8 float-left">
+<div class="row">
+<div class="col s12 m8 l8">
   <div id="content-main-wrapper">
     <div id="content-main">
       <h4 class="publish-info card">Published: <?php print date('d-m-Y H:i:s', $element->date); ?></h4>
@@ -29,9 +30,9 @@
     </div>
   </div>
 </div>
-<div id="column-right-wrapper" class="span-4 float-left padding-left">
+<div id="column-right-wrapper" class="col l4 m4 s12 padding-left">
   <div id="column-right">
-    <div class="card popup" style="margin-top: 0px;">
+    <div class="card popup">
       <div class="card-content">
         <span class="card-title">Sites affected by this</span>
         <?php $result = samurai_get_affected_sites($element->sa_id, $element->project_name, $element->version); ?>
@@ -43,4 +44,5 @@
       </div>
     </div>
   </div>
+</div>
 </div>

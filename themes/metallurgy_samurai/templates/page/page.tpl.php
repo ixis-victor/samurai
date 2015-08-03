@@ -69,15 +69,16 @@
  * @ingroup themeable
  */
 ?>
-
+<div class="row">
 <section id="header-wrapper">
-  <div id="header" class="offset-2">
+  <div class="row">
+  <div id="header" class="col s12 m12 l10 offset-l2">
     <h1>Samurai</h1>
     <h3><?php print $title ?></h3>
   </div>
+</div>
 </section>
-<?php if ($user->uid != 0): ?>
-<section id="menu-wrapper" class="span-2 float-left">
+<section id="menu-wrapper" class="col s2 hide-on-med-and-down">
   <div id="menu">
     <?php print theme('links__system_main_menu', array(
       'links' => $main_menu,
@@ -102,22 +103,33 @@
         'heading' => t('User menu'),
       )); ?>
   </div>
-  <div id="mobile-menu" class="show-768">
-    <i class="fa fa-bars" id="menu-open"></i>
-    <i class="fa fa-times" id="menu-close"></i>
-    <?php print theme('links__system_main_menu', array(
-      'links' => $main_menu,
-      'attributes' => array(
-        'id' => 'main-menu',
-        'class' => array(
-          'links',
-        ),
-      ), 
-    )); ?>
-  </div>
 </section>
-<?php endif; ?>
-<section id="content-wrapper" class="span-10 float-left offset-2 padding-left">
+<section id="menu-mobile-wrapper" class="hide-on-large-only">
+    <a href="#" id="menu-open"><i class="mdi-navigation-menu"></i></a>
+    <div id="menu">
+      <?php print theme('links__system_main_menu', array(
+        'links' => $main_menu,
+        'attributes' => array(
+          'id' => 'main-menu',
+          'class' => array(
+            'links',
+          ),
+        ),
+        'heading' => t('Navigation'),
+      )); ?>
+      <?php print theme('links__system_secondary_menu', array(
+        'links' => $secondary_menu,
+        'attributes' => array(
+          'id' => 'main-menu',
+          'class' => array(
+            'links'
+            ),
+          ),
+        'heading' => t('User menu'),
+        )); ?>
+    </div>  
+</section>
+<section id="content-wrapper" class="col s12 m12 l10 offset-l2">
   <div id="content">
     <?php if (!empty($messages)): ?>
       <?php print $messages; ?>
@@ -146,3 +158,5 @@
   </div>
   </div>
 </section>
+</div>
+<div id="sidenav-overlay" style="opacity: 0; z-index: -10;"></div>

@@ -34,7 +34,10 @@ class samurai_codebase {
     
     // Initialise Curl.
     $this->http = curl_init();
-    $this->url = 'https://api3.codebasehq.com/users/username/public_keys';
+    $this->url = 'https://api3.codebasehq.com/';
+
+    // Test getting the public keys
+    // https://api3.codebasehq.com/users/username/public_keys
 
     // Username and password is not necessary for some functions.
     $this->api_key = $api_key;
@@ -46,7 +49,7 @@ class samurai_codebase {
     // Define the curl options.
     curl_setopt($this->http, CURLOPT_URL, $this->url . $url);
     curl_setopt($this->http, CURLOPT_RETURNTRANSFER, TRUE);
-    curl_setopt($this->http, CURLOPT_HEADER, TRUE);
+    curl_setopt($this->http, CURLOPT_HEADER, FALSE);
     curl_setopt($this->http, CURLOPT_SSL_VERIFYPEER, $this->verify_ssl);
     curl_setopt($this->http, CURLOPT_USERAGENT, $this->user_agent);
     curl_setopt($this->http, CURLOPT_VERBOSE, $this->debug_verbose);
