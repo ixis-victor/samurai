@@ -126,8 +126,22 @@ section {
 
 // Average portrait tablet
 @media screen and (max-width: 769px) {
-  * { font-size: 98.5%; }
-  .panel-col-first, .panel-col-last, .panel-col { width: 100% !important; .inside { margin: 0px !important; } }
+  * {
+    font-size: 98.5%;
+  }
+
+  select {
+    height: 2rem;
+  }
+  
+  .panel-col-first,
+  .panel-col-last,
+  .panel-col {
+    width: 100% !important;
+    .inside {
+      margin: 0px !important;
+    }
+  }
 }
 
 .inline-block {

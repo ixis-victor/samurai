@@ -70,41 +70,41 @@
  */
 ?>
 <div class="row">
-<section id="header-wrapper">
-  <div class="row">
-  <div id="header" class="col s12 m12 l10 offset-l2">
-    <h1>Samurai</h1>
-    <h3><?php print $title ?></h3>
-  </div>
-</div>
-</section>
-<section id="menu-wrapper" class="col s2 hide-on-med-and-down">
-  <div id="menu">
-    <?php print theme('links__system_main_menu', array(
-      'links' => $main_menu,
-      'attributes' => array(
-        'id' => 'main-menu',
-        'class' => array(
-          'links',
-        ),
-      ), 
-      'heading' => t('Navigation'),
-    )); ?>
-  </div>
-  <div id="menu">
-    <?php print theme('links__system_secondary_menu', array(
-      'links' => $secondary_menu,
-      'attributes' => array(
-        'id' => 'main-menu',
-        'class' => array(
-          'links'
+  <section id="header-wrapper">
+    <div class="row">
+      <div id="header" class="col s12 m12 l10 offset-l2">
+        <h1>Samurai</h1>
+        <h3><?php print $title ?></h3>
+      </div>
+    </div>
+  </section>
+  <section id="menu-wrapper" class="col s2 hide-on-med-and-down">
+    <div id="menu">
+      <?php print theme('links__system_main_menu', array(
+        'links' => $main_menu,
+        'attributes' => array(
+          'id' => 'main-menu',
+          'class' => array(
+            'links',
           ),
-        ),
-        'heading' => t('User menu'),
+        ), 
+        'heading' => t('Navigation'),
       )); ?>
-  </div>
-</section>
-<section id="menu-mobile-wrapper" class="hide-on-large-only">
+    </div>
+    <div id="menu">
+      <?php print theme('links__system_secondary_menu', array(
+        'links' => $secondary_menu,
+        'attributes' => array(
+          'id' => 'main-menu',
+          'class' => array(
+            'links'
+            ),
+          ),
+          'heading' => t('User menu'),
+        )); ?>
+    </div>
+  </section>
+  <section id="menu-mobile-wrapper" class="hide-on-large-only">
     <a href="#" id="menu-open"><i class="mdi-navigation-menu"></i></a>
     <div id="menu">
       <?php print theme('links__system_main_menu', array(
@@ -123,40 +123,40 @@
           'id' => 'main-menu',
           'class' => array(
             'links'
-            ),
           ),
+        ),
         'heading' => t('User menu'),
-        )); ?>
+      )); ?>
     </div>  
-</section>
-<section id="content-wrapper" class="col s12 m12 l10 offset-l2">
-  <div id="content">
-    <?php if (!empty($messages)): ?>
-      <?php print $messages; ?>
-    <?php endif; ?>
-    <?php if (!empty($tabs)): ?>
-      <?php print render($tabs); ?>
-    <?php endif; ?>
-    <?php if (!empty($action_links)): ?>
-      <div class="action-links">
-        <?php print render($action_links); ?>
+  </section>
+  <section id="content-wrapper" class="col s12 m12 l10 offset-l2">
+    <div id="content">
+      <?php if (!empty($messages)): ?>
+        <?php print $messages; ?>
+      <?php endif; ?>
+      <?php if (!empty($tabs)): ?>
+        <?php print render($tabs); ?>
+      <?php endif; ?>
+      <?php if (!empty($action_links)): ?>
+        <div class="action-links">
+          <?php print render($action_links); ?>
+        </div>
+      <?php endif; ?>
+      <?php print render($page['content']); ?>
+      <div class="fixed-action-btn" style="bottom: 45px; right: 24px;">
+        <a class="btn-floating btn-large samurai-blue waves-effect waves-light">
+          <i class="large material-icons">add</i>
+        </a>
+        <ul>
+          <li>
+            <a onclick="location.href='/client-site/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Add site"><i class="material-icons" style="color: #333;">playlist_add</i></a>
+          </li>
+          <li>
+            <a onclick="location.href='/client-site/config'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Manage sites"><i class="material-icons" style="color: #333;">device_hub</i></a>
+          </li>
+        </ul>
       </div>
-    <?php endif; ?>
-    <?php print render($page['content']); ?>
-    <div class="fixed-action-btn" style="bottom: 45px; right: 24px;">
-      <a class="btn-floating btn-large samurai-blue waves-effect waves-light">
-        <i class="large material-icons">add</i>
-      </a>
-      <ul>
-        <li>
-          <a onclick="location.href='/client-site/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Add site"><i class="material-icons" style="color: #333;">playlist_add</i></a>
-        </li>
-        <li>
-          <a onclick="location.href='/client-site/config'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Manage sites"><i class="material-icons" style="color: #333;">device_hub</i></a>
-        </li>
-      </ul>
-  </div>
-  </div>
-</section>
+    </div>
+  </section>
 </div>
 <div id="sidenav-overlay" style="opacity: 0; z-index: -10;"></div>

@@ -11,8 +11,10 @@
 			(jQuery)("#menu-mobile-wrapper #menu").animate({
 				"margin-left": "0px",
 			}, 250);
-			(jQuery)("#sidenav-overlay").animate({
+			(jQuery)("#sidenav-overlay").css({
 				"z-index": "997",
+			});
+			(jQuery)("#sidenav-overlay").animate({
 				"opacity": "1",
 			}, 250);
 			menu_open = 1;

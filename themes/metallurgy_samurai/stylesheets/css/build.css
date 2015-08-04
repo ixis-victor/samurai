@@ -94,9 +94,16 @@ section p {
   * {
     font-size: 98.5%; }
 
-  .panel-col-first, .panel-col-last, .panel-col {
+  select {
+    height: 2rem; }
+
+  .panel-col-first,
+  .panel-col-last,
+  .panel-col {
     width: 100% !important; }
-    .panel-col-first .inside, .panel-col-last .inside, .panel-col .inside {
+    .panel-col-first .inside,
+    .panel-col-last .inside,
+    .panel-col .inside {
       margin: 0px !important; } }
 .inline-block {
   display: inline-block; }
