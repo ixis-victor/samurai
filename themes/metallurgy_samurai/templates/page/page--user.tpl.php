@@ -77,11 +77,6 @@
 </section>
 <section id="content-wrapper" class="full-width">
   <div id="content">
-    <div class="login-messages">
-      <?php if (!empty($messages)): ?>
-    	  <?php print $messages; ?>
-      <?php endif; ?>
-	  </div>
     <?php $page['content']['system_main']['#attributes']['class'] = array('card'); ?>
     <?php print render($page['content']); ?>
   </div>
