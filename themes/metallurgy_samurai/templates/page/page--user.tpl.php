@@ -72,7 +72,7 @@
 
 <section id="header-wrapper">
   <div id="header">
-    <img class="logo center" src="<?php print $logo; ?>" width="35" height="auto"></img>
+    <h1 class="center-align" style="width: 100%;">Samurai</h1>
   </div>
 </section>
 <section id="content-wrapper" class="full-width">
