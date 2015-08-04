@@ -218,10 +218,10 @@ function client_site_form_step_2_validate($form, $form_state) {
 function client_site_form_submit_details_step_2($form_id, &$form_state) {
 
   // Set the useful form_state to shorter variables.
-  $site_name = $form_state['mutlistep_values']['client_site_form_step_1']['name'];
+  // $site_name = $form_state['multistep_values']['client_site_form_step_1']['name'];
 
   // Get the client_site ID
-  $client_site_id = samurai_get_site_id($site_name);
+  // $client_site_id = samurai_get_site_id($site_name);
 }
 
 /**

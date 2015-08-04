@@ -21,7 +21,7 @@ function client_site_form($form, &$form_state, $site = NULL) {
   switch ($form_state['step']) {
 
     case 'client_site_form_step_1':
-      return client_site_form_step_1($form, $form_state, $site = NULL);
+      return client_site_form_step_1($form, $form_state, $site);
       break;
     case 'client_site_form_step_2':
       return client_site_form_step_2($form, $form_state);
@@ -171,15 +171,17 @@ function client_site_form_step_1_validate($form, $form_state) {
     return form_set_error('encryption_key', t('Please enter a valid encryption key.'));
   }
 
-  // Retrieve the site_url.
-  $encryptionsiteurl = $form_state['values']['encryption_key'];
-  $site_url = substr($encryptionsiteurl, 32);
-  $site_url = base64_decode($site_url);
+  if (!isset($form_state['values']['site_url'])) {
+    // Retrieve the site_url.
+    $encryptionsiteurl = $form_state['values']['encryption_key'];
+    $site_url = substr($encryptionsiteurl, 32);
+    $site_url = base64_decode($site_url);
 
-  // Attempt connection to the site.
-  if (samurai_check_site_access($site_url)) {
-    return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and 
-      Samurai is configured properly to access the site'));
+    // Attempt connection to the site.
+    if (!samurai_check_site_access($site_url)) {
+      return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and 
+        Samurai is configured properly to access the site'));
+    }
   }
 }
 
@@ -267,8 +269,28 @@ function client_site_form_submit_details_step_1($form, $form_state) {
   // -- Print notification messages.
   // -- Log to watchdoge.
   // -- Redirect to site/add.
-  $site = entity_ui_form_submit_build_entity($form, $form_state);
-  $site->save();
+  $site_id = arg(3);
+  drupal_set_message($site_id);
+  if (!samurai_site_exists($form_state['values']['name']) && is_null($site_id)) {
+
+    $site = entity_create('client_site', array(
+      'name' => $form_state['values']['name'],
+      'encryption_key' => $form_state['values']['encryption_key'],
+      'site_url' => $form_state['values']['site_url'],
+      'update_next_check' => 0,
+    ));
+    $site_wrapper = entity_metadata_wrapper('client_site', $site);
+    $site_wrapper->save();
+  } else {
+
+    // Entity already exists, load it and update it.
+    $site = client_site_load($site_id);
+    $site->name = $form_state['values']['name'];
+    $site->encryption_key = $form_state['values']['name'];
+    $site->site_url = $form_state['values']['site_url'];
+    $site->update_next_check = 0;
+    $site->save();
+  }
   drupal_set_message(t('@name has been saved.', array('@name' => $site->name)));
   watchdog('Security samurai', t('@name has been saved.', array('@name' => $site->name)));
   $form_state['redirect'] = 'site/config';
