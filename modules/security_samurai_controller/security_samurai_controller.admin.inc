@@ -270,9 +270,9 @@ function client_site_form_submit_details_step_1($form, $form_state) {
   // -- Log to watchdoge.
   // -- Redirect to site/add.
   $site_id = arg(3);
-  drupal_set_message($site_id);
   if (!samurai_site_exists($form_state['values']['name']) && is_null($site_id)) {
 
+    // Entity doesn't exist.
     $site = entity_create('client_site', array(
       'name' => $form_state['values']['name'],
       'encryption_key' => $form_state['values']['encryption_key'],
