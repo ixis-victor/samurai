@@ -158,12 +158,11 @@ section {
             transition: 0.2s ease; }
             section#menu-wrapper #menu ul li > a > div:hover {
               background-color: #232a2f; }
-  section #user-login-title {
-    margin-top: 80px; }
   section #user-login {
     width: 400px;
     padding: 2em;
-    margin: 30px auto; }
+    margin: 30px auto;
+    margin-top: 0.8em; }
     section #user-login label {
       margin-bottom: 0.1em; }
     section #user-login .form-required {

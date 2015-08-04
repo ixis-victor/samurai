@@ -77,7 +77,6 @@
 </section>
 <section id="content-wrapper" class="full-width">
   <div id="content">
-    <h1 id="user-login-title" class="center-text"><?php print $title ?></h1>
     <div class="login-messages">
       <?php if (!empty($messages)): ?>
     	  <?php print $messages; ?>
