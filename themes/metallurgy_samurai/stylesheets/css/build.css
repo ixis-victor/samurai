@@ -168,19 +168,6 @@ section {
       margin-bottom: 0.1em; }
     section #user-login .form-required {
       display: none; }
-  section form button {
-    -webkit-transition: 0.3s ease;
-    -moz-transition: 0.3s ease;
-    transition: 0.3s ease;
-    border: none;
-    padding: 0.71429em 1.5em;
-    border-radius: 3px;
-    background-color: #596876;
-    color: #bfbfbf; }
-    section form button:hover {
-      cursor: pointer;
-      background-color: #2d353c;
-      color: #FFF; }
   section form input[type=text]:focus, section form input[type=password]:focus, section form input[type=email]:focus, section form input[type=url]:focus, section form input[type=date]:focus, section form input[type=tel]:focus, section form input[type=number]:focus, section form input[type=search]:focus,
   section form button[type=text]:focus,
   section form button[type=password]:focus,
