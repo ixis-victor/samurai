@@ -67,7 +67,8 @@ section {
   }
 
   form {
-    input {
+    input,
+    button {
       &[type=text],
       &[type=password],
       &[type=email],
@@ -91,7 +92,6 @@ section {
         -moz-transition: 0.3s ease;
         transition: 0.3s ease;
         border: none;
-        padding: ($button_submit_horz_padding / 2.1) $button_submit_horz_padding;
         border-radius: $button_submit_border_radius;
         background-color: lighten(#2d353c, 20%);
         color: darken(#FFF, 25%);

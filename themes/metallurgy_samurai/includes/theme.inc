@@ -83,3 +83,31 @@ function metallurgy_samurai_fieldset($variables) {
   $output .= "</ul>\n";
   return $output;
 }
+
+/**
+ * Implements theme_button
+ */
+function metallurgy_samurai_button($variables) {
+  $element = $variables ['element'];
+  $element['#attributes']['type'] = 'submit';
+  element_set_attributes($element, array('id', 'name'));
+
+  $element['#attributes']['class'][] = 'form-' . $element ['#button_type'];
+  $element['#attributes']['class'][] = 'waves-effect';
+  $element['#attributes']['class'][] = 'waves-light';
+  $element['#attributes']['class'][] = 'btn';
+  if (!empty($element['#attributes']['disabled'])) {
+    $element['#attributes']['class'][] = 'form-button-disabled';
+  }
+
+  if (isset($element['#attributes']['type'])) {
+    $return = '<button';
+    $return .= drupal_attributes($element['#attributes']);
+    $return .= '>';
+    $return .= $element['#value'];
+    $return .= '</button>';
+    return $return;
+  }
+
+  return '<input' . drupal_attributes($element ['#attributes']) . ' />';
+}

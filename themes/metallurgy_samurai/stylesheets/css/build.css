@@ -168,14 +168,7 @@ section {
       margin-bottom: 0.1em; }
     section #user-login .form-required {
       display: none; }
-  section form input[type=text]:focus, section form input[type=password]:focus, section form input[type=email]:focus, section form input[type=url]:focus, section form input[type=date]:focus, section form input[type=tel]:focus, section form input[type=number]:focus, section form input[type=search]:focus {
-    border-color: #2d353c;
-    box-shadow: 0 1px 0 0 #2d353c; }
-  section form input[type=text].error, section form input[type=password].error, section form input[type=email].error, section form input[type=url].error, section form input[type=date].error, section form input[type=tel].error, section form input[type=number].error, section form input[type=search].error {
-    border-top: none;
-    border-left: none;
-    border-right: none; }
-  section form input[type="submit"] {
+  section form button {
     -webkit-transition: 0.3s ease;
     -moz-transition: 0.3s ease;
     transition: 0.3s ease;
@@ -184,7 +177,44 @@ section {
     border-radius: 3px;
     background-color: #596876;
     color: #bfbfbf; }
-    section form input[type="submit"]:hover {
+    section form button:hover {
+      cursor: pointer;
+      background-color: #2d353c;
+      color: #FFF; }
+  section form input[type=text]:focus, section form input[type=password]:focus, section form input[type=email]:focus, section form input[type=url]:focus, section form input[type=date]:focus, section form input[type=tel]:focus, section form input[type=number]:focus, section form input[type=search]:focus,
+  section form button[type=text]:focus,
+  section form button[type=password]:focus,
+  section form button[type=email]:focus,
+  section form button[type=url]:focus,
+  section form button[type=date]:focus,
+  section form button[type=tel]:focus,
+  section form button[type=number]:focus,
+  section form button[type=search]:focus {
+    border-color: #2d353c;
+    box-shadow: 0 1px 0 0 #2d353c; }
+  section form input[type=text].error, section form input[type=password].error, section form input[type=email].error, section form input[type=url].error, section form input[type=date].error, section form input[type=tel].error, section form input[type=number].error, section form input[type=search].error,
+  section form button[type=text].error,
+  section form button[type=password].error,
+  section form button[type=email].error,
+  section form button[type=url].error,
+  section form button[type=date].error,
+  section form button[type=tel].error,
+  section form button[type=number].error,
+  section form button[type=search].error {
+    border-top: none;
+    border-left: none;
+    border-right: none; }
+  section form input[type="submit"],
+  section form button[type="submit"] {
+    -webkit-transition: 0.3s ease;
+    -moz-transition: 0.3s ease;
+    transition: 0.3s ease;
+    border: none;
+    border-radius: 3px;
+    background-color: #596876;
+    color: #bfbfbf; }
+    section form input[type="submit"]:hover,
+    section form button[type="submit"]:hover {
       cursor: pointer;
       background-color: #2d353c;
       color: #FFF; }
