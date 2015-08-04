@@ -228,18 +228,17 @@ function client_site_form_submit($form, &$form_state) {
  */
 function client_site_form_submit_details($form, $form_state) {
 
-  $form_state_step_1['values'] = $form_state['multistep_values']['client_site_form_step_1'];
-  $form_state_step_2['values'] = $form_state['multistep_values']['client_site_form_step_2'];
-  $form_state_step_3['values'] = $form_state['multistep_values']['client_site_form_step_3'];
-
   // Submit step 1
-  client_site_form_submit_details_step_1($form, $form_state_step_1);
+  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_1'];
+  client_site_form_submit_details_step_1($form, $form_state);
 
   // Submit step 2
-  client_site_form_submit_details_step_2($form, $form_state_step_2);
+  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_2'];
+  client_site_form_submit_details_step_2($form, $form_state);
 
   // Submit step 3
-  client_site_form_submit_details_step_3($form, $form_state_step_3);
+  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_3'];
+  client_site_form_submit_details_step_3($form, $form_state);
 }
 
 /**
@@ -286,7 +285,7 @@ function client_site_form_submit_details_step_1($form, $form_state) {
     // Entity already exists, load it and update it.
     $site = client_site_load($site_id);
     $site->name = $form_state['values']['name'];
-    $site->encryption_key = $form_state['values']['name'];
+    $site->encryption_key = $form_state['values']['encryption_key'];
     $site->site_url = $form_state['values']['site_url'];
     $site->update_next_check = 0;
     $site->save();
