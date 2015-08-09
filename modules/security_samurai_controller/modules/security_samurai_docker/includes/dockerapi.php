@@ -1,5 +1,30 @@
 <?php
+/**
+ * @file
+ * dockerapi.php
+ *
+ * Functions for managing active docker containers
+ */
 
+/**
+ * Usage:
+ * =======
+ *
+ * Initialising the docker class:
+ * -----------------------------
+ * $docker = new Docker;
+ *
+ * Process of creating a new container:
+ * -----------------------------------
+ * $docker->create_image('test', drupal_get_path('security_samurai_docker') . '/docker/images/default/Dockerfile');
+ * $docker->create_container($docker->image_name, array('80' => '3000'));
+ *
+ * Executing commands:
+ * ------------------
+ * // Starting apache
+ * $docker->execute_command('service apache2 start');
+ *
+ */
 class Docker {
 
   // General variables
@@ -20,10 +45,10 @@ class Docker {
    * Execute command
    * Execute a command on a docker container
    *
-   * @param string $container_id The container ID.
    * @param string $command The command to execute
+   * @param string $container_id The container ID.
    */
-  public static function execute_command($container_id = NULL, $command) {
+  public static function execute_command($command, $container_id = NULL) {
 
     if (is_null($container_id) && !is_null($this->container_id)) {
       // If the container_id is NULL, get the class' value of the variable.
@@ -97,10 +122,10 @@ class Docker {
    * Create container
    * Create a new container.
    *
-   * @param string $image_name The name of the image to create a container from.
    * @param array $assigned_ports The assigned ports e.g. array(3000 => 80).
+   * @param string $image_name The name of the image to create a container from.
    */
-  public static function create_container($image_name = NULL, $assigned_ports = NULL) {
+  public static function create_container($assigned_ports = NULL, $image_name = NULL) {
     
     if (is_null($image_name) && !is_null($this->image_name)) {
       // If the image_name is NULL, get the class' value of the variable.
