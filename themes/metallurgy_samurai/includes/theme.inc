@@ -90,7 +90,7 @@ function metallurgy_samurai_fieldset($variables) {
 function metallurgy_samurai_button($variables) {
   $element = $variables ['element'];
   $element['#attributes']['type'] = 'submit';
-  element_set_attributes($element, array('id', 'name'));
+  element_set_attributes($element, array('id', 'name', 'value'));
 
   $element['#attributes']['class'][] = 'form-' . $element ['#button_type'];
   $element['#attributes']['class'][] = 'waves-effect';
