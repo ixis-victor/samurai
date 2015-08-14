@@ -189,7 +189,7 @@ function client_site_form_step_2($form, $form_state) {
   // Form back button.
   $form['form_back'] = array(
     '#type' => 'submit',
-    '#value' => 'Back'
+    '#value' => 'Back',
   );
   // Form next button.
   $form['form_next'] = array(

@@ -4,11 +4,27 @@
  * security_samurai_gitapi.module
  */
 
-$gitapipath = drupal_get_path('module', 'security_samurai_gitapi');
-define('SECURITY_SAMURAI_GITAPI_PATH', $gitapipath);
+/**
+ * Implements hook_libraries_info()
+ */
+function security_samurai_libraries_info() {
+
+  $info = array();
+
+  $info['codebase'] = array(
+    'name' => 'Codebase PHP wrapper',
+    'vendor url' => 'https://github.com',
+    'download url' => 'https://github.com/jkswoods/codebase/archive/master.zip',
+    'files' => array(
+      'php' => array(
+        'codebase.php'
+      ),
+    ),
+  );
+}
 
 /**
- * Implements hook_entity_info
+ * Implements hook_entity_info()
  */
 function security_samurai_gitapi_entity_info() {
 
@@ -112,7 +128,7 @@ function client_site_form_step_3($form, $form_state) {
   // Container for the GitAPI elements.
   $form['gitapi_fieldset'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Git configuration'),
+    '#title' => t('Git repository information'),
     '#description' => t('Set up git branches, clone URLs and tagging per client here.'),
     '#fieldset_icon' => 'code',
     '#collapsed' => FALSE,
@@ -171,10 +187,10 @@ function client_site_form_step_3($form, $form_state) {
   // Form submit button.
   $form['form_next'] = array(
     '#type' => 'submit',
-    '#value' => 'Submit',
+    '#value' => 'Next',
   );
 
-    return $form;
+  return $form;
 }
 
 /**
@@ -187,10 +203,17 @@ function client_site_form_step_3_validate($form, $form_state) {
     return form_set_error('gitapi_service', t('Select a Git service'));
   }
 
+  // Bitbucket and Github integration currently not complete
+  if ($form_state['values']['gitapi_service'] == 1 ||
+    $form_state['values']['gitapi_service'] == 2) {
+    return form_set_error('gitapi_service', t('This git service option is currently disabled, select another'));
+  }
+
   // Check selected branch is valid branch
   // $branch = $form_state['values']['branches'];
+  // TEMP
   $branch = '';
-  if (!is_valid_branch($branch)) {
+  if (!is_valid_branch($branch, 'test')) {
     return form_set_error('gitapi_branch', t('Select a valid branch.'));
   }
 
@@ -201,7 +224,7 @@ function client_site_form_step_3_validate($form, $form_state) {
  */
 function client_site_form_submit_details_step_3($form, $form_state) {
 
-  
+  // Not yet implemented.  
 }
 
 /**
@@ -211,5 +234,42 @@ function client_site_form_submit_details_step_3($form, $form_state) {
  * @param string $service The selected git service.
  */
 function is_valid_branch($branch, $service) {
+
+  // Functionality not yet implemented. Defaults to TRUE.
   return TRUE;
+}
+
+function client_site_form_step_4($form, $form_state) {
+
+  // Container for the GitAPI elements.
+  $form['gitap_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Git workflow'),
+    '#description' => t('Configure the workflow for this client'),
+    '#collapsed' => FALSE,
+    '#collapsible' => FALSE
+  );
+  // Form back button.
+  $form['form_back'] = array(
+    '#type' => 'submit',
+    '#value' => 'Back'
+  );
+  // Form submit button.
+  $form['form_next'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
+
+  return $form;
+}
+
+function client_site_form_step_4_validate($form, $form_state) {
+
+  // Not yet implemented.
+}
+
+
+function client_site_form_submit_details_step_4($form, $form_state) {
+
+  // Not yet implemented
 }

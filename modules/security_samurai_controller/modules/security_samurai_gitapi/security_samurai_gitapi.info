@@ -5,7 +5,6 @@ version = 7.x-0.1
 package = Security Samurai
 
 dependencies[] = encrypt
+dependencies[] = libraries
 
 files[] = includes/security_samurai_gitapi.bitbucket.inc
-files[] = includes/security_samurai_gitapi.codebase.inc
-files[] = includes/security_samurai_gitapi.github.inc
