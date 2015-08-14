@@ -29,9 +29,6 @@ function client_site_form($form, &$form_state, $site = NULL) {
     case 'client_site_form_step_3':
       return client_site_form_step_3($form, $form_state);
       break;
-    case 'client_site_form_step_4':
-      return client_site_form_step_4($form, $form_state);
-      break;
     default:
       return client_site_form_step_1($form, $form_state);
       break;
@@ -51,9 +48,6 @@ function client_site_form_move_to_next($form, $form_state) {
     case 'client_site_form_step_2':
       return 'client_site_form_step_3';
       break;
-    case 'client_site_form_step_3':
-      return 'client_site_form_step_4';
-      break;
   }
 }
 
@@ -64,9 +58,6 @@ function client_site_form_move_to_previous($form, $form_state) {
 
   switch ($form_state['step']) {
 
-    case 'client_site_form_step_4':
-      return 'client_site_form_step_3';
-      break;
     case 'client_site_form_step_3':
       return 'client_site_form_step_2';
       break;
@@ -166,9 +157,6 @@ function client_site_form_validate($form, &$form_state) {
     case 'client_site_form_step_3':
       return client_site_form_step_3_validate($form, $form_state);
       break;
-    case 'client_site_form_step_4':
-      return client_site_form_step_4_validate($form, $form_state);
-      break;
   }
 }
 
@@ -178,23 +166,23 @@ function client_site_form_validate($form, &$form_state) {
 function client_site_form_step_1_validate($form, $form_state) {
 
   // The encryption key must be 32 or more characters long.
-  // if (strlen($form_state['values']['encryption_key']) < 32) {
-  //   // Error handling.
-  //   return form_set_error('encryption_key', t('Please enter a valid encryption key.'));
-  // }
+  if (strlen($form_state['values']['encryption_key']) < 32) {
+    // Error handling.
+    return form_set_error('encryption_key', t('Please enter a valid encryption key.'));
+  }
 
-  // if (!isset($form_state['values']['site_url'])) {
-  //   // Retrieve the site_url.
-  //   $encryptionsiteurl = $form_state['values']['encryption_key'];
-  //   $site_url = substr($encryptionsiteurl, 32);
-  //   $site_url = base64_decode($site_url);
+  if (!isset($form_state['values']['site_url'])) {
+    // Retrieve the site_url.
+    $encryptionsiteurl = $form_state['values']['encryption_key'];
+    $site_url = substr($encryptionsiteurl, 32);
+    $site_url = base64_decode($site_url);
 
-  //   // Attempt connection to the site.
-  //   if (!samurai_check_site_access($site_url)) {
-  //     return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and 
-  //       Samurai is configured properly to access the site'));
-  //   }
-  // }
+    // Attempt connection to the site.
+    if (!samurai_check_site_access($site_url)) {
+      return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and 
+        Samurai is configured properly to access the site'));
+    }
+  }
 }
 
 /**
@@ -204,7 +192,7 @@ function client_site_form_submit($form, &$form_state) {
 
   switch ($form_state['step']) {
 
-    case 'client_site_form_step_4':
+    case 'client_site_form_step_3':
       $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
       if ($form_state['triggering_element']['#value'] != 'Back') {
         client_site_form_submit_details($form, $form_state);
@@ -252,10 +240,6 @@ function client_site_form_submit_details($form, $form_state) {
   // Submit step 3
   $form_state['values'] = $form_state['multistep_values']['client_site_form_step_3'];
   client_site_form_submit_details_step_3($form, $form_state);
-
-  // Submit step 4
-  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_4'];
-  client_site_form_submit_details_step_4($form, $form_state);
 }
 
 /**

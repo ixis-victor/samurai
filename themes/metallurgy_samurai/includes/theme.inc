@@ -41,7 +41,7 @@ function metallurgy_samurai_status_messages($variables) {
  * Implements theme_fieldset
  */
 function metallurgy_samurai_fieldset($variables) {
-  $element = $variables ['element'];
+  $element = $variables['element'];
   element_set_attributes($element, array('id'));
   _form_set_class($element, array('form-wrapper'));
 

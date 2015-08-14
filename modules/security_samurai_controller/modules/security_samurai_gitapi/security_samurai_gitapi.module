@@ -21,6 +21,8 @@ function security_samurai_libraries_info() {
       ),
     ),
   );
+
+  return $info;
 }
 
 /**
@@ -130,10 +132,15 @@ function client_site_form_step_3($form, $form_state) {
     '#type' => 'fieldset',
     '#title' => t('Git repository information'),
     '#description' => t('Set up git branches, clone URLs and tagging per client here.'),
-    '#fieldset_icon' => 'code',
+    '#fieldset_icon' => 'info_outline',
     '#collapsed' => FALSE,
   );
   // The Git service.
+  if (isset($form_state['values']['gitapi_service'])) {
+    $service_default = $form_state['values']['gitapi_service'];
+  } else {
+    $service_default = 3;
+  }
   $form['gitapi_fieldset']['gitapi_service'] = array(
     '#type' => 'select',
     '#title' => t('Service'),
@@ -144,50 +151,62 @@ function client_site_form_step_3($form, $form_state) {
       2 => t('BitBucket'),
       3 => t('Codebase'),
     ),
+    '#default_value' => $service_default,
   );
   // The repo clone URL.
+  if (isset($form_state['values']['gitapi_clone_url'])) {
+    $clone_default = $form_state['values']['gitapi_clone_url'];
+  } else {
+    $clone_default = '';
+  }
   $form['gitapi_fieldset']['gitapi_clone_url'] = array(
     '#type' => 'textfield',
     '#title' => t('Clone URL'),
     '#description' => t('The Git URL to the repo containing the site.'),
+    '#default_value' => $clone_default,
   );
-  // Fieldset for setting Git workflow.
-  $form['gitapi_fieldset']['gitapi_branch_fieldset'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Git workflow'),
-    '#description' => t('The workflow you define here can be custom to each site. The steps are followed top to bottom.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#fieldset_icon' => 'group_work',
+  // Makefile
+  if (isset($form_state['values']['gitapi_makefile'])) {
+    $makefile_default = $form_state['values']['gitapi_makefile'];
+  } else {
+    $makefile_default = '';
+  }
+  $form['gitapi_fieldset']['gitapi_makefile'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('This project depends on a makefile?'),
+    '#description' => t('Only select this option if the site set up is based primarily on running a makefile.'),
+    '#default_value' => $makefile_default,
+  );
+  // Makefile location
+  if (isset($form_state['values']['gitapi_makefile_location'])) {
+    $makefile_location_default = $form_state['values']['gitapi_makefile_location'];
+  } else {
+    $makefile_location_default = '';
+  }
+  $form['gitapi_fieldset']['gitapi_makefile_location'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Makefile location and name'),
+    '#description' => t('The name and location of the makefile to run e.g. some-folder/another-folder/samurai.make'),
     '#attributes' => array(
-      'class' => array('flatten'),
+      'placeholder' => 'make/samurai.make',
     ),
+    '#default_value' => $makefile_location_default,
   );
-  // Think of a better way to do this...
-  $form['gitapi_fieldset']['gitapi_branch_fieldset']['gitapi_model'] = array(
-    '#type' => 'select',
-    '#title' => t('Add step'),
-    '#options' => array(
-      0 => '- Add a step to the Git workflow -',
-      1 => 'Create a new Samurai branch from an existing branch',
-      2 => 'Check out to an existing branch',
-      3 => 'Merge an existing branch in to an existing branch',
-      4 => 'Merge the Samurai branch in to an existing branch',
-      5 => 'Run security updates and tests',
-      6 => 'Delete the samurai branch',
-      7 => 'Commit changes to the Samurai branch',
-      8 => 'Commit changes to an existing branch',
-    ),
+  // Git flow model help
+  $form['gitapi_fieldset']['gitapi_workflow'] = array(
+    '#type' => 'markup',
+    '#markup' => 'Ensure your repository is using the Git flow model.
+      <a style="text-decoration: underline;" target="_blank" href="http://danielkummer.github.io/git-flow-cheatsheet/">See here for more information</a>.',
   );
   // Form back button.
   $form['form_back'] = array(
     '#type' => 'submit',
-    '#value' => 'Back'
+    '#value' => 'Back',
   );
   // Form submit button.
   $form['form_next'] = array(
     '#type' => 'submit',
-    '#value' => 'Next',
+    '#value' => 'Submit',
   );
 
   return $form;
@@ -209,14 +228,6 @@ function client_site_form_step_3_validate($form, $form_state) {
     return form_set_error('gitapi_service', t('This git service option is currently disabled, select another'));
   }
 
-  // Check selected branch is valid branch
-  // $branch = $form_state['values']['branches'];
-  // TEMP
-  $branch = '';
-  if (!is_valid_branch($branch, 'test')) {
-    return form_set_error('gitapi_branch', t('Select a valid branch.'));
-  }
-
 }
 
 /**
@@ -224,52 +235,13 @@ function client_site_form_step_3_validate($form, $form_state) {
  */
 function client_site_form_submit_details_step_3($form, $form_state) {
 
-  // Not yet implemented.  
+
 }
 
-/**
- * Check if selected branch is valid.
- *
- * @param string $branch The name of the branch.
- * @param string $service The selected git service.
- */
-function is_valid_branch($branch, $service) {
+function get_branches() {
 
-  // Functionality not yet implemented. Defaults to TRUE.
-  return TRUE;
-}
-
-function client_site_form_step_4($form, $form_state) {
-
-  // Container for the GitAPI elements.
-  $form['gitap_fieldset'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Git workflow'),
-    '#description' => t('Configure the workflow for this client'),
-    '#collapsed' => FALSE,
-    '#collapsible' => FALSE
+  // TEMP
+  return array(
+    0 => 'test',
   );
-  // Form back button.
-  $form['form_back'] = array(
-    '#type' => 'submit',
-    '#value' => 'Back'
-  );
-  // Form submit button.
-  $form['form_next'] = array(
-    '#type' => 'submit',
-    '#value' => 'Submit',
-  );
-
-  return $form;
-}
-
-function client_site_form_step_4_validate($form, $form_state) {
-
-  // Not yet implemented.
-}
-
-
-function client_site_form_submit_details_step_4($form, $form_state) {
-
-  // Not yet implemented
 }

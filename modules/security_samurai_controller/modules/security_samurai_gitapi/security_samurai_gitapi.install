@@ -44,34 +44,9 @@ function security_samurai_gitapi_schema() {
         'type' => 'text',
         'not null' => FALSE,
       ),
-      'default_branch' => array(
-        'decsription' => 'The branch to push to/branch off when an update is announced.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => FALSE,
-      ),
-      'default_hotfix_branch' => array(
-        'description' => 'The branch to push to/branch off when a highly critical update is announced.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => FALSE,
-      ),
-      'dev_branch' => array(
-        'description' => 'The dev branch for the standard workflow',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => FALSE,
-      ),
-      'stage_branch' => array(
-        'description' => 'The stage branch for the standard workflow',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => FALSE,
-      ),
-      'prod_branch' => array(
-        'description' => 'The production branch for the standard workflow',
-        'type' => 'varchar',
-        'length' => 255,
+      'is_make' => array(
+        'description' => 'Make file install',
+        'type' => 'bool',
         'not null' => FALSE,
       ),
     ),
