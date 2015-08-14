@@ -26,7 +26,12 @@ projects[encrypt][version] = "2.0"
 ; Themes
 projects[adminimal_theme][version] = "1.21"
 
+; Materialize css library
 libraries[materialize][download][type] = get
-; libraries[materialize][download][url] = http://materializecss.com/bin/materialize-v0.97.0.zip
 libraries[materialize][download][url] = https://github.com/Dogfalo/materialize/releases/download/v0.95.3/materialize-v0.95.3.zip
 libraries[materialize][destination] = libraries
+
+; Codebase PHP api
+libraries[codebase][download][type] = get
+libraries[codebase][download][url] = https://github.com/jkswoods/codebase/archive/master.zip
+libraries[codebase][destination] = libraries
