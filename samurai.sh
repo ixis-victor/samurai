@@ -11,13 +11,11 @@ drush en -y views_ui
 drush en -y views_content
 drush en -y pace
 drush en -y libraries
-drush en -y fontawesome
 drush en -y panels
 drush en -y page_manager
 drush en -y elysia_cron
 drush en -y entity
 drush en -y require_login
-drush en -y fontawesome
 drush en -y jquery_update
 drush en -y module_filter
 
