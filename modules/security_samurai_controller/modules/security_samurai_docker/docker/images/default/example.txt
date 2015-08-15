@@ -1,7 +1,9 @@
-example
 
+// Creates a new image
+docker build -t IMAGE_NAME .
 
-docker build -t jkswoods/samuraitesting .
-docker run -d -i -t -p 3000:80 jkswoods/samuraitesting
-docker exec f249d15672b5 service apache2 start
-docker exec f249d15672b5 mkdir .ssh
+// Creates a new container accessible on port 3000
+docker run -d -i -t -p 3000:80 IMAGE_NAME
+
+// Starts apache
+docker exec CONTAINER_ID service apache2 start
