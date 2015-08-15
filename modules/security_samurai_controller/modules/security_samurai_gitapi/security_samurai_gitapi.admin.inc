@@ -50,7 +50,7 @@ function security_samurai_gitapi_admin_config_form($node, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('API Username'),
     '#description' => t('Your Codebase API username, found next to the API key.'),
-    '#default_value' => variable_get('security_samurai_gitapi_codebase_user', ''),
+    '#default_value' => variable_get('security_samruai_gitapi_codebase_user', ''),
   );
 
   $form['security_samurai_gitapi_codebase_wrapper']['security_samurai_gitapi_codebase_api_key'] = array(

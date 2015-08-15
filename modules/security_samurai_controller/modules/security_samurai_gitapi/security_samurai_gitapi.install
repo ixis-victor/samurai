@@ -33,6 +33,12 @@ function security_samurai_gitapi_schema() {
         'length' => 255,
         'not null' => TRUE,
       ),
+      'service' => array(
+        'description' => 'The Git service',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
       'clone_url' => array(
         'description' => 'The clone url of the repo.',
         'type' => 'varchar',
@@ -45,8 +51,14 @@ function security_samurai_gitapi_schema() {
         'not null' => FALSE,
       ),
       'is_make' => array(
-        'description' => 'Make file install',
+        'description' => 'Make file required',
         'type' => 'bool',
+        'not null' => FALSE,
+      ),
+      'make_location' => array(
+        'description' => 'Make file location',
+        'type' => 'varchar',
+        'length' => 255,
         'not null' => FALSE,
       ),
     ),

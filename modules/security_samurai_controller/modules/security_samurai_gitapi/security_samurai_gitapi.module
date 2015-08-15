@@ -5,27 +5,6 @@
  */
 
 /**
- * Implements hook_libraries_info()
- */
-function security_samurai_libraries_info() {
-
-  $info = array();
-
-  $info['codebase'] = array(
-    'name' => 'Codebase PHP wrapper',
-    'vendor url' => 'https://github.com',
-    'download url' => 'https://github.com/jkswoods/codebase/archive/master.zip',
-    'files' => array(
-      'php' => array(
-        'codebase.php'
-      ),
-    ),
-  );
-
-  return $info;
-}
-
-/**
  * Implements hook_entity_info()
  */
 function security_samurai_gitapi_entity_info() {
@@ -127,6 +106,18 @@ function security_samurai_gitapi_permission() {
  */
 function client_site_form_step_3($form, $form_state) {
 
+  // Load the gitinfo entity if one exists.
+  $site_id = arg(3);
+  $gitinfo = NULL;
+  if (gitinfo_exists($site_id)) {
+
+    $gitinfo_id = gitinfo_getid($site_id);
+    if ($gitinfo_id != FALSE) {
+
+      $gitinfo = gitinfo_load($gitinfo_id);
+    }
+  }
+
   // Container for the GitAPI elements.
   $form['gitapi_fieldset'] = array(
     '#type' => 'fieldset',
@@ -138,6 +129,8 @@ function client_site_form_step_3($form, $form_state) {
   // The Git service.
   if (isset($form_state['values']['gitapi_service'])) {
     $service_default = $form_state['values']['gitapi_service'];
+  } elseif (!is_null($gitinfo)) {
+    $service_default = $gitinfo->service;
   } else {
     $service_default = 3;
   }
@@ -156,6 +149,8 @@ function client_site_form_step_3($form, $form_state) {
   // The repo clone URL.
   if (isset($form_state['values']['gitapi_clone_url'])) {
     $clone_default = $form_state['values']['gitapi_clone_url'];
+  } elseif (!is_null($gitinfo)) {
+    $clone_default = $gitinfo->clone_url;
   } else {
     $clone_default = '';
   }
@@ -164,10 +159,13 @@ function client_site_form_step_3($form, $form_state) {
     '#title' => t('Clone URL'),
     '#description' => t('The Git URL to the repo containing the site.'),
     '#default_value' => $clone_default,
+    '#required' => TRUE,
   );
   // Makefile
   if (isset($form_state['values']['gitapi_makefile'])) {
     $makefile_default = $form_state['values']['gitapi_makefile'];
+  } elseif (!is_null($gitinfo)) {
+    $makefile_default = $gitinfo->is_make;
   } else {
     $makefile_default = '';
   }
@@ -180,6 +178,8 @@ function client_site_form_step_3($form, $form_state) {
   // Makefile location
   if (isset($form_state['values']['gitapi_makefile_location'])) {
     $makefile_location_default = $form_state['values']['gitapi_makefile_location'];
+  } elseif (!is_null($gitinfo)) {
+    $makefile_location_default = $gitinfo->make_location;
   } else {
     $makefile_location_default = '';
   }
@@ -228,6 +228,11 @@ function client_site_form_step_3_validate($form, $form_state) {
     return form_set_error('gitapi_service', t('This git service option is currently disabled, select another'));
   }
 
+  // Check makefile location is set, if makefile selected
+  if ($form_state['values']['gitapi_makefile'] == TRUE &&
+   !isset($form_state['values']['gitapi_makefile_location'])) {
+    return form_set_error('gitapi_makefile_location', t('The makefile location is required'));
+  }
 }
 
 /**
@@ -235,13 +240,164 @@ function client_site_form_step_3_validate($form, $form_state) {
  */
 function client_site_form_submit_details_step_3($form, $form_state) {
 
+  // Check if the gitinfo already exists.
+  $site_id = arg(3);
+  if (gitinfo_exists($site_id)) {
 
+    // Update the gitinfo entity.
+    $gitinfo_id = gitinfo_getid($site_id);
+    if ($gitinfo_id != FALSE) {
+
+      // Load and update each of the values of the gitinfo entity.
+      $gitinfo = gitinfo_load($gitinfo_id);
+      $gitinfo->name = parse_repo_name($form_state['values']['gitapi_clone_url']);
+      $gitinfo->service = $form_state['values']['gitapi_service'];
+      $gitinfo->clone_url = $form_state['values']['gitapi_clone_url'];
+      $gitinfo->branches = drupal_json_encode(get_branches($form_state['values']['gitapi_service'], $form_state['values']['gitapi_clone_url']));
+      $gitinfo->is_make = $form_state['values']['gitapi_makefile'];
+      $gitinfo->make_location = $form_state['values']['gitapi_makefile_location'];
+      $gitinfo->save();
+    }
+
+  } else {
+
+    // Create the gitinfo entity.
+    $gitinfo = entity_create('gitinfo', array(
+      'site' => samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']),
+      'name' => parse_repo_name($form_state['values']['gitapi_clone_url']), // repo name
+      'service' => $form_state['values']['gitapi_service'],
+      'clone_url' => $form_state['values']['gitapi_clone_url'],
+      'branches' => drupal_json_encode(get_branches($form_state['values']['gitapi_service'], $form_state['values']['gitapi_clone_url'])),
+      'is_make' => $form_state['values']['gitapi_makefile'],
+      'make_location' => $form_state['values']['gitapi_makefile_location'],
+    ));
+
+    $gitinfo_wrapper = entity_metadata_wrapper('gitinfo', $gitinfo);
+    $gitinfo_wrapper->save();
+  }
 }
 
-function get_branches() {
+/**
+ * Get all of the branches for a single repo
+ *
+ * @param string $service The git service.
+ * @param string $clone_url The git clone url.
+ */
+function get_branches($service, $clone_url) {
+  
+  switch($service) {
 
-  // TEMP
-  return array(
-    0 => 'test',
-  );
+    case 1:
+      // GitHub
+      break;
+    case 2:
+      // BitBucket
+      break;
+    case 3:
+
+      // Codebase
+      libraries_load('codebase');
+
+      $user_account = variable_get('security_samruai_gitapi_codebase_user', NULL);
+      $encrypted_key = variable_get('security_samurai_gitapi_codebase_api_key', NULL);
+
+      $key = '';
+      if (!is_null($encrypted_key)) {
+        $key = decrypt($encrypted_key);
+      } else {
+        return FALSE;
+      }
+
+      $user_account = explode('/', $user_account);
+
+      $account = $user_account[0];
+      $auth_user = $user_account[1];
+
+      // Initialise the Codebase class.
+      $codebase = new Codebase();
+      $codebase->setAccount($account);
+      $codebase->setAuthentication($auth_user, $key);
+
+      // Retrieve the project and repo name
+      $project_n_repo = parse_repo_name($clone_url);
+
+      // Retrieve all of the available branches as an XML
+      $branches_raw = $codebase->get('/' . $project_n_repo . '/branches');
+
+      $branches = array();
+      foreach ($branches_raw->document->branch as $branch => $b) {
+        $branches[] = (string)$b->name;
+      }
+
+      return $branches;
+      break;
+  }
+}
+
+/**
+ * Parse the clone url to get the repo name
+ *
+ * The first part of the returned string will be the project name...
+ * The second part of the returned string will be the repo name...
+ *
+ * @param string $clone_url The git clone url.
+ */
+function parse_repo_name($clone_url) {
+
+  // Get the start and end of the string.
+  $start = strpos($clone_url, '/') + 1;
+  $end = strpos($clone_url, '.', $start);
+  $length = $end - $start;
+
+  // Retrieve the repo name.
+  $project_n_repo = substr($clone_url, $start, $length);
+
+  return $project_n_repo;
+}
+
+/**
+ * Check if the gitinfo already exists
+ *
+ * @param int $site_id The ID of the site
+ */
+function gitinfo_exists($site_id) {
+
+  // Query the database for an existing gitinfo entry.
+  $result = db_query('SELECT id FROM securitysamurai_gitinfo
+    WHERE site = :site_id', 
+    array(
+      ':site_id' => $site_id,
+    ))->fetchField();
+
+  if (!empty($result)) {
+
+    // The result is not empty return TRUE.
+    return TRUE;
+  } else {
+
+    return FALSE;
+  }
+}
+
+/**
+ * Retrieve the ID of the gitinfo entity from a site ID.
+ *
+ * @param int $site_id The ID of the site.
+ */
+function gitinfo_getid($site_id) {
+
+  // Query the database.
+  $result = db_query('SELECT id FROM securitysamurai_gitinfo
+    WHERE site = :site_id',
+    array(
+      ':site_id' => $site_id,
+    ))->fetchField();
+
+  if (!empty($result)) {
+
+    return $result;
+  } else {
+
+    return FALSE;
+  }
 }

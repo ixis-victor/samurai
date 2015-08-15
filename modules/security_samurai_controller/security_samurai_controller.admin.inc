@@ -196,7 +196,6 @@ function client_site_form_submit($form, &$form_state) {
       $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
       if ($form_state['triggering_element']['#value'] != 'Back') {
         client_site_form_submit_details($form, $form_state);
-        drupal_set_message('Site has been added');
         $form_state['complete'] = TRUE;
       }
       break;

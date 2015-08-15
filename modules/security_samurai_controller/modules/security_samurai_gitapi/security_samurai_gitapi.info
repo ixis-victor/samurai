@@ -8,3 +8,4 @@ dependencies[] = encrypt
 dependencies[] = libraries
 
 files[] = includes/security_samurai_gitapi.bitbucket.inc
+files[] = includes/codebase.php
