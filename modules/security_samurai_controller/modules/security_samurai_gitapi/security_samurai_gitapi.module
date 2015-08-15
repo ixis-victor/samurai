@@ -431,6 +431,30 @@ function gitapi_removesshkey($ssh_key, $key_desc, $service) {
 }
 
 /**
+ * Returns the branches that are attached to the gitinfo entity
+ *
+ * @param int $site_id The ID of the site.
+ */
+function gitinfo_branches($site_id) {
+
+  // Query the database for the branches.
+  $result = db_query('SELECT branches FROM securitysamurai_gitinfo
+    WHERE site = :site_id',
+    array(
+      ':site_id' => $site_id,
+    ))->fetchField();
+
+  if (!empty($result)) {
+
+    // Return the result as an array.
+    return drupal_json_decode($result);
+  } else {
+
+    return FALSE;
+  }
+}
+
+/**
  * Check if the gitinfo already exists
  *
  * @param int $site_id The ID of the site

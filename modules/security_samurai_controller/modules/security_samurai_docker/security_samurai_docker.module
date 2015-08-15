@@ -13,7 +13,7 @@ function security_samurai_docker_entity_info() {
 
   // The entity info for the docker_container entity type.
   $entity['docker_container'] = array(
-    'label' => t('Docker containers'),
+    'label' => t('Docker container'),
     'base table' => 'securitysamurai_dockercontainers',
     'entity keys' => array(
       'id' => 'id',

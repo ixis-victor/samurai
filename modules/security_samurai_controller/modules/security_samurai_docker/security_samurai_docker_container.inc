@@ -10,48 +10,204 @@
  */
 function docker_container_form($form, &$form_state) {
 
-	$form = array();
+	// If no current step is defined, set it to the first one.
+  if (!isset($form_state['step'])) $form_state['step'] = 'docker_container_form_step_1';
 
-  $form['docker_container_form_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Name'),
-    '#description' => t('The container name, so people know what it\'s being used for.'),
+  $form = array();
+
+  switch ($form_state['step']) {
+
+    case 'docker_container_form_step_1':
+      return docker_container_form_step_1($form, $form_state);
+      break;
+    case 'docker_container_form_step_2':
+      return docker_container_form_step_2($form, $form_state);
+      break;
+    default:
+      return docker_container_form_step_1($form, $form_state);
+      break;
+  }
+}
+
+/**
+ * Implements hook_validate
+ */
+function docker_container_form_validate($form, &$form_state) {
+
+  if ($form_state['triggering_element']['#value'] == 'Back') {
+    return;
+  }
+
+  switch ($form_state['step']) {
+
+    case 'docker_container_form_step_1':
+      return docker_container_form_step_1_validate($form, $form_state);
+      break;
+    case 'docker_container_form_step_2':
+      return docker_container_form_step_2_validate($form, $form_state);
+      break;
+  }
+}
+
+/**
+ * Return the next step function name
+ */
+function docker_container_form_move_to_next($form, $form_state) {
+
+  switch ($form_state['step']) {
+
+    case 'docker_container_form_step_1':
+      return 'docker_container_form_step_2';
+      break;
+  }
+}
+
+/**
+ * Return the previous step function name
+ */
+function docker_container_form_move_to_previous($form, $form_state) {
+
+  switch ($form_state['step']) {
+
+    case 'docker_container_form_step_2':
+      return 'docker_container_form_step_1';
+      break;
+  }
+}
+
+
+function docker_container_form_step_1($form, $form_state) {
+
+  $form = array();
+
+  // Wrapper for the form elements.
+  $form['docker_container'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Basic container information'),
+    '#fieldset_icon' => 'settings',
+    '#collapsed' => FALSE,
   );
-
-  $form['docker_container_form_site'] = array(
+  // The container name
+  $form['docker_container']['docker_container_form_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Container name'),
+    '#description' => t('The container name, so people know what it\'s being used for.'),
+    '#required' => TRUE,
+  );
+  // The container description
+  $form['docker_container']['docker_container_form_description'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Container description'),
+    '#description' => t('Give a little bit more information about what this container is going to be used for. (optional)')
+  );
+  // The site the container will use.
+  $sites_array = samurai_get_sites();
+  $new_site_array = array();
+  array_push($new_site_array, '- Select one -');
+  foreach ($sites_array as $key => $value) {
+    array_push($new_site_array, $value);
+  }
+  $form['docker_container']['docker_container_form_site'] = array(
     '#type' => 'select',
     '#title' => t('Site to use'),
-    '#decsription' => t('The site to set up on the container, all Git configuration is carried over from the site.'),
-    '#options' => samurai_get_sites(),
+    '#description' => t('The site to set up on the container, all Git configuration is carried over from the site.'),
+    '#options' => $new_site_array,
   );
-
-  $form['docker_container_form_branch'] = array(
-    '#type' => 'select',
-    '#title' => t('Branch to deploy from'),
-    '#description' => t('The git branch to deploy the code from to the new container.'),
-    // Will need to be done via ajax.
-    // '#options' => samurai_gitapi_get_branches
-    '#options' => array(
-      '1',
-    ),
-  );
-
-  $form['docker_container_form_submit'] = array(
+  // The form next button.
+  $form['form_next'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit')
+    '#value' => t('Next'),
   );
-
-  $form['#submit'][] = 'docker_container_form_submit';
 
   return $form;
+}
+
+function docker_container_form_step_1_validate($form, $form_state) {
+
+  // Site select cannot be 0
+  if ($form_state['values']['docker_container_form_site'] == 0) {
+    return form_set_error('docker_container_form_site', 'Select a site to use');
+  }
+}
+
+function docker_container_form_step_2($form, $form_state) {
+
+  $form = array();
+
+  // Wrapper for the form elements.
+  $form['docker_container'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Setup options'),
+    '#fieldset_icon' => 'settings',
+    '#collapsed' => FALSE,
+  );
+  // Select the branch.
+  $site_array = samurai_get_sites();
+  $site_key = $form_state['multistep_values']['docker_container_form_step_1']['docker_container_form_site'];
+  $form['docker_container']['docker_container_form_branch'] = array(
+    '#type' => 'select',
+    '#title' => t('Branch to use'),
+    '#description' => t('The branch to use on the container'),
+    '#options' => gitinfo_branches(samurai_get_site_id($site_array[$site_key - 1])),
+  );
+  // The form back button.
+  $form['form_back'] = array(
+    '#type' => 'submit',
+    '#value' => t('Back'),
+  );
+  // The form submit button.
+  $form['form_next'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
+  return $form;
+}
+
+function docker_container_form_step_2_validate($form, $form_state) {
+
+  //  
 }
 
 /**
  * Form submit handler for @see docker_container_form()
  */
-function docker_container_form_submit($form_id, &$form_state) {
+function docker_container_form_submit($form, &$form_state) {
 
-  $docker = new Docker;
-  // Example: $docker->execute_command("f249d15672b5", "ls -lash");
-  // Docker PHP API needs finishing before moving any more forward with this.
+  switch ($form_state['step']) {
+
+    case 'docker_container_form_step_2':
+      $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
+      if ($form_state['triggering_element']['#value'] != 'Back') {
+        docker_container_form_submit_details($form, $form_state);
+        $form_state['complete'] = TRUE;
+      }
+      break;
+    default:
+      $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
+      $form_state['new_step'] = docker_container_form_move_to_next($form, $form_state);
+      if (isset($form_state['multistep_values'][$form_state['new_step']])) {
+        $form_state['values'] = $form_state['multistep_values'][$form_state['new_step']];
+      }
+      break;
+  }
+
+  if (isset($form_state['complete'])) drupal_goto('/jobs/containers/config');
+
+  if ($form_state['triggering_element']['#value'] == 'Back') {
+    $form_state['new_step'] = docker_container_form_move_to_previous($form, $form_state);
+    $form_state['values'] = $form_state['multistep_values'][$form_state['new_step']];
+  }
+
+  if (isset($form_state['multistep_values']['form_build_id'])) {
+    $form_state['values']['form_build_id'] = $form_state['multistep_values']['form_build_id'];
+  }
+  $form_state['multistep_values']['form_build_id'] = $form_state['values']['form_build_id'];
+  $form_state['step'] = $form_state['new_step'];
+  $form_state['rebuild'] = TRUE;
+}
+
+function docker_container_form_submit_details($form, $form_state) {
+
+  // Submit the details
 }

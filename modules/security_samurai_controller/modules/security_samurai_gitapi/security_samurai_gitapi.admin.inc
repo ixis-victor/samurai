@@ -117,28 +117,6 @@ function security_samurai_gitapi_admin_config_form_submit($form_id, &$form_state
 		// Encrypt the password and set as variable.
 		variable_set('security_samurai_gitapi_bitbucket_pass', encrypt($bitbucket_pass));
 
-		// Create a new samurai_bitbucket object.
-		$samurai_bitbucket = new samurai_bitbucket($bitbucket_user, $bitbucket_pass);
-
-    // Create a request for the SSH keys, we will only be using the response code.
-		$reply = $samurai_bitbucket->getSshKeys();
-    $branches = $samurai_bitbucket->getBranches('westminstercc', 'wcc');
-
-    $decoded = json_decode($branches['content']);
-    $branch_names = array();
-    foreach ($decoded as $branch => $b) {
-      $branch_names[] = $branch;
-    }
-    variable_set('samurai_debug', $branch_names);
-
-    // User is unathorised.
-		if ($reply['response']['http_code'] == 401) {
-      // Return the error.
-      form_set_error('security_samurai_gitapi_bitbucket_user',
-        'Failed to authenticate with bitbucket, incorrect user/password combination');
-		} else {
-      drupal_set_message('Succeeded in communicating with bitbucket.');
-    }
 	}
 
   if (!empty($codebase_apikey)) {
