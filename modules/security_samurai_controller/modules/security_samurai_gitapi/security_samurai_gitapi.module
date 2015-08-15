@@ -296,8 +296,6 @@ function get_branches($service, $clone_url) {
     case 3:
 
       // Codebase
-      libraries_load('codebase');
-
       $user_account = variable_get('security_samruai_gitapi_codebase_user', NULL);
       $encrypted_key = variable_get('security_samurai_gitapi_codebase_api_key', NULL);
 
