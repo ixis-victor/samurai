@@ -23,12 +23,12 @@
 			return $this->execute('GET', $path);
 		}
 
-		public function post($path, DOMDocument $document) {
-			return $this->execute('POST', $path, $document->saveXML());
+		public function post($path, $document) {
+			return $this->execute('POST', $path, $document);
 		}
 
-		public function put($path, DOMDocument $document) {
-			return $this->execute('PUT', $path, $document->saveXML());
+		public function put($path, $document) {
+			return $this->execute('PUT', $path, $document);
 		}
 
 		protected function execute($method, $path, $data = null) {
@@ -48,7 +48,7 @@
 			));
 
 			if ($data !== null) {
-				curl_setopt(CURLOPT_POSTFIELDS, $data);
+				curl_setopt($this->curl, CURLOPT_POSTFIELDS, $data);
 			}
 
 			$data = trim(curl_exec($this->curl));

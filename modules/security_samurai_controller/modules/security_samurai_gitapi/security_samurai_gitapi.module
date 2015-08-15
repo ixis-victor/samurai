@@ -354,6 +354,83 @@ function parse_repo_name($clone_url) {
 }
 
 /**
+ * Add an ssh key to the linked user account
+ * 
+ * @param string $ssh_key The key string.
+ * @param string $key_desc The name to give the key.
+ * @param int $service The Git service.
+ */
+function gitapi_addsshkey($ssh_key, $key_desc, $service) {
+
+  // Switch the service
+  switch ($service) {
+    case 1:
+      // Github
+      break;
+    case 2:
+      // Bitbucket
+      break;
+    case 3:
+
+      // Codebase
+      $user_account = variable_get('security_samruai_gitapi_codebase_user', NULL);
+      $encrypted_key = variable_get('security_samurai_gitapi_codebase_api_key', NULL);
+
+      $key = '';
+      if (!is_null($encrypted_key)) {
+        $key = decrypt($encrypted_key);
+      } else {
+        return FALSE;
+      }
+
+      $user_account = explode('/', $user_account);
+
+      $account = $user_account[0];
+      $auth_user = $user_account[1];
+
+      // Initialise the Codebase class.
+      $codebase = new Codebase();
+      $codebase->setAccount($account);
+      $codebase->setAuthentication($auth_user, $key);
+
+      // Create the XML
+      $ssh_key = new SimpleXMLElement('<public-key></public-key>');
+      $ssh_key->addChild('description', $key_desc);
+      $ssh_key->addChild('key', $ssh_key);
+
+      // Send the request
+      $codebase->post('/users/jkswoods/public_keys', $ssh_key->asXml());
+
+      break;
+  }
+}
+
+/**
+ * Remove an ssh key from the linked user account
+ *
+ * @param string $ssh_key The key string.
+ * @param string $key_desc The name given to the key.
+ * @param int $service The Git service.
+ */
+function gitapi_removesshkey($ssh_key, $key_desc, $service) {
+
+  // Switch the service
+  switch ($service) {
+    case 1:
+      // Github
+      break;
+    case 2:
+      // Bitbucket
+      break;
+    case 3:
+      // Codebase
+      // Currently the ability to remove ssh keys from a user account is
+      // not available.
+      break;
+  }
+}
+
+/**
  * Check if the gitinfo already exists
  *
  * @param int $site_id The ID of the site
