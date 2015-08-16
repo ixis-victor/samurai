@@ -123,3 +123,22 @@ function security_samurai_docker_schema() {
 
 	return $schema;
 }
+
+/**
+ * Implements hook_install()
+ */
+function security_samurai_docker_install() {
+
+  // Create a default image
+  $docker = new Docker;
+  $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
+
+  // Add a default docker image entity
+  $image = entity_create('docker_image', array(
+    'image_name' => 'default',
+    'image_id' => $image_id,
+    'creation_date' => REQUEST_TIME,
+  ));
+  $image_wrapper = entity_metadata_wrapper('docker_image', $image);
+  $image_wrapper->save();
+}
