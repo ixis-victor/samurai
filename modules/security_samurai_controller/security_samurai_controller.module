@@ -307,7 +307,7 @@ class ClientSiteEntity extends Entity {
  */
 class ClientSiteEntityController extends EntityAPIController {
   /**
-   * Override the default save function to 
+   * Override the default save function
    */
   public function save($entity, DatabaseTransaction $transaction = NULL) {
 
