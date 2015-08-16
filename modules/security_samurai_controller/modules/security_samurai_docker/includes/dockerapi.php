@@ -88,10 +88,14 @@ class Docker {
     $command = escapeshellcmd($command);
     $result = system($command);
 
+    // Parse the ID from the last line of output
+    $start = strpos($result, 'built') + 6;
+    $result = substr($result, $start);
+
     // The result returned is the image ID.
     $this->image_id = $result;
 
-    $this->dockerfile_location = $dockerfile_location;
+    return $result;
   }
 
   /**
