@@ -15,11 +15,11 @@ function security_samurai_pages_default_page_manager_pages() {
   $page->task = 'page';
   $page->admin_title = 'Automated jobs';
   $page->admin_description = '';
-  $page->path = 'job';
+  $page->path = 'jobs';
   $page->access = array();
   $page->menu = array(
     'type' => 'normal',
-    'title' => 'Jobs',
+    'title' => 'Jobs & environments',
     'name' => 'main-menu',
     'weight' => '0',
     'parent' => array(
