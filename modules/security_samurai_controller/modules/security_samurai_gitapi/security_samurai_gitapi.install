@@ -52,7 +52,8 @@ function security_samurai_gitapi_schema() {
       ),
       'is_make' => array(
         'description' => 'Make file required',
-        'type' => 'bool',
+        'type' => 'tinyint',
+        'length' => 1,
         'not null' => FALSE,
       ),
       'make_location' => array(
