@@ -144,11 +144,17 @@ function docker_container_form_step_2($form, $form_state) {
   // Select the branch.
   $site_array = samurai_get_sites();
   $site_key = $form_state['multistep_values']['docker_container_form_step_1']['docker_container_form_site'];
+  $branches = gitinfo_branches(samurai_get_site_id($site_array[$site_key - 1]));
+  $new_branch_array = array();
+  array_push($new_branch_array, '- Select one -');
+  foreach ($branches as $key => $value) {
+    array_push($new_branch_array, $value);
+  }
   $form['docker_container']['docker_container_form_branch'] = array(
     '#type' => 'select',
     '#title' => t('Branch to use'),
     '#description' => t('The branch to use on the container'),
-    '#options' => gitinfo_branches(samurai_get_site_id($site_array[$site_key - 1])),
+    '#options' => $new_branch_array,
   );
   // The form back button.
   $form['form_back'] = array(
@@ -166,7 +172,10 @@ function docker_container_form_step_2($form, $form_state) {
 
 function docker_container_form_step_2_validate($form, $form_state) {
 
-  //  
+  //  Branch select cannot be 0
+  if ($form_state['values']['docker_container_form_branch'] == 0) {
+    return form_set_error('docker_container_form_branch', 'Select a branch to use');
+  }
 }
 
 /**
