@@ -13,7 +13,7 @@ function security_samurai_docker_entity_info() {
 
   // The entity info for the docker_container entity type.
   $entity['docker_container'] = array(
-    'label' => t('Docker container'),
+    'label' => t('Environment'),
     'base table' => 'securitysamurai_dockercontainers',
     'entity keys' => array(
       'id' => 'id',
@@ -23,7 +23,7 @@ function security_samurai_docker_entity_info() {
     'entity class' => 'DockerContainersEntity',
     'controller class' => 'DockerContainersEntityController',
     'admin ui' => array(
-      'path' => 'jobs/containers/config',
+      'path' => 'jobs/environments/config',
       'controller class' => 'EntityDefaultUIController',
       'menu wildcard' => '%docker_containers',
       'file' => 'security_samurai_docker_container.inc',
@@ -125,7 +125,7 @@ function security_samurai_docker_menu() {
   );
 
   // Docker containers view entity pages
-  $items['docker/container/%docker_containers'] = array(
+  $items['jobs/environment/%docker_containers'] = array(
     'title' => t('Docker container'),
     'page callback' => 'security_samurai_docker_container_view_entity',
     'page arguments' => array(2),
@@ -133,7 +133,7 @@ function security_samurai_docker_menu() {
   );
 
   // Docker images view entity pages
-  $items['docker/image/%docker_images'] = array(
+  $items['jobs/image/%docker_images'] = array(
     'title' => t('Docker image'),
     'page callback' => 'security_samurai_docker_image_view_entity',
     'page arguments' => array(2),
