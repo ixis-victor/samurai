@@ -75,7 +75,9 @@ function docker_container_form_move_to_previous($form, $form_state) {
   }
 }
 
-
+/**
+ * Form step 1 for docker_container_form
+ */
 function docker_container_form_step_1($form, $form_state) {
 
   $form = array();
@@ -83,22 +85,22 @@ function docker_container_form_step_1($form, $form_state) {
   // Wrapper for the form elements.
   $form['docker_container'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Basic container information'),
+    '#title' => t('Basic environment information'),
     '#fieldset_icon' => 'settings',
     '#collapsed' => FALSE,
   );
   // The container name
   $form['docker_container']['docker_container_form_name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Container name'),
+    '#title' => t('Environment name'),
     '#description' => t('The container name, so people know what it\'s being used for.'),
     '#required' => TRUE,
   );
   // The container description
   $form['docker_container']['docker_container_form_description'] = array(
     '#type' => 'textarea',
-    '#title' => t('Container description'),
-    '#description' => t('Give a little bit more information about what this container is going to be used for. (optional)')
+    '#title' => t('Environment description'),
+    '#description' => t('Give a little bit more information about what this environment is going to be used for. (optional)')
   );
   // The site the container will use.
   $sites_array = samurai_get_sites();
@@ -110,7 +112,7 @@ function docker_container_form_step_1($form, $form_state) {
   $form['docker_container']['docker_container_form_site'] = array(
     '#type' => 'select',
     '#title' => t('Site to use'),
-    '#description' => t('The site to set up on the container, all Git configuration is carried over from the site.'),
+    '#description' => t('The site to set up in the environment.'),
     '#options' => $new_site_array,
   );
   // The form next button.
@@ -122,6 +124,9 @@ function docker_container_form_step_1($form, $form_state) {
   return $form;
 }
 
+/**
+ * Form step 1 validation for docker_container_form
+ */
 function docker_container_form_step_1_validate($form, $form_state) {
 
   // Site select cannot be 0
@@ -130,6 +135,9 @@ function docker_container_form_step_1_validate($form, $form_state) {
   }
 }
 
+/**
+ * Form step 2 for docker_container_form
+ */
 function docker_container_form_step_2($form, $form_state) {
 
   $form = array();
@@ -153,7 +161,7 @@ function docker_container_form_step_2($form, $form_state) {
   $form['docker_container']['docker_container_form_branch'] = array(
     '#type' => 'select',
     '#title' => t('Branch to use'),
-    '#description' => t('The branch to use on the container'),
+    '#description' => t('The branch to use for the site.'),
     '#options' => $new_branch_array,
   );
   // The form back button.
@@ -170,6 +178,9 @@ function docker_container_form_step_2($form, $form_state) {
   return $form;
 }
 
+/**
+ * Form step 2 validation for docker_container_form
+ */
 function docker_container_form_step_2_validate($form, $form_state) {
 
   //  Branch select cannot be 0
@@ -179,7 +190,7 @@ function docker_container_form_step_2_validate($form, $form_state) {
 }
 
 /**
- * Form submit handler for @see docker_container_form()
+ * Form submit handler for docker_container_form
  */
 function docker_container_form_submit($form, &$form_state) {
 
@@ -216,7 +227,12 @@ function docker_container_form_submit($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 }
 
+/**
+ * 
+ */
 function docker_container_form_submit_details($form, $form_state) {
 
-  // Submit the details
+  // Create a new container
+  // Use the default image for the container if no image was selected.
+  
 }
