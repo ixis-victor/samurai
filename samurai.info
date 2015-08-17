@@ -34,6 +34,5 @@ dependencies[] = libraries
 dependencies[] = panels
 dependencies[] = page_manager
 dependencies[] = elysia_cron
-dependencies[] = require_login
 dependencies[] = jquery_update
 dependencies[] = module_filter
