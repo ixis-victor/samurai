@@ -36,7 +36,7 @@ function security_samurai_docker_entity_info() {
 
   // The entity info for the docker_image entity type.
   $entity['docker_image'] = array(
-    'label' => t('Docker images'),
+    'label' => t('Image'),
     'base table' => 'securitysamurai_dockerimages',
     'entity keys' => array(
       'id' => 'id',
