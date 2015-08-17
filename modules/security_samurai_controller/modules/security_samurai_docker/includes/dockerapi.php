@@ -48,7 +48,7 @@ class Docker {
    * @param string $command The command to execute
    * @param string $container_id The container ID.
    */
-  public static function execute_command($command, $container_id = NULL) {
+  public function execute_command($command, $container_id = NULL) {
 
     if (is_null($container_id) && !is_null($this->container_id)) {
       // If the container_id is NULL, get the class' value of the variable.
@@ -73,7 +73,7 @@ class Docker {
    * @param string $image_name The name of the image to create.
    * @param string $dockerfile_location The absolute location to the dockerfile.
    */
-  public static function create_image($image_name, $dockerfile_location = NULL) {
+  public function create_image($image_name, $dockerfile_location = NULL) {
 
     if (is_null($dockerfile_location) && !is_null($this->dockerfile_location)) {
       // If the dockerfile_location is NULL, get the class' value of the variable
@@ -104,7 +104,7 @@ class Docker {
    *
    * @param string $image_name The name of the image to delete.
    */
-  public static function delete_image($image_name = NULL) {
+  public function delete_image($image_name = NULL) {
 
     if (is_null($image_name) && !is_null($this->image_name)) {
       // If  the image_name is NULL, get the class' value of the variable.
@@ -129,7 +129,7 @@ class Docker {
    * @param array $assigned_ports The assigned ports e.g. array(3000 => 80).
    * @param string $image_name The name of the image to create a container from.
    */
-  public static function create_container($assigned_ports = NULL, $image_name = NULL) {
+  public function create_container($assigned_ports = NULL, $image_name = NULL) {
     
     if (is_null($image_name) && !is_null($this->image_name)) {
       // If the image_name is NULL, get the class' value of the variable.
@@ -161,7 +161,7 @@ class Docker {
    *
    * @param string $container_id The container ID.
    */
-  public static function delete_container($container_id = NULL) {
+  public function delete_container($container_id = NULL) {
 
     if (is_null($container_id) && !is_null($this->container_id)) {
       // If container_id is NULL, get the class' value of the variable.
@@ -185,7 +185,7 @@ class Docker {
    *
    * @param string $container_id The container ID.
    */
-  public static function stop_container($container_id = NULL) {
+  public function stop_container($container_id = NULL) {
 
     // Structure
     // docker stop {container_id}
@@ -216,7 +216,7 @@ class Docker {
    *
    * @param string $container_id The container ID.
    */
-  public static function start_container($container_id = NULL) {
+  public function start_container($container_id = NULL) {
 
     if (is_null($container_id) && !is_null($this->container_id)) {
       // If container_id is NULL, get the class' value of the variable.
@@ -244,7 +244,7 @@ class Docker {
    * @param string $container_id The container ID.
    * @param string $output_file_location The location to save the container.
    */
-  public static function export_container($container_id = NULL, $output_file_location) {
+  public function export_container($container_id = NULL, $output_file_location) {
 
     if (is_null($container_id) && !is_null($this->container_id)) {
       // If container_id is NULL, get the class' value of the variable.
