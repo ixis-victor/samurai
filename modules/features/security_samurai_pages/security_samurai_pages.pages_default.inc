@@ -70,6 +70,29 @@ function security_samurai_pages_default_page_manager_pages() {
   $display->uuid = 'dc0b6c4b-8b68-43f3-9fb3-84080277c70a';
   $display->content = array();
   $display->panels = array();
+    $pane = new stdClass();
+    $pane->pid = 'new-53ceb197-e3d5-4520-be84-a9ed2d385400';
+    $pane->panel = 'right';
+    $pane->type = 'block';
+    $pane->subtype = 'block-1';
+    $pane->shown = TRUE;
+    $pane->access = array();
+    $pane->configuration = array(
+      'override_title' => 1,
+      'override_title_text' => 'Environment & image actions',
+      'override_title_heading' => 'h2',
+    );
+    $pane->cache = array();
+    $pane->style = array(
+      'settings' => NULL,
+    );
+    $pane->css = array();
+    $pane->extras = array();
+    $pane->position = 0;
+    $pane->locks = array();
+    $pane->uuid = '53ceb197-e3d5-4520-be84-a9ed2d385400';
+    $display->content['new-53ceb197-e3d5-4520-be84-a9ed2d385400'] = $pane;
+    $display->panels['right'][0] = 'new-53ceb197-e3d5-4520-be84-a9ed2d385400';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;

@@ -22,6 +22,7 @@ projects[simplehtmldom][version] = "1.12"
 projects[strongarm][version] = "2.0"
 projects[views][version] = "3.11"
 projects[encrypt][version] = "2.0"
+projects[features_extra][version] = "1.0"
 
 ; Themes
 projects[adminimal_theme][version] = "1.21"
