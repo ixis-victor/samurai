@@ -52,6 +52,7 @@ class Docker {
 
     if (is_null($container_id) && !is_null($this->container_id)) {
       // If the container_id is NULL, get the class' value of the variable.
+      $container_id = $this->container_id;
     }
 
     // Construct the command.
@@ -126,7 +127,7 @@ class Docker {
    * Create container
    * Create a new container.
    *
-   * @param array $assigned_ports The assigned ports e.g. array(3000 => 80).
+   * @param string $assigned_ports The assigned ports e.g. 3000:80.
    * @param string $image_name The name of the image to create a container from.
    */
   public function create_container($assigned_ports = NULL, $image_name = NULL) {
