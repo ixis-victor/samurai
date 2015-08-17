@@ -228,11 +228,50 @@ function docker_container_form_submit($form, &$form_state) {
 }
 
 /**
- * 
+ * Submit the container creation form details.
  */
 function docker_container_form_submit_details($form, $form_state) {
 
   // Create a new container
   // Use the default image for the container if no image was selected.
-  
+  $docker = new Docker;
+  $docker->create_container('3000:80', 'default');
+
+  // Clone the repo of the site, grab a database (drush aliases)
+  // This process will be different if the site is a make installation or standard.
+
+  // - Get all of the sites.
+  // - Get the selected site key.
+  // - Get the site ID.
+  // - Get all of the branches associated with the selected site.
+  // - Get the selected branch.
+  $sites_array = samurai_get_sites();
+  $site_key = $form_state['multistep_values']['docker_container_form_step_1']['docker_container_form_site'] - 1;
+  $site_id = samurai_get_site_id($sites_array[$site_key]);
+  $branches_array = gitinfo_branches($site_id);
+  $selected_branch = $branches_array[$form_state['multistep_values']['docker_container_form_step_2']['docker_container_form_branch'] - 1];
+
+  // Create the private key file
+  $private_key = variable_get('docker_container_form', NULL);
+  if (!is_null($private_key)) {
+
+    // Decrypt the private key
+    $private_key = decrypt($private_key);
+    
+    // Add the key to the container
+  }
+
+  // Start apache on the container
+  $docker->execute_command('service apache2 start');
+
+  // Create a new docker container entity and save it.
+  $container = entity_create('docker_container', array(
+    'container_id' => $docker->container_id,
+    'image_name' => $docker->image_name,
+    'assigned_ports' => $docker->assigned_ports,
+    'status' => 1,
+    'creation_date' => REQUEST_TIME,
+  ));
+  $container_wrapper = entity_metadata_wrapper('docker_container', $container);
+  $container_wrapper->save();
 }
