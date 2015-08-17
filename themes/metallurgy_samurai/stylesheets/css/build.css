@@ -206,6 +206,13 @@ section {
       color: #FFF; }
   section form .form-required {
     color: white; }
+  section form textarea:focus {
+    border-color: #2d353c !important;
+    box-shadow: 0 1px 0 0 #2d353c !important; }
+  section form textarea.error {
+    border-top: none;
+    border-left: none;
+    border-right: none; }
   section table {
     border-radius: 3px;
     width: 100%;
@@ -448,3 +455,6 @@ section {
           transition: 0.2s ease; }
           #menu-mobile-wrapper ul li > a > div:hover {
             background-color: #232a2f; }
+
+.grippie {
+  display: none; }

@@ -103,6 +103,18 @@ section {
     .form-required {
       color: $required_input;
     }
+
+    textarea {
+      &:focus {
+        border-color: $menu_background_color !important;
+        box-shadow: 0 1px 0 0 $menu_background_color !important;
+      }
+      &.error {
+        border-top: none;
+        border-left: none;
+        border-right: none;
+      }
+    }
   }
 
   table {
@@ -444,4 +456,8 @@ section {
       }
     }
   }
+}
+
+.grippie {
+  display: none;
 }

@@ -9,6 +9,7 @@
  * Implements theme_status_message()
  */
 function metallurgy_samurai_status_messages($variables) {
+
   $display = $variables ['display'];
   $output = '';
 
@@ -41,6 +42,7 @@ function metallurgy_samurai_status_messages($variables) {
  * Implements theme_fieldset
  */
 function metallurgy_samurai_fieldset($variables) {
+
   $element = $variables['element'];
   element_set_attributes($element, array('id'));
   _form_set_class($element, array('form-wrapper'));
@@ -88,6 +90,7 @@ function metallurgy_samurai_fieldset($variables) {
  * Implements theme_button
  */
 function metallurgy_samurai_button($variables) {
+
   $element = $variables ['element'];
   $element['#attributes']['type'] = 'submit';
   element_set_attributes($element, array('id', 'name', 'value'));
@@ -110,4 +113,13 @@ function metallurgy_samurai_button($variables) {
   }
 
   return '<input' . drupal_attributes($element ['#attributes']) . ' />';
+}
+
+/**
+ * Implements hook_preprocess_textarea()
+ */
+function metallurgy_samurai_preprocess_textarea(&$variables) {
+
+  // Add a class to the textarea element
+  $variables['element']['#attributes']['class'][] = 'materialize-textarea';
 }
