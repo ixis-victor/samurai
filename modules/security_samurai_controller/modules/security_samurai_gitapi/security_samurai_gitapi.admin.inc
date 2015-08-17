@@ -23,14 +23,12 @@ function security_samurai_gitapi_admin_config_form($node, &$form_state) {
 		'#description' => t('Please provide your password and username for Bitbucket (password will be encrypted).'),
 		'#collapsible' => TRUE,
 	);
-
 	$form['security_samurai_gitapi_bitbucket_wrapper']['security_samurai_gitapi_bitbucket_user'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Username'),
 		'#description' => t('Your Bitbucket username'),
 		'#default_value' => variable_get('security_samurai_gitapi_bitbucket_user', ''),
 	);
-
 	$form['security_samurai_gitapi_bitbucket_wrapper']['security_samurai_gitapi_bitbucket_pass'] = array(
 		'#type' => 'password',
 		'#title' => t('Password'),
@@ -45,14 +43,12 @@ function security_samurai_gitapi_admin_config_form($node, &$form_state) {
 		'#collapsible' => TRUE,
 		'#collapsed' => TRUE,
 	);
-
   $form['security_samurai_gitapi_codebase_wrapper']['security_samurai_gitapi_codebase_user'] = array(
     '#type' => 'textfield',
     '#title' => t('API Username'),
     '#description' => t('Your Codebase API username, found next to the API key.'),
     '#default_value' => variable_get('security_samruai_gitapi_codebase_user', ''),
   );
-
   $form['security_samurai_gitapi_codebase_wrapper']['security_samurai_gitapi_codebase_api_key'] = array(
     '#type' => 'textfield',
     '#title' => t('API key'),
@@ -68,20 +64,26 @@ function security_samurai_gitapi_admin_config_form($node, &$form_state) {
 		'#collapsible' => TRUE,
 		'#collapsed' => TRUE,
 	);
-
 	$form['security_samurai_gitapi_github_wrapper']['security_samurai_gitapi_github_user'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Username'),
 		'#description' => t('Your GitHub username'),
 		'#default_value' => variable_get('security_samurai_gitapi_github_user', ''),
 	);
-
 	$form['security_samurai_gitapi_github_wrapper']['security_samurai_gitapi_github_pass'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Password'),
 		'#description' => t('Your GitHub password'),
     '#default_value' => variable_get('security_samurai_gitapi_github_pass', ''),
 	);
+
+  // Ssh private key, needed for cloning the repositories into the docker containers
+  $form['security_samurai_gitapi_privkey'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Private key'),
+    '#description' => t('The private key to accompany the public key that is present on each connected Git service.'),
+    '#default_value' => decrypt(variable_get('security_samurai_gitapi_privkey', '')),
+  );
 
 	// Apply a default 'save' button and return the form.
 	$form = system_settings_form($form);
@@ -116,9 +118,7 @@ function security_samurai_gitapi_admin_config_form_submit($form_id, &$form_state
 
 		// Encrypt the password and set as variable.
 		variable_set('security_samurai_gitapi_bitbucket_pass', encrypt($bitbucket_pass));
-
 	}
-
   if (!empty($codebase_apikey)) {
 
     // Set the Drupal variable for codebase user.
@@ -126,16 +126,14 @@ function security_samurai_gitapi_admin_config_form_submit($form_id, &$form_state
 
     // Encrypt the password and set as variable.
     variable_set('security_samurai_gitapi_codebase_api_key', encrypt($codebase_apikey));
-
-    // Create a new samurai_codebase object.
-    // $samurai_codebase = new samurai_codebase($codebase_user, $codebase_apikey);
-    // $reply = $samurai_codebase->get
   }
-
   if (!empty($github_apikey)) {
 
     // Set the Drupal variable for github
   }
+
+  // Set the privkey Drupal variable
+  variable_set('security_samurai_gitapi_privkey', encrypt($form_state['values']['security_samurai_gitapi_privkey']));
 
   drupal_set_message('Settings have been saved.');
 }
