@@ -82,7 +82,7 @@ function security_samurai_gitapi_admin_config_form($node, &$form_state) {
     '#type' => 'textarea',
     '#title' => t('Private key'),
     '#description' => t('The private key to accompany the public key that is present on each connected Git service.'),
-    '#default_value' => decrypt(variable_get('security_samurai_gitapi_privkey', '')),
+    '#default_value' => decrypt(variable_get('samurai_gitapi_privkey', '')),
   );
 
 	// Apply a default 'save' button and return the form.
@@ -133,7 +133,7 @@ function security_samurai_gitapi_admin_config_form_submit($form_id, &$form_state
   }
 
   // Set the privkey Drupal variable
-  variable_set('security_samurai_gitapi_privkey', encrypt($form_state['values']['security_samurai_gitapi_privkey']));
+  variable_set('samurai_gitapi_privkey', encrypt($form_state['values']['security_samurai_gitapi_privkey']));
 
   drupal_set_message('Settings have been saved.');
 }
