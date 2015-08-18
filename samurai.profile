@@ -11,14 +11,6 @@ if (!function_exists('site_install_hooks_initialize')) {
 site_install_hooks_initialize('samurai');
 
 /**
- * Implements hook_post_install
- */
-function samurai_post_install() {
-
-  // Not yet implemented
-}
-
-/**
  * Implements hook_form_FORM_ID_alter() for install_configure_form().
  *
  * Allows the profile to alter the site configuration form.

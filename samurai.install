@@ -1,0 +1,13 @@
+<?php
+/**
+ * @file
+ * Installation functions.
+ */
+
+/**
+ * Implements hook_site_post_install
+ */
+function samurai_site_post_install() {
+
+  // Not yet implemented
+}
