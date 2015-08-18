@@ -80,6 +80,7 @@ RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 RUN ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts
 RUN ssh-keyscan codebasehq.com >> /root/.ssh/known_hosts
+RUN git clone https://github.com/jkswoods/samurai-scripts.git
 
 # Setup Supervisor.
 RUN echo -e '[program:apache2]\ncommand=/bin/bash -c "source /etc/apache2/envvars && exec /usr/sbin/apache2 -DFOREGROUND"\nautorestart=true\n\n' >> /etc/supervisor/supervisord.conf

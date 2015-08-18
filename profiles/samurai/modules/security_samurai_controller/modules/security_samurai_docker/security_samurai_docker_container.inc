@@ -106,8 +106,10 @@ function docker_container_form_step_1($form, $form_state) {
   $sites_array = samurai_get_sites();
   $new_site_array = array();
   array_push($new_site_array, '- Select one -');
-  foreach ($sites_array as $key => $value) {
-    array_push($new_site_array, $value);
+  if (!empty($sites_array)) {
+    foreach ($sites_array as $key => $value) {
+      array_push($new_site_array, $value);
+    }
   }
   $form['docker_container']['docker_container_form_site'] = array(
     '#type' => 'select',
@@ -259,6 +261,9 @@ function docker_container_form_submit_details($form, $form_state) {
     $private_key = decrypt($private_key);
     
     // Add the key to the container
+    $docker->execute_commmand('./samurai-scripts/set_ssh_key.sh \'$private_key\'');
+
+    // Clone the site into the www directory
   }
 
   // Start apache on the container
