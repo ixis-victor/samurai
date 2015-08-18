@@ -14,4 +14,4 @@ features[page_manager_pages][] = automated_jobs
 features[page_manager_pages][] = dashboard
 features[page_manager_pages][] = security_announcement
 features[page_manager_pages][] = sites
-project path = sites/samurai/modules/features
+project path = profiles/samurai/modules/features
