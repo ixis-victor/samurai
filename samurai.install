@@ -9,5 +9,7 @@
  */
 function samurai_site_post_install() {
 
-  // Not yet implemented
+  // Enable 2 modules.
+  module_enable(array('security_samurai_base'));
+  module_enable(array('require_login'));
 }

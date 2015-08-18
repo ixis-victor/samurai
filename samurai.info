@@ -1,7 +1,12 @@
 name = Samurai
+distribution_name = Samurai
 description = Manage sites, environments and automated security updates.
+exclusive = 1
+
 version = 0.1.2
 core = 7.x
+
+; Dependencies
 dependencies[] = block
 dependencies[] = color
 dependencies[] = comment
