@@ -4,6 +4,20 @@
  * Enables modules and site configuration for the Samurai site installation.
  */
 
+// Initalise the site_install_hooks
+if (!function_exists('site_install_hooks_initialize')) {
+  require_once('libraries/site_install_hooks/site_install_hooks.inc');
+}
+site_install_hooks_initialize('samurai');
+
+/**
+ * Implements hook_post_install
+ */
+function samurai_post_install() {
+
+  // Not yet implemented
+}
+
 /**
  * Implements hook_form_FORM_ID_alter() for install_configure_form().
  *
@@ -31,7 +45,40 @@ function samurai_install_tasks() {
     'function' => 'samurai_config_form',
   );
 
+  // Batch process to enable samurai modules
+  $task['samurai_modules'] = array(
+    'display_name' => st('Enable samurai modules'),
+    'display' => TRUE,
+    'type' => 'batch',
+    'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
+    'function' => 'samurai_module_batch',
+  );
+
   return $task;
+}
+
+/**
+ * Batch process callback
+ */
+function samurai_module_batch() {
+
+  // Create the batch array
+  $batch = array(
+    'operations' => array(
+      array('module_enable', array(array('security_samurai_base'))),
+      ),
+    'finished' => 'samurai_module_batch_finished',
+    'title' => t('Enabling samurai modules'),
+    'init_message' => t('Samurai is going to enable a few things.'),
+    'progress_message' => t('Processed @current out of @total.'),
+    'error_message' => t('Samurai has encountered an error during the batch process.'),
+    'file' => drupal_get_path('profile', 'samurai') . '/samurai.batch.inc',
+  );
+
+  // Create the batch
+  $batch_set = batch_set($batch);
+
+  batch_process() 
 }
 
 /**
