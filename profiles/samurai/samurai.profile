@@ -215,7 +215,7 @@ function samurai_create_default_image_form($form, &$form_state) {
     '#prefix' => '<div id="ajax_content">',
     '#suffix' => '</div>',
     '#markup' => isset($form_state['ajax_load_values']['current_value'])
-     ? '<pre>' . $form_state['ajax_load_values']['current_value'] . '</pre>' : '<pre>Waiting</pre>',
+     ? '<pre>' . $form_state['ajax_load_values']['current_value'] . '</pre>' : '<pre>Loading...</pre>',
     '#ajax' => array(
       'callback' => 'samurai_create_default_image_form_ajax',
       'wrapper' => 'ajax_content',
