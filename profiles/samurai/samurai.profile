@@ -198,7 +198,7 @@ function samurai_config_form_submit($form, $form_state) {
   ));
   $image_wrapper = entity_metadata_wrapper('docker_image', $image);
   $image_wrapper->save();
-  
+
  *
  */
 function samurai_create_default_image_form($form, &$form_state) {
@@ -210,7 +210,23 @@ function samurai_create_default_image_form($form, &$form_state) {
     '#markup' => '<h2>' . t('Creating default image...') . '</h2>',
   );
 
+  $form['ajax_content'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div id="ajax_content">',
+    '#suffix' => '</div>',
+    '#markup' => isset($form_state['ajax_load_values']['current_value'])
+     ? '<pre>' . $form_state['ajax_load_values']['current_value'] . '</pre>' : '<pre>Waiting</pre>',
+    '#ajax' => array(
+      'callback' => 'samurai_create_default_image_form_ajax',
+      'wrapper' => 'ajax_content',
+    ),
+  );
+
   return $form;
+}
+
+function samurai_create_default_image_form_ajax($form, $form_state) {
+
 }
 
 /**
