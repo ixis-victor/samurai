@@ -87,7 +87,7 @@ class Docker {
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    $result = system($command);
+    exec($command, $result);
 
     // Parse the ID from the last line of output
     $start = strpos($result, 'built') + 6;

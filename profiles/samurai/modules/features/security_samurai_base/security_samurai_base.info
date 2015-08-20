@@ -9,7 +9,6 @@ dependencies[] = elysia_cron
 dependencies[] = jquery_update
 dependencies[] = module_filter
 dependencies[] = pace
-dependencies[] = require_login
 dependencies[] = security_samurai_controller
 dependencies[] = security_samurai_menu
 dependencies[] = security_samurai_pages

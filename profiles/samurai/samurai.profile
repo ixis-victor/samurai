@@ -37,6 +37,15 @@ function samurai_install_tasks(&$install_state) {
     'function' => 'samurai_config_form',
   );
 
+  // Add a step to create the default image
+  $task['samurai_create_default_image'] = array(
+    'display_name' => st('Create default image'),
+    'display' => TRUE,
+    'type' => 'form',
+    'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
+    'function' => 'samurai_create_default_image_form',
+  );
+
   return $task;
 }
 
@@ -166,6 +175,56 @@ function samurai_config_form_submit($form, $form_state) {
 
   // security_samurai_gitapi
   variable_set('samurai_gitapi_privkey', $form_state['values']['gitapi_privkey']);
+
+  // Enable the Samurai modules
+  module_enable(array('security_samurai_base'));
+}
+
+/**
+ * Form handler samurai_create_default_image_form()
+ *
+ * TODO:
+ *
+
+  // Create a default image
+  $docker = new Docker;
+  $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
+
+  // Add a default docker image entity
+  $image = entity_create('docker_image', array(
+    'image_name' => 'default',
+    'image_id' => $image_id,
+    'creation_date' => REQUEST_TIME,
+  ));
+  $image_wrapper = entity_metadata_wrapper('docker_image', $image);
+  $image_wrapper->save();
+  
+ *
+ */
+function samurai_create_default_image_form($form, &$form_state) {
+
+  $form = array();
+
+  $form['title'] = array(
+    '#type' => 'markup',
+    '#markup' => '<h2>' . t('Creating default image...') . '</h2>',
+  );
+
+  return $form;
+}
+
+/**
+ * Form validation for samurai_create_default_image_form()
+ */
+function samurai_create_default_image_form_validate($form, $form_state) {
+
+}
+
+/**
+ * Form submit handler for samurai_create_default_image_form()
+ */
+function samurai_create_default_image_form_submit($form, $form_state) {
+
 }
 
 /**
