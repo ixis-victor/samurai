@@ -55,13 +55,10 @@ class Docker {
       $container_id = $this->container_id;
     }
 
-    // Construct the command.
-    $command = 'docker exec ' . $container_id . ' ' . $command;
-
-    // - Escape shell metacharacters.
+    // - Construct the command.
     // - Execute the command.
-    $command = escapeshellcmd($command);
-    $result = system($command);
+    $command = 'docker exec ' . $container_id . ' ' . $command;
+    exec($command, $result);
 
     // Return the result.
     return $result;
