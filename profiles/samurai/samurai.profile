@@ -174,7 +174,7 @@ function samurai_config_form_submit($form, $form_state) {
   variable_set('samurai_controller_sa_check_interval', strtotime($form_state['values']['security_interval']));
 
   // security_samurai_gitapi
-  variable_set('samurai_gitapi_privkey', $form_state['values']['gitapi_privkey']);
+  variable_set('samurai_gitapi_privkey', encrypt($form_state['values']['gitapi_privkey']));
 
   // Enable the Samurai modules
   module_enable(array('security_samurai_base'));
