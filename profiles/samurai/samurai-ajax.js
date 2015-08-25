@@ -9,7 +9,7 @@
 
 
         var element_settings = {
-          url: 'http://' + window.location.hostname + ':8080' +  settings.basePath + settings.pathPrefix + 'ajax/remote/image',
+          url: 'http://' + window.location.hostname +  settings.basePath + settings.pathPrefix + 'ajax/remote/image',
           event: 'click',
           progress: {
             type: 'throbber'
