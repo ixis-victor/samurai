@@ -165,19 +165,30 @@ function security_samurai_docker_menu() {
  * Creates a docker image
  */
 function security_samurai_docker_build_image_ajax() {
-   $commands = array();
-
+  
+  $commands = array();
   $selector = '#samurai-remote-wrapper';
 
-  // output the creation of the image into a file
-  // read the last lines of this file and return the output.
+  // Init docker and run the create image command.
   $docker = new Docker();
-  $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.', '/tmp/default-log.log');
-  $html = $image_id;
+  $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
+
+  // Add entity
+  $docker_default_image = entity_create('docker_image', array(
+    'image_name' => 'default',
+    'image_id' => $image_id,
+    'creation_date' => REQUEST_TIME,
+  ));
+  $image_wrapper = entity_metadata_wrapper('docker_image', $image);
+  $image_wrapper->save();
+
+  // Output for the user
+  $html = '<pre>Image has been created: ' . $image_id . '</pre><input type="submit">Save and continue</input>';
 
   // Debug messages, we can use dpm() here.
   $messages = theme('status_messages');
   $commands[] = ajax_command_prepend('body', $messages);
+
   // Add command with insert new requested content
   $commands[] = ajax_command_html($selector, $html);
 

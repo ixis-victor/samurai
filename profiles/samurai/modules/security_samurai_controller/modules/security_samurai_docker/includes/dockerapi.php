@@ -72,9 +72,9 @@ class Docker {
    * @param string $dockerfile_location The absolute location to the dockerfile.
    * @param string $log The path to log the output to.
    */
-  public function create_image($image_name, $dockerfile_location = NULL, $log = NULL) {
+  public function create_image($image_name, $dockerfile_location = NULL) {
 
-    if (is_null($dockerfile_location) && !is_null($this->dockerfile_location)) {
+    if (is_null($dockerfile_location) && !is_null($this->dockerfile_locati
       // If the dockerfile_location is NULL, get the class' value of the variable
       $dockerfile_location = $this->dockerfile_location;
     }
@@ -85,7 +85,7 @@ class Docker {
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    $result = system($command);
+    $result = exec($command . ' 2>&1');
 
     // Parse the ID from the last line of output
     $start = strpos($result, 'built') + 6;

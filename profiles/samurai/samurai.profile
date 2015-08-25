@@ -178,28 +178,13 @@ function samurai_config_form_submit($form, $form_state) {
 
   // Enable the Samurai modules
   module_enable(array('security_samurai_base'));
+
+  // Clear the cache
+  cache_clear_all();
 }
 
 /**
  * Form handler samurai_create_default_image_form()
- *
- * TODO:
- *
-
-  // Create a default image
-  $docker = new Docker;
-  $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
-
-  // Add a default docker image entity
-  $image = entity_create('docker_image'i, array(
-    'image_name' => 'default',
-    'image_id' => $image_id,
-    'creation_date' => REQUEST_TIME,
-  ));
-  $image_wrapper = entity_metadata_wrapper('docker_image', $image);
-    $image_wrapper->save();
-
- *
  */
 function samurai_create_default_image_form($form, &$form_state) {
 
