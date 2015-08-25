@@ -185,10 +185,6 @@ function security_samurai_docker_build_image_ajax() {
   // Output for the user
   $html = '<pre>Image has been created: ' . $image_id . '</pre><input type="submit">Save and continue</input>';
 
-  // Debug messages, we can use dpm() here.
-  $messages = theme('status_messages');
-  $commands[] = ajax_command_prepend('body', $messages);
-
   // Add command with insert new requested content
   $commands[] = ajax_command_html($selector, $html);
 

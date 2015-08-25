@@ -237,39 +237,6 @@ function samurai_create_default_image_form($form, &$form_state) {
   return $form;
 }
 
-function samurai_create_default_image_form_ajax($form, $form_state) {
-
-  // Create the image
-  // Wait until the image is created.
-
-  // IF image is created.
-  
-  $form['test'] = array(
-    '#type' => 'textfield',
-    '#title' => 'test',
-  );
-
-  return $form;
-}
-
-function getValue() {
-  return 1;
-}
-
-/**
- * Form validation for samurai_create_default_image_form()
- */
-function samurai_create_default_image_form_validate($form, $form_state) {
-
-}
-
-/**
- * Form submit handler for samurai_create_default_image_form()
- */
-function samurai_create_default_image_form_submit($form, $form_state) {
-
-}
-
 /**
  * Helper function, returns an array of intervals
  * @see samurai_config_form()
