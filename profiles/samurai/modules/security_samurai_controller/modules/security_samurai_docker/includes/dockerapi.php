@@ -70,8 +70,9 @@ class Docker {
    *
    * @param string $image_name The name of the image to create.
    * @param string $dockerfile_location The absolute location to the dockerfile.
+   * @param string $log The path to log the output to.
    */
-  public function create_image($image_name, $dockerfile_location = NULL) {
+  public function create_image($image_name, $dockerfile_location = NULL, $log = NULL) {
 
     if (is_null($dockerfile_location) && !is_null($this->dockerfile_location)) {
       // If the dockerfile_location is NULL, get the class' value of the variable
@@ -79,12 +80,12 @@ class Docker {
     }
     
     // Construct the command.
-    $command = 'docker build -t ' . $image_name . ' ' . $dockerfile_location;
+    $command = 'docker build -t ' . $image_name . ' ' . $dockerfile_location . ' 2>&1 > ' . $log . ' &';
 
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    exec($command, $result);
+    $result = system($command);
 
     // Parse the ID from the last line of output
     $start = strpos($result, 'built') + 6;

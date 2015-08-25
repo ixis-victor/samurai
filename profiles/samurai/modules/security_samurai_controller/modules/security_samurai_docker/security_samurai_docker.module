@@ -172,7 +172,7 @@ function security_samurai_docker_build_image_ajax() {
   // output the creation of the image into a file
   // read the last lines of this file and return the output.
   $docker = new Docker();
-  $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
+  $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.', '/tmp/default-log.log');
   $html = $image_id;
 
   // Debug messages, we can use dpm() here.
