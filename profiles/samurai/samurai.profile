@@ -38,13 +38,13 @@ function samurai_install_tasks(&$install_state) {
   );
 
   // Add a step to create the default image
-  // $task['samurai_create_default_image'] = array(
-  //   'display_name' => st('Create default image'),
-  //   'display' => TRUE,
-  //   'type' => 'form',
-  //   'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
-  //   'function' => 'samurai_create_default_image_form',
-  // );
+  $task['samurai_create_default_image'] = array(
+    'display_name' => st('Create default image'),
+    'display' => TRUE,
+    'type' => 'form',
+    'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
+    'function' => 'samurai_create_default_image_form',
+  );
 
   return $task;
 }
@@ -210,7 +210,28 @@ function samurai_create_default_image_form($form, &$form_state) {
     '#type' => 'markup',
     '#markup' => '<h2>' . t('Create default image') . '</h2><p>Ensure you have the <a href="https://docs.docker.com" target="_blank">Docker CLI</a> installed and set up correctly on your server.</p>',
   );
-
+  // Attach the Ajax file
+  $form['#attached']['js'] = array(
+    drupal_get_path('profile', 'samurai') . '/samurai-ajax.js',
+  );
+  // Attach ajax libraries
+  $form['#attached']['library'] = array(
+    array('system', 'drupal.ajax'),
+  );
+  // Container
+  $form['container'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'id' => 'samurai-remote-wrapper',
+      'title' => t('Click to create image.'),
+    ),
+  );
+  // Container content
+  $form['container']['content'] = array(
+    '#prefix' => '<pre>',
+    '#suffix' => '</pre>',
+    '#markup' => t('Loading data...'),
+  );
   // Submit button will remain hidden while the build is in progress
   $form['submit'] = array(
     '#type' => 'submit',
@@ -221,6 +242,7 @@ function samurai_create_default_image_form($form, &$form_state) {
       ),
     ),
   );
+
 
   // From here there nneeds to be a markup button which initialises the creation of the image,
   // the build log is then outputted on to the screen

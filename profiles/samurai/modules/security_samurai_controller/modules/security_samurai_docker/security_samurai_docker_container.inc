@@ -254,7 +254,7 @@ function docker_container_form_submit_details($form, $form_state) {
   $selected_branch = $branches_array[$form_state['multistep_values']['docker_container_form_step_2']['docker_container_form_branch'] - 1];
 
   // Create the private key file
-  $private_key = variable_get('samurai_gitapi_privkey', NULL);
+  $private_key = variable_get('gitapi_privkey', NULL);
   if (!is_null($private_key)) {
 
     // Decrypt the private key

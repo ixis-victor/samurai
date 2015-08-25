@@ -140,7 +140,49 @@ function security_samurai_docker_menu() {
     'access arguments' => array('view security samurai docker images')
   );
 
+  // Ajax callback for creating images
+  $items['ajax/remote/image'] = array(
+    'title' => t('Image creation'),
+    'page callback' => 'security_samurai_docker_build_image_ajax',
+    'access arguments' => array('administer security samurai docker images'),
+    'type' => MENU_CALLBACK,
+  );
+
+  // Ajax callback for creating environments
+  $items['ajax/remote/environment'] = array(
+    'title' => t('Environment creation'),
+    'page callback' => 'security_samurai_docker_build_environment_ajax',
+    'access arguments' => array('administer security samurai docker containers'),
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
+}
+
+/**
+ * Ajax callback
+ *
+ * Creates a docker image
+ */
+function security_samurai_docker_build_image_ajax() {
+   $commands = array();
+
+  $selector = '#samurai-remote-wrapper';
+
+  // output the creation of the image into a file
+  // read the last lines of this file and return the output.
+  $docker = new Docker();
+  $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
+  $html = $image_id;
+
+  // Debug messages, we can use dpm() here.
+  $messages = theme('status_messages');
+  $commands[] = ajax_command_prepend('body', $messages);
+  // Add command with insert new requested content
+  $commands[] = ajax_command_html($selector, $html);
+
+  print ajax_render($commands);
+  drupal_exit();
 }
 
 /**
