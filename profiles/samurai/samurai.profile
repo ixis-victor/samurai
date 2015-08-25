@@ -38,13 +38,13 @@ function samurai_install_tasks(&$install_state) {
   );
 
   // Add a step to create the default image
-  $task['samurai_create_default_image'] = array(
-    'display_name' => st('Create default image'),
-    'display' => TRUE,
-    'type' => 'form',
-    'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
-    'function' => 'samurai_create_default_image_form',
-  );
+  // $task['samurai_create_default_image'] = array(
+  //   'display_name' => st('Create default image'),
+  //   'display' => TRUE,
+  //   'type' => 'form',
+  //   'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
+  //   'function' => 'samurai_create_default_image_form',
+  // );
 
   return $task;
 }
@@ -191,13 +191,13 @@ function samurai_config_form_submit($form, $form_state) {
   $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
 
   // Add a default docker image entity
-  $image = entity_create('docker_image', array(
+  $image = entity_create('docker_image'i, array(
     'image_name' => 'default',
     'image_id' => $image_id,
     'creation_date' => REQUEST_TIME,
   ));
   $image_wrapper = entity_metadata_wrapper('docker_image', $image);
-  $image_wrapper->save();
+    $image_wrapper->save();
 
  *
  */
@@ -205,28 +205,48 @@ function samurai_create_default_image_form($form, &$form_state) {
 
   $form = array();
 
+  // Simple markup for the title and info.
   $form['title'] = array(
     '#type' => 'markup',
-    '#markup' => '<h2>' . t('Creating default image...') . '</h2>',
+    '#markup' => '<h2>' . t('Create default image') . '</h2><p>Ensure you have the <a href="https://docs.docker.com" target="_blank">Docker CLI</a> installed and set up correctly on your server.</p>',
   );
 
-  $form['ajax_content'] = array(
-    '#type' => 'markup',
-    '#prefix' => '<div id="ajax_content">',
-    '#suffix' => '</div>',
-    '#markup' => isset($form_state['ajax_load_values']['current_value'])
-     ? '<pre>' . $form_state['ajax_load_values']['current_value'] . '</pre>' : '<pre>Loading...</pre>',
-    '#ajax' => array(
-      'callback' => 'samurai_create_default_image_form_ajax',
-      'wrapper' => 'ajax_content',
+  // Submit button will remain hidden while the build is in progress
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save and continue'),
+    '#attributes' => array(
+      'style' => array(
+        'display: none',
+      ),
     ),
   );
+
+  // From here there nneeds to be a markup button which initialises the creation of the image,
+  // the build log is then outputted on to the screen
+
+  // IF the build fails, allow the user to start again/provide instructions for a manual setup.
 
   return $form;
 }
 
 function samurai_create_default_image_form_ajax($form, $form_state) {
 
+  // Create the image
+  // Wait until the image is created.
+
+  // IF image is created.
+  
+  $form['test'] = array(
+    '#type' => 'textfield',
+    '#title' => 'test',
+  );
+
+  return $form;
+}
+
+function getValue() {
+  return 1;
 }
 
 /**
