@@ -74,7 +74,7 @@ class Docker {
    */
   public function create_image($image_name, $dockerfile_location = NULL) {
 
-    if (is_null($dockerfile_location) && !is_null($this->dockerfile_locati
+    if (is_null($dockerfile_location) && !is_null($this->dockerfile_location) {
       // If the dockerfile_location is NULL, get the class' value of the variable
       $dockerfile_location = $this->dockerfile_location;
     }
