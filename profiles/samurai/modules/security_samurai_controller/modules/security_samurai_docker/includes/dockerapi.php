@@ -80,7 +80,7 @@ class Docker {
     }
     
     // Construct the command.
-    $command = 'docker build -t ' . $image_name . ' ' . $dockerfile_location . ' 2>&1 > ' . $log . ' &';
+    $command = 'docker build -t ' . $image_name . ' ' . $dockerfile_location;
 
     // - Escape shell metacharacters.
     // - Execute the command.
