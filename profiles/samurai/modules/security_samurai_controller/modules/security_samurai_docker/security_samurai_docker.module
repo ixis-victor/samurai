@@ -179,7 +179,7 @@ function security_samurai_docker_build_image_ajax() {
     'image_id' => $image_id,
     'creation_date' => REQUEST_TIME,
   ));
-  $image_wrapper = entity_metadata_wrapper('docker_image', $image);
+  $image_wrapper = entity_metadata_wrapper('docker_image', $docker_default_image);
   $image_wrapper->save();
 
   // Output for the user
