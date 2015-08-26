@@ -56,9 +56,11 @@ class Docker {
     }
 
     // - Construct the command.
+    // - Escape shell metacharacters.
     // - Execute the command.
     $command = 'docker exec ' . $container_id . ' ' . $command;
-    exec($command . ' 2>&1', $result);
+    $command = escapeshellcmd($command);
+    $result = exec($command . ' 2>&1');
 
     // Return the result.
     return $result;
@@ -116,7 +118,7 @@ class Docker {
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    system($command);
+    exec($command . ' 2>&1');
 
     // No return output for this function.
   }
@@ -173,7 +175,7 @@ class Docker {
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    system($command);
+    exec($command . ' 2>&1');
 
     // No return output for this function.
   }

@@ -214,7 +214,7 @@ function docker_container_form_submit($form, &$form_state) {
       break;
   }
 
-  if (isset($form_state['complete'])) drupal_goto('/jobs/containers/config');
+  if (isset($form_state['complete'])) drupal_goto('/jobs/environments/config');
 
   if ($form_state['triggering_element']['#value'] == 'Back') {
     $form_state['new_step'] = docker_container_form_move_to_previous($form, $form_state);
@@ -233,6 +233,8 @@ function docker_container_form_submit($form, &$form_state) {
  * Submit the container creation form details.
  */
 function docker_container_form_submit_details($form, $form_state) {
+
+  // Logic needed to work out an available port
 
   // Create a new container
   // Use the default image for the container if no image was selected.
