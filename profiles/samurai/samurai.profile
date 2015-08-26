@@ -177,10 +177,14 @@ function samurai_config_form_submit($form, $form_state) {
   variable_set('samurai_gitapi_privkey', encrypt($form_state['values']['gitapi_privkey']));
 
   // Enable the Samurai modules
-  module_enable(array('security_samurai_base'));
+  module_enable('security_samurai_base');
 
-  // Clear the cache
+  // Clear all cache
   cache_clear_all();
+
+  // Rebuild theme caches so things are right
+  system_rebuild_theme_data();
+  drupal_theme_rebuild();
 }
 
 /**
