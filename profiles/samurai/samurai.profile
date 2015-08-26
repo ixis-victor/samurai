@@ -194,7 +194,7 @@ function samurai_create_default_image_form($form, &$form_state) {
   // Simple markup for the title and info.
   $form['title'] = array(
     '#type' => 'markup',
-    '#markup' => '<h2>' . t('Create default image') . '</h2><p>Ensure you have the <a href="https://docs.docker.com" target="_blank">Docker CLI</a> installed and set up correctly on your server.</p>',
+    '#markup' => '<h2>' . t('Create default image') . '</h2><p>Ensure you have the <a href="https://docs.docker.com" target="_blank">Docker CLI</a> installed and set up correctly on your server.</p><p>This process may take up to 5 minutes.</p>',
   );
   // Attach the Ajax file
   $form['#attached']['js'] = array(
