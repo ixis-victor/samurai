@@ -29,7 +29,7 @@ RUN curl -sS https://getcomposer.org/installer | php
 RUN mv composer.phar /usr/local/bin/composer
 
 # Install Drush 6.
-RUN composer global require drush/drush:6.*
+RUN composer global require drush/drush:6.6
 RUN composer global update
 # Unfortunately, adding the composer vendor dir to the PATH doesn't seem to work. So:
 RUN ln -s /root/.composer/vendor/bin/drush /usr/local/bin/drush

@@ -235,6 +235,9 @@ function docker_container_form_submit($form, &$form_state) {
 function docker_container_form_submit_details($form, $form_state) {
 
   // Logic needed to work out an available port
+  // - Check the allowed port range
+  // - Check the max allowed containers
+  // - At least 3 containers must be left free for security updates.
 
   // Create a new container
   // Use the default image for the container if no image was selected.
