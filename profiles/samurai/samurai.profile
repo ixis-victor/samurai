@@ -179,8 +179,8 @@ function samurai_config_form_submit($form, $form_state) {
   // Enable the Samurai modules
   module_enable(array('security_samurai_base'));
 
-  // Clear all cache
-  cache_clear_all();
+  // Rebuild the menu cache
+  menu_rebuild();
 
   // Rebuild theme caches so things are right
   system_rebuild_theme_data();
