@@ -58,7 +58,7 @@ class Docker {
     // - Construct the command.
     // - Execute the command.
     $command = 'docker exec ' . $container_id . ' ' . $command;
-    exec($command, $result);
+    exec($command . ' 2>&1', $result);
 
     // Return the result.
     return $result;
