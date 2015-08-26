@@ -146,7 +146,7 @@ class Docker {
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    $result = system($command);
+    $result = exec($command . ' 2>&1');
 
     // The result returned is the container ID.
     $this->image_name = $image_name;
