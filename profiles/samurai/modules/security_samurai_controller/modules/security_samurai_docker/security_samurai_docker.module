@@ -40,7 +40,7 @@ function security_samurai_docker_entity_info() {
     'base table' => 'securitysamurai_dockerimages',
     'entity keys' => array(
       'id' => 'id',
-      'label' => 'image_id',
+      'label' => 'image_name',
     ),
     'uri callback' => 'entity_class_uri',
     'entity class' => 'DockerImagesEntity',
@@ -169,21 +169,29 @@ function security_samurai_docker_build_image_ajax() {
   $commands = array();
   $selector = '#samurai-remote-wrapper';
 
-  // Init docker and run the create image command.
-  $docker = new Docker();
-  $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
+  if (!is_null(variable_get('samurai_install_default_image_created', NULL))) {
 
-  // Add entity
-  $docker_default_image = entity_create('docker_image', array(
-    'image_name' => 'default',
-    'image_id' => $image_id,
-    'creation_date' => REQUEST_TIME,
-  ));
-  $image_wrapper = entity_metadata_wrapper('docker_image', $docker_default_image);
-  $image_wrapper->save();
+    // Init docker and run the create image command.
+    $docker = new Docker();
+    $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
 
-  // Output for the user
-  $html = '<pre>Image has been created: ' . $image_id . '</pre><input type="submit">Save and continue</input>';
+    // Add entity
+    $docker_default_image = entity_create('docker_image', array(
+      'image_name' => 'default',
+      'image_id' => $image_id,
+      'creation_date' => REQUEST_TIME,
+    ));
+    $image_wrapper = entity_metadata_wrapper('docker_image', $docker_default_image);
+    $image_wrapper->save();
+
+    // Output for the user
+    $html = '<pre>Image has been created: ' . $image_id . '</pre>';
+
+    variable_set('samurai_install_default_image_created', TRUE);
+  } else {
+
+    $html = '<pre>Image has already been created</pre>';
+  }
 
   // Add command with insert new requested content
   $commands[] = ajax_command_html($selector, $html);
@@ -280,7 +288,7 @@ class DockerContainersEntity extends Entity {
 
   protected function defaultUri() {
 
-    return array('path' => 'docker/container/' . $this->identifier());
+    return array('path' => 'jobs/environment/' . $this->identifier());
   }
 }
 
@@ -338,7 +346,7 @@ class DockerImagesEntity extends Entity {
 
   protected function defaultUri() {
 
-    return array('path' => 'docker/image/' . $this->identifier());
+    return array('path' => 'jobs/image/' . $this->identifier());
   }
 }
 
