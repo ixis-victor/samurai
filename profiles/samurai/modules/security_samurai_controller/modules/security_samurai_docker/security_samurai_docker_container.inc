@@ -237,7 +237,7 @@ function docker_container_form_submit_details($form, $form_state) {
   // Create a new container
   // Use the default image for the container if no image was selected.
   $docker = new Docker;
-  $docker->create_container('3000:80', 'default');
+  $docker->create_container('3001:80', 'default');
 
   // Clone the repo of the site, grab a database (drush aliases)
   // This process will be different if the site is a make installation or standard.
