@@ -169,7 +169,7 @@ function security_samurai_docker_build_image_ajax() {
   $commands = array();
   $selector = '#samurai-remote-wrapper';
 
-  if (!is_null(variable_get('samurai_install_default_image_created', NULL))) {
+  if (is_null(variable_get('samurai_install_default_image_created', NULL))) {
 
     // Init docker and run the create image command.
     $docker = new Docker();
