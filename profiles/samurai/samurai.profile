@@ -176,9 +176,6 @@ function samurai_config_form_submit($form, $form_state) {
   // security_samurai_gitapi
   variable_set('samurai_gitapi_privkey', encrypt($form_state['values']['gitapi_privkey']));
 
-  // Enable the Samurai modules
-  module_enable(array('security_samurai_base'));
-
   // Rebuild the menu cache
   menu_rebuild();
 

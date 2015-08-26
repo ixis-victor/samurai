@@ -42,3 +42,4 @@ dependencies[] = elysia_cron
 dependencies[] = jquery_update
 dependencies[] = module_filter
 dependencies[] = encrypt
+dependencies[] = security_samurai_base
