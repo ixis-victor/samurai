@@ -23,6 +23,9 @@ function docker_container_form($form, &$form_state) {
     case 'docker_container_form_step_2':
       return docker_container_form_step_2($form, $form_state);
       break;
+    case 'docker_container_form_step_3':
+      return docker_container_form_step_3($form, $form_state);
+      break;
     default:
       return docker_container_form_step_1($form, $form_state);
       break;
@@ -61,7 +64,7 @@ function docker_container_form_move_to_next($form, $form_state) {
       break;
 
     case 'docker_container_form_step_2':
-      return 'docker_container_form_step_3'
+      return 'docker_container_form_step_3';
       break;
   }
 }

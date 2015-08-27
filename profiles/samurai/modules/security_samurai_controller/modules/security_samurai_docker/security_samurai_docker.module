@@ -153,7 +153,6 @@ function security_samurai_docker_menu() {
   $items['ajax/remote/environment'] = array(
     'title' => t('Environment creation'),
     'page callback' => 'security_samurai_docker_build_environment_ajax',
-    'page arguments' => array(3),
     'access arguments' => array('administer security samurai docker containers'),
     'type' => MENU_CALLBACK,
   );
@@ -243,7 +242,7 @@ function security_samurai_docker_build_environment_ajax() {
   }
 
   // Delete the temp information
-  variable_delete('samurai_contaier_temp_information');
+  variable_del('samurai_contaier_temp_information');
 
   // Insert new requested content
   $commands[] = ajax_command_html($selector, $html);
