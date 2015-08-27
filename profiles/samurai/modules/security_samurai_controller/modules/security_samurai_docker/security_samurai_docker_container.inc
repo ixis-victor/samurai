@@ -231,7 +231,7 @@ function docker_container_form_step_3($form, $form_state) {
   );
   // Attach custom ajax.
   $form['#attached']['js'] = array(
-    drupal_get_path('module', 'security_samurai_docker') . '/samurai-setup-container-ajax.js',
+    drupal_get_path('module', 'security_samurai_docker') . '/samurai-set-up-container-ajax.js',
   );
   // Attach ajax libraries
   $form['#attached']['library'] = array(
