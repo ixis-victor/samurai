@@ -149,9 +149,10 @@ function security_samurai_docker_menu() {
   );
 
   // Ajax callback for creating environments
-  $items['ajax/remote/environment'] = array(
+  $items['ajax/remote/environment/%'] = array(
     'title' => t('Environment creation'),
     'page callback' => 'security_samurai_docker_build_environment_ajax',
+    'page arguments' => array(3)
     'access arguments' => array('administer security samurai docker containers'),
     'type' => MENU_CALLBACK,
   );
@@ -164,16 +165,20 @@ function security_samurai_docker_menu() {
  *
  * Creates a docker image
  */
-function security_samurai_docker_build_image_ajax() {
+function security_samurai_docker_build_image_ajax($image_name) {
   
   $commands = array();
   $selector = '#samurai-remote-wrapper';
 
-  if (is_null(variable_get('samurai_install_default_image_created', NULL))) {
+  $image_created = variable_get('samurai_' . $image_name . '_image_created', NULL);
+  $image_dockerfile_location = variable_get('samurai_' . $image_name . '_dockerfile_location', NULL);
+
+  // Check if the image_name image created Drupal variable exists.
+  if (is_null($image_created) && !is_null($image_dockerfile_location)) {
 
     // Init docker and run the create image command.
     $docker = new Docker();
-    $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
+    $image_id = $docker->create_image($image_name, $image_dockerfile_location);
 
     // If the image was created successfully, a 12 character string is returned.
     if (strlen($image_id) > 12 || strlen($image_id) < 12) {
@@ -184,9 +189,9 @@ function security_samurai_docker_build_image_ajax() {
 
     } else {
 
-      // Add entity
+      // Add the docker_image entity
       $docker_default_image = entity_create('docker_image', array(
-        'image_name' => 'default',
+        'image_name' => $image_name,
         'image_id' => $image_id,
         'creation_date' => REQUEST_TIME,
       ));
@@ -197,7 +202,7 @@ function security_samurai_docker_build_image_ajax() {
       $html = '<pre>Image has been created: ' . $image_id . '</pre>';
 
       // The image has been created successfully.
-      variable_set('samurai_install_default_image_created', TRUE);
+      variable_set('samurai_' . $image_name . '_image_created', TRUE);
     }
   } else {
 
