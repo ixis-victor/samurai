@@ -231,14 +231,14 @@ function docker_container_form_step_3($form, $form_state) {
   );
   // Attach custom ajax.
   $form['#attached']['js'] = array(
-    drupal_get_path('profile', 'security_samurai_docker') . '/samurai-setup-container-ajax.js',
+    drupal_get_path('module', 'security_samurai_docker') . '/samurai-setup-container-ajax.js',
   );
   // Attach ajax libraries
   $form['#attached']['library'] = array(
     array('system', 'drupal.ajax'),
   );
   // Container
-  $form['container'] = array(
+  $form['docker_container']['container'] = array(
     '#type' => 'container',
     '#attributes' => array(
       'id' => 'samurai-remote-wrapper',
@@ -246,13 +246,13 @@ function docker_container_form_step_3($form, $form_state) {
     ),
   );
   // Container content
-  $form['container']['content'] = array(
+  $form['docker_container']['container']['content'] = array(
     '#prefix' => '<pre>',
     '#suffix' => '</pre>',
     '#markup' => t('Loading data...'),
   );
   // Submit button will remain hidden while the build is in progress
-  $form['submit'] = array(
+  $form['docker_container']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
     '#attributes' => array(
