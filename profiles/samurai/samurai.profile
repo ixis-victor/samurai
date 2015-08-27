@@ -222,22 +222,6 @@ function samurai_create_default_image_form($form, &$form_state) {
     '#suffix' => '</pre>',
     '#markup' => t('Loading data...'),
   );
-  // Submit button will remain hidden while the build is in progress
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save and continue'),
-    '#attributes' => array(
-      'style' => array(
-        'display: none',
-      ),
-    ),
-  );
-
-
-  // From here there nneeds to be a markup button which initialises the creation of the image,
-  // the build log is then outputted on to the screen
-
-  // IF the build fails, allow the user to start again/provide instructions for a manual setup.
 
   return $form;
 }
