@@ -201,7 +201,7 @@ function security_samurai_docker_build_image_ajax($image_name) {
 
       // Output for the user
       $html = '<pre>Image has been created: ' . $image_id . '</pre>';
-      $html .= '<input style="" type="submit" id="edit-submit" name="op" value="Save and continue" class="form-submit">';
+      $html .= '<script type="text/javascript">(function ($) {$("#edit-submit").css({"display": "block"});})(jQuery);</script>';
 
       // The image has been created successfully.
       variable_set('samurai_' . $image_name . '_image_created', TRUE);

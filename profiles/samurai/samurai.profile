@@ -222,6 +222,16 @@ function samurai_create_default_image_form($form, &$form_state) {
     '#suffix' => '</pre>',
     '#markup' => t('Loading data...'),
   );
+  // Submit button will remain hidden while the build is in progress
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save and continue'),
+    '#attributes' => array(
+      'style' => array(
+        'display: none',
+      ),
+    ),
+  );
 
   return $form;
 }
