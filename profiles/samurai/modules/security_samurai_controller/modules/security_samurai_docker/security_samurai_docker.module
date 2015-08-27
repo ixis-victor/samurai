@@ -141,9 +141,10 @@ function security_samurai_docker_menu() {
   );
 
   // Ajax callback for creating images
-  $items['ajax/remote/image'] = array(
+  $items['ajax/remote/image/%'] = array(
     'title' => t('Image creation'),
     'page callback' => 'security_samurai_docker_build_image_ajax',
+    'page arguments' => array(3),
     'access arguments' => array('administer security samurai docker images'),
     'type' => MENU_CALLBACK,
   );
@@ -185,7 +186,7 @@ function security_samurai_docker_build_image_ajax($image_name) {
 
       // Presume image was not created successfully.
       $html = '<pre>The image creation process has failed. Here is the output received: ' . $image_id . '</pre>';
-      $html .= '<p>Click the above text to restart the image creation process or create the image manually.</p>'
+      $html .= '<p>Click the above text to restart the image creation process or create the image manually.</p>';
 
     } else {
 
