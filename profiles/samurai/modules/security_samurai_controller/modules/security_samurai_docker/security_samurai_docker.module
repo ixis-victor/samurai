@@ -175,19 +175,30 @@ function security_samurai_docker_build_image_ajax() {
     $docker = new Docker();
     $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
 
-    // Add entity
-    $docker_default_image = entity_create('docker_image', array(
-      'image_name' => 'default',
-      'image_id' => $image_id,
-      'creation_date' => REQUEST_TIME,
-    ));
-    $image_wrapper = entity_metadata_wrapper('docker_image', $docker_default_image);
-    $image_wrapper->save();
+    // If the image was created successfully, a 12 character string is returned.
+    if (strlen($image_id) > 12 || strlen($image_id) < 12) {
 
-    // Output for the user
-    $html = '<pre>Image has been created: ' . $image_id . '</pre>';
+      // Presume image was not created successfully.
+      $html = '<pre>The image creation process has failed. Here is the output received: ' . $image_id . '</pre>';
+      $html .= '<p>Click the above text to restart the image creation process or create the image manually.</p>'
 
-    variable_set('samurai_install_default_image_created', TRUE);
+    } else {
+
+      // Add entity
+      $docker_default_image = entity_create('docker_image', array(
+        'image_name' => 'default',
+        'image_id' => $image_id,
+        'creation_date' => REQUEST_TIME,
+      ));
+      $image_wrapper = entity_metadata_wrapper('docker_image', $docker_default_image);
+      $image_wrapper->save();
+
+      // Output for the user
+      $html = '<pre>Image has been created: ' . $image_id . '</pre>';
+
+      // The image has been created successfully.
+      variable_set('samurai_install_default_image_created', TRUE);
+    }
   } else {
 
     $html = '<pre>Image has already been created</pre>';
