@@ -150,7 +150,7 @@ function security_samurai_docker_menu() {
   );
 
   // Ajax callback for creating environments
-  $items['ajax/remote/environment/%'] = array(
+  $items['ajax/remote/environment'] = array(
     'title' => t('Environment creation'),
     'page callback' => 'security_samurai_docker_build_environment_ajax',
     'page arguments' => array(3),
@@ -159,6 +159,97 @@ function security_samurai_docker_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Ajax callback
+ * 
+ * Creates a docker container
+ */
+function security_samurai_docker_build_environment_ajax() {
+
+  $commands = array();
+  $selector = '#samurai-remote-wrapper';
+
+  $container_information = variable_get('samurai_container_temp_information', NULL);
+
+  if (!is_null($container_information)) {
+
+    // Check what ports in the port range are currently available.
+    // Port range will start from 3000.
+    $max_active_containers = variable_get('samurai_docker_max_active_containers', 0);
+
+    if ($max_active_containers >= samurai_docker_get_active_containers()) {
+
+      // No environments available. All are being used.
+      $html = '<pre>' . t('All environments are currently in use.');
+      $html .= t('You can either stop an active environment or raise the number of maximum active containers.') . '</pre>';
+    } else {
+
+      // Check what ports are available
+      $available_port = samurai_docker_get_available_port();
+
+      // Update the samurai_docker_ports variable with the new used port
+      $docker_ports = variable_get('samurai_docker_ports', NULL);
+      if (!is_null($docker_ports)) {
+
+        $docker_ports[$available_port] = TRUE;
+        variable_set('samurai_docker_ports', $docker_ports);
+      } else {
+
+        $docker_ports = array();
+        $docker_ports[$available_port] = TRUE;
+        variable_set('samurai_docker_ports', $docker_ports);
+      }
+
+      // Append ':80' on to the end of the available_port string
+      $available_port = $available_port . ':80';
+
+      // Init docker and run the create container command
+      $docker = new Docker();
+      $docker->create_container($available_port, $container_information['image']);
+
+      // Start apache on the container
+      $docker->execute_command('service apache2 start');
+
+      // Create a new docker container entity and save it
+      $container = entity_create('docker_container', array(
+        'container_id' => $docker->container_id,
+        'image_name' => $docker->image_name,
+        'assigned_ports' => $docker->assigned_ports,
+        'status' => 1,
+        'creation_date' => REQUEST_TIME,
+      ));
+      $container_wrapper = entity_metadata_wrapper('docker_container', $container);
+      $container_wrapper->save();
+
+      // Create a link between the new container and an existing site
+      $container_id = samurai_docker_get_container_row_id($docker->container_id);
+      $image_id = samurai_docker_get_image_row_id($docker->container_image_name);
+      $site_id = $container_information['site_id'];
+      $branch = $container_information['branch'];
+
+      samurai_docker_create_dockersite_link($container_id, $site_id, $image_id, $branch);
+
+      // Success message
+      $html = '<pre>' . t('Environment has been created') . '</pre>';
+      $html .= '<p>' . t('You will now be redirected to the page to manage this new environment.') . '</p>'
+    }
+
+  } else {
+
+    // No environments available
+    $html = '<pre>' . t('No environment information specified') . '</pre>'
+  }
+
+  // Delete the temp information
+  variable_delete('samurai_contaier_temp_information');
+
+  // Insert new requested content
+  $commands[] = ajax_command_html($selector, $html);
+
+  print ajax_render($commands);
+  drupal_exit();
 }
 
 /**
@@ -201,7 +292,7 @@ function security_samurai_docker_build_image_ajax($image_name) {
 
       // Output for the user
       $html = '<pre>Image has been created: ' . $image_id . '</pre>';
-      $html .= '<script type="text/javascript">(function ($) {$("#edit-submit").css({"display": "block"});})(jQuery);</script>';
+      $html .= '<script type="text/javascript">(function ($) {$("#edit-submit").css({"display":"block"});})(jQuery);</script>';
 
       // The image has been created successfully.
       variable_set('samurai_' . $image_name . '_image_created', TRUE);
@@ -211,11 +302,127 @@ function security_samurai_docker_build_image_ajax($image_name) {
     $html = '<pre>Image has already been created</pre>';
   }
 
-  // Add command with insert new requested content
+  // Insert new requested content
   $commands[] = ajax_command_html($selector, $html);
 
   print ajax_render($commands);
   drupal_exit();
+}
+
+/**
+ * Return an available port 
+ */
+function samurai_docker_get_available_port() {
+
+  // Make sure available_port is within scope
+  $available_port = NULL;
+
+  // Retrieve the array of ports currently in use
+  $samurai_docker_ports = variable_get('samurai_docker_ports', NULL);
+
+  // Create an array 3000 -- 3100.
+  $port_range = range(3000, 3100);
+
+  // Ideally the lowest port number would be best,
+  // so the possible range is kept as low as possible
+  foreach ($port_range as $key => $value) {
+    
+    // Check if the port is already in use by
+    // crossreferencing samurai_docker_ports
+    if (empty($samurai_docker_ports[$value])) {
+
+      // The docker port is not currently in use
+      $available_port = $value;
+
+      // Break out of foreach
+      break;
+    }
+  }
+
+  if (!is_null($available_port)) {
+
+    // Port is availalble
+    return $available_port;
+  } else {
+
+    // No ports available
+    return NULL;
+  }
+}
+
+/**
+ * Returns the number of active containers
+ */
+function samurai_docker_get_active_containers() {
+
+  // Perform the query
+  $result = db_query('SELECT container_id FROM {securitysamurai_dockercontainers} 
+    WHERE status = 1')->fetchAll();
+
+  // Loop through results adding 1 to $count each loop
+  $count = 0;
+  foreach ($result as $key => $value) {
+    $count++;
+  }
+
+  // Return the result
+  return $count;
+}
+
+/**
+ * Returns the ID for a docker container
+ *
+ * @param string $container_id The unique ID generated by Docker
+ */
+function samurai_docker_get_container_row_id($container_id) {
+
+  // Execute the query
+  $result = db_query('SELECT id FROM {securitysamurai_dockercontainers}
+    WHERE container_id = :container_id', array(
+      ':container_id' => $container_id,
+    ))->fetchField();
+
+  // Return the result
+  return $result;
+}
+
+/**
+ * Returns the ID for docker image
+ *
+ * @param string $image_name The name of the image
+ */
+function samurai_docker_get_image_row_id($image_name) {
+
+  // Execute the query
+  $result = db_query('SELECT id FROM {securitysamurai_dockerimages}
+    WHERE image_name = :image_name', array(
+      ':image_name' => $image_name,
+    ))->fetchField();
+
+  // Return the result
+  return $result;
+}
+
+/**
+ * Insert a row into the securitysamurai_dockersites table
+ * Easily link between the entities.
+ *
+ * @param int $site_id The ID of the site (securitysamurai_site)
+ * @param int $container_id The ID of the container (securitysamurai_dockercontainers)
+ * @param int $image_id The ID of the image (securitysamurai_dockerimages)
+ * @param string $branch_name The name of the branch
+ */
+function samurai_docker_create_dockersite_link($site_id, $container_id, $image_id, $branch_name) {
+
+  // Insert the values in the securitysamurai_dockersites table
+  db_insert('securitysamurai_dockersites')
+    ->fields(array(
+      'container_id' => $container_id,
+      'image_id' => $image_id,
+      'site_id' => $site_id,
+      'branch' => $branch_name
+    ))
+    ->execute();
 }
 
 /**

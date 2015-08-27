@@ -59,6 +59,10 @@ function docker_container_form_move_to_next($form, $form_state) {
     case 'docker_container_form_step_1':
       return 'docker_container_form_step_2';
       break;
+
+    case 'docker_container_form_step_2':
+      return 'docker_container_form_step_3'
+      break;
   }
 }
 
@@ -174,7 +178,7 @@ function docker_container_form_step_2($form, $form_state) {
   // The form submit button.
   $form['form_next'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit'),
+    '#value' => t('Next'),
   );
 
   return $form;
@@ -192,16 +196,82 @@ function docker_container_form_step_2_validate($form, $form_state) {
 }
 
 /**
+ * Form step 3 for docker_container_form
+ */
+function docker_container_form_step_3($form, $form_state) {
+
+  // This could be done in docker_container_form_step_2_submit
+  $sites_array = samurai_get_sites();
+  $site_key = $form_state['multistep_values']['docker_container_form_step_1']['docker_container_form_site'] - 1;
+  $site_id = samurai_get_site_id($sites_array[$site_key]);
+  $branches_array = gitinfo_branches($site_id);
+  $selected_branch = $branches_array[$form_state['multistep_values']['docker_container_form_step_2']['docker_container_form_branch'] - 1];
+
+  // Container information array.
+  $container_information = array(
+    'site_id' => $site_id,
+    'branch' => $selected_branch,
+    'image' => 'default',
+  );
+
+  // Set the container information temp variable
+  variable_set('samurai_container_temp_information', $container_information);
+
+  $form = array();
+
+  // Wrapper for the form elements.
+  $form['docker_container'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Setup options'),
+    '#fieldset_icon' => 'settings',
+    '#collapsed' => FALSE,
+  );
+  // Attach custom ajax.
+  $form['#attached']['js'] = array(
+    drupal_get_path('profile', 'security_samurai_docker') . '/samurai-setup-container-ajax.js',
+  );
+  // Attach ajax libraries
+  $form['#attached']['library'] = array(
+    array('system', 'drupal.ajax'),
+  );
+  // Container
+  $form['container'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'id' => 'samurai-remote-wrapper',
+      'title' => t('Click to create image.'),
+    ),
+  );
+  // Container content
+  $form['container']['content'] = array(
+    '#prefix' => '<pre>',
+    '#suffix' => '</pre>',
+    '#markup' => t('Loading data...'),
+  );
+  // Submit button will remain hidden while the build is in progress
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+    '#attributes' => array(
+      'style' => array(
+        'display: none',
+      ),
+    ),
+  );
+
+  return $form;
+}
+
+/**
  * Form submit handler for docker_container_form
  */
 function docker_container_form_submit($form, &$form_state) {
 
   switch ($form_state['step']) {
 
-    case 'docker_container_form_step_2':
+    case 'docker_container_form_step_3':
       $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
       if ($form_state['triggering_element']['#value'] != 'Back') {
-        docker_container_form_submit_details($form, $form_state);
         $form_state['complete'] = TRUE;
       }
       break;
@@ -214,7 +284,7 @@ function docker_container_form_submit($form, &$form_state) {
       break;
   }
 
-  if (isset($form_state['complete'])) drupal_goto('/jobs/environments/config');
+  if (isset($form_state['complete'])) drupal_goto('/jobs/environments');
 
   if ($form_state['triggering_element']['#value'] == 'Back') {
     $form_state['new_step'] = docker_container_form_move_to_previous($form, $form_state);
@@ -227,62 +297,4 @@ function docker_container_form_submit($form, &$form_state) {
   $form_state['multistep_values']['form_build_id'] = $form_state['values']['form_build_id'];
   $form_state['step'] = $form_state['new_step'];
   $form_state['rebuild'] = TRUE;
-}
-
-/**
- * Submit the container creation form details.
- */
-function docker_container_form_submit_details($form, $form_state) {
-
-  // Logic needed to work out an available port
-  // - Check the allowed port range
-  // - Check the max allowed containers
-  // - At least 3 containers must be left free for security updates.
-
-  // Create a new container
-  // Use the default image for the container if no image was selected.
-  $docker = new Docker;
-  $docker->create_container('3001:80', 'default');
-
-  // Clone the repo of the site, grab a database (drush aliases)
-  // This process will be different if the site is a make installation or standard.
-
-  // - Get all of the sites.
-  // - Get the selected site key.
-  // - Get the site ID.
-  // - Get all of the branches associated with the selected site.
-  // - Get the selected branch.
-  $sites_array = samurai_get_sites();
-  $site_key = $form_state['multistep_values']['docker_container_form_step_1']['docker_container_form_site'] - 1;
-  $site_id = samurai_get_site_id($sites_array[$site_key]);
-  $branches_array = gitinfo_branches($site_id);
-  $selected_branch = $branches_array[$form_state['multistep_values']['docker_container_form_step_2']['docker_container_form_branch'] - 1];
-
-  // Create the private key file
-  $private_key = variable_get('samurai_gitapi_privkey', NULL);
-  if (!is_null($private_key)) {
-
-    // Decrypt the private key
-    $private_key = decrypt($private_key);
-    
-    // Add the key to the container
-    $docker->execute_commmand('./samurai-scripts/set_ssh_key.sh \'$private_key\'');
-
-    // Start apache on the container
-    $docker->execute_command('service apache2 start');
-  } else {
-
-    return FALSE;
-  }
-
-  // Create a new docker container entity and save it.
-  $container = entity_create('docker_container', array(
-    'container_id' => $docker->container_id,
-    'image_name' => $docker->image_name,
-    'assigned_ports' => $docker->assigned_ports,
-    'status' => 1,
-    'creation_date' => REQUEST_TIME,
-  ));
-  $container_wrapper = entity_metadata_wrapper('docker_container', $container);
-  $container_wrapper->save();
 }
