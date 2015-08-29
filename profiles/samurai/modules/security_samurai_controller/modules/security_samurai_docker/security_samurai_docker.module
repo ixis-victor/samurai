@@ -232,10 +232,13 @@ function security_samurai_docker_build_environment_ajax() {
 
       // Success message
       $html = '<pre>' . t('Environment has been created') . '</pre>';
-      $html .= '<p>' . t('You will now be redirected to the page to manage this new environment.') . '</p>';
+      $html .= '<p>' . t('You will now be redirected to a page that will allow you to manage this environment.') . '</p>';
 
       // Delete the temp variable
       variable_del('samurai_contaier_temp_information');
+
+      // Redirect to the environment page
+      drupal_goto('jobs/environment/' . $container_id);
     }
 
   } else {
