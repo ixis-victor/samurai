@@ -232,7 +232,7 @@ function security_samurai_docker_build_environment_ajax() {
 
       // Success message
       $html = '<pre>' . t('Environment has been created') . '</pre>';
-      $html .= '<p>' . t('You will be redirected to a page that will allow you to manage this environment upon submission of this form.') . '</p>';
+      $html .= t('You will be redirected to a page that will allow you to manage this environment upon submission of this form.');
       $html .= '<script type="text/javascript">(function ($) {$("#edit-submit").css({"display":"block"});})(jQuery);</script>';
 
       // Delete the temp variable

@@ -252,7 +252,7 @@ function docker_container_form_step_3($form, $form_state) {
     '#markup' => t('Creating environment...'),
   );
   // Submit button will remain hidden while the build is in progress
-  $form['docker_container']['submit'] = array(
+  $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
     '#attributes' => array(
