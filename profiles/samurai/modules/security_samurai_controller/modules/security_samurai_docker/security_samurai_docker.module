@@ -178,7 +178,7 @@ function security_samurai_docker_build_environment_ajax() {
     // Port range will start from 3000.
     $max_active_containers = variable_get('samurai_docker_max_active_containers', 0);
 
-    if ($max_active_containers >= samurai_docker_get_active_containers()) {
+    if (samurai_docker_get_active_containers() >= $max_active_containers) {
 
       // No environments available. All are being used.
       $html = '<pre>' . t('All environments are currently in use.');
@@ -411,7 +411,7 @@ function samurai_docker_get_image_row_id($image_name) {
  * @param int $image_id The ID of the image (securitysamurai_dockerimages)
  * @param string $branch_name The name of the branch
  */
-function samurai_docker_create_dockersite_link($site_id, $container_id, $image_id, $branch_name) {
+function samurai_docker_create_dockersite_link($container_id, $site_id, $image_id, $branch_name) {
 
   // Insert the values in the securitysamurai_dockersites table
   db_insert('securitysamurai_dockersites')
