@@ -224,7 +224,7 @@ function security_samurai_docker_build_environment_ajax() {
 
       // Create a link between the new container and an existing site
       $container_id = samurai_docker_get_container_row_id($docker->container_id);
-      $image_id = samurai_docker_get_image_row_id($docker->container_image_name);
+      $image_id = samurai_docker_get_image_row_id($docker->image_name);
       $site_id = $container_information['site_id'];
       $branch = $container_information['branch'];
 
@@ -233,6 +233,9 @@ function security_samurai_docker_build_environment_ajax() {
       // Success message
       $html = '<pre>' . t('Environment has been created') . '</pre>';
       $html .= '<p>' . t('You will now be redirected to the page to manage this new environment.') . '</p>';
+
+      // Delete the temp variable
+      variable_del('samurai_contaier_temp_information');
     }
 
   } else {
@@ -240,9 +243,6 @@ function security_samurai_docker_build_environment_ajax() {
     // No environments available
     $html = '<pre>' . t('No environment information specified') . '</pre>';
   }
-
-  // Delete the temp information
-  variable_del('samurai_contaier_temp_information');
 
   // Insert new requested content
   $commands[] = ajax_command_html($selector, $html);
