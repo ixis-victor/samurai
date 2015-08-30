@@ -213,7 +213,7 @@ function security_samurai_docker_build_environment_ajax() {
       $docker->execute_command('service apache2 start');
 
       // Create a new docker container entity and save it
-      $container = entity_create('docker_container', array(
+      $container = entity_create('docker_containers', array(
         'container_id' => $docker->container_id,
         'container_name' => $container_information['name'],
         'container_description' => $container_information['description'],
