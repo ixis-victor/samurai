@@ -8,7 +8,7 @@
 /**
  * Implements drupal_form()
  */
-function docker_container_form($form, &$form_state) {
+function docker_containers_form($form, &$form_state) {
 
 	// If no current step is defined, set it to the first one.
   if (!isset($form_state['step'])) $form_state['step'] = 'docker_container_form_step_1';
@@ -272,7 +272,7 @@ function docker_container_form_step_3($form, $form_state) {
 /**
  * Form submit handler for docker_container_form
  */
-function docker_container_form_submit($form, &$form_state) {
+function docker_containers_form_submit($form, &$form_state) {
 
   switch ($form_state['step']) {
 
