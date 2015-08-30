@@ -394,7 +394,7 @@ function samurai_process_update_data($decrypted_update_data) {
         $m_latest_minor_secure = $m_split_version['minor'];
 
         // First check that the project isn't custom.
-        if ($m_type['type'] != 'module_custom') {
+        if ($m_type != 'module_custom') {
 
           // -- Retrieve the latest secure minor version of the module.
           // -- Retrieve the latest minor version of the module.
