@@ -181,8 +181,8 @@ function security_samurai_docker_build_environment_ajax() {
     if (samurai_docker_get_active_containers() >= $max_active_containers) {
 
       // No environments available. All are being used.
-      $html = '<pre>' . t('All environments are currently in use.');
-      $html .= t('You can either stop an active environment or raise the number of maximum active containers.') . '</pre>';
+      $html = '<pre>' . t('All environments are currently in use.') . '</pre>';
+      $html .= '<pre>' . t('You can either stop an active environment or raise the number of maximum active containers.') . '</pre>';
     } else {
 
       // Check what ports are available
@@ -235,8 +235,8 @@ function security_samurai_docker_build_environment_ajax() {
       $html .= t('You will be redirected to a page that will allow you to manage this environment upon submission of this form.');
       $html .= '<script type="text/javascript">(function ($) {$("#edit-submit").css({"display":"block"});})(jQuery);</script>';
 
-      // Delete the temp variable
-      variable_del('samurai_contaier_temp_information');
+      // Set the temp variable to NULL
+      variable_set('samurai_contaier_temp_information', NULL);
     }
 
   } else {
