@@ -223,7 +223,7 @@ function security_samurai_docker_build_environment_ajax() {
         'status' => 1,
         'creation_date' => REQUEST_TIME,
       ));
-      $container_wrapper = entity_metadata_wrapper('docker_container', $container);
+      $container_wrapper = entity_metadata_wrapper('docker_containers', $container);
       $container_wrapper->save();
 
       // Create a link between the new container and an existing site
