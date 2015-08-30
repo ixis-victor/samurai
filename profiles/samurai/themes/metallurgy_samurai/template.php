@@ -18,7 +18,7 @@ function metallurgy_samurai_theme($existing, $type, $theme, $path) {
       'variables' => array('element' => null),
       'template' => 'templates/entity/entity--client-site'
     ),
-    'docker_container' => array(
+    'docker_containers' => array(
       'variables' => array('element' => null),
       'template' => 'templates/entity/entity--docker-container'
     ),

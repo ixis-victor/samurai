@@ -209,12 +209,16 @@ function docker_container_form_step_3($form, $form_state) {
   $site_id = samurai_get_site_id($sites_array[$site_key]);
   $branches_array = gitinfo_branches($site_id);
   $selected_branch = $branches_array[$form_state['multistep_values']['docker_container_form_step_2']['docker_container_form_branch'] - 1];
+  $name = $form_state['multistep_values']['docker_container_form_step_1']['docker_container_form_name'];
+  $description = $form_state['multistep_values']['docker_container_form_step_1']['docker_container_form_description'];
 
   // Container information array.
   $container_information = array(
     'site_id' => $site_id,
     'branch' => $selected_branch,
     'image' => 'default',
+    'name' => $name,
+    'description' => $description,
   );
 
   // Set the container information temp variable

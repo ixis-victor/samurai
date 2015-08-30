@@ -12,12 +12,12 @@ function security_samurai_docker_entity_info() {
   $entity = array();
 
   // The entity info for the docker_container entity type.
-  $entity['docker_container'] = array(
+  $entity['docker_containers'] = array(
     'label' => t('Environment'),
     'base table' => 'securitysamurai_dockercontainers',
     'entity keys' => array(
       'id' => 'id',
-      'label' => 'container_id',
+      'label' => 'container_name',
     ),
     'uri callback' => 'entity_class_uri',
     'entity class' => 'DockerContainersEntity',
@@ -125,11 +125,12 @@ function security_samurai_docker_menu() {
   );
 
   // Docker containers view entity pages
-  $items['jobs/environment/%docker_containers'] = array(
+  $items['jobs/environments/%docker_containers'] = array(
     'title' => t('Docker container'),
     'page callback' => 'security_samurai_docker_container_view_entity',
     'page arguments' => array(2),
     'access arguments' => array('view security samurai docker containers'),
+    'access callback' => TRUE,
   );
 
   // Docker images view entity pages
@@ -214,6 +215,9 @@ function security_samurai_docker_build_environment_ajax() {
       // Create a new docker container entity and save it
       $container = entity_create('docker_container', array(
         'container_id' => $docker->container_id,
+        'container_name' => $container_information['name'],
+        'container_description' => $container_information['description'],
+        'container_branch' => $container_information['branch'],
         'image_name' => $docker->image_name,
         'assigned_ports' => $docker->assigned_ports,
         'status' => 1,
@@ -404,6 +408,19 @@ function samurai_docker_get_image_row_id($image_name) {
 }
 
 /**
+ * Returns the id of the client_site associated with a container
+ */
+function samurai_docker_get_associated_site($container_id) {
+
+  $result = db_query('SELECT site_id FROM {securitysamurai_dockersites}
+    WHERE container_id = :container_id', array(
+      ':container_id' => $container_id,
+    ))->fetchField();
+
+  return $result;
+}
+
+/**
  * Insert a row into the securitysamurai_dockersites table
  * Easily link between the entities.
  *
@@ -513,7 +530,7 @@ class DockerContainersEntity extends Entity {
 
   protected function defaultUri() {
 
-    return array('path' => 'jobs/environment/' . $this->identifier());
+    return array('path' => 'jobs/environments/' . $this->identifier());
   }
 }
 
@@ -536,7 +553,7 @@ class DockerContainersEntityController extends EntityAPIController {
  *
  * Menu autoloader for project entities.
  */
-function docker_container_load($id) {
+function docker_containers_load($id) {
 
   $docker_entity = entity_load('docker_containers', array($id));
   return array_pop($docker_entity);
@@ -550,7 +567,7 @@ function security_samurai_docker_container_view_entity($entity, $view_mode = 'fu
     $entity_type = $entity->entityType();
     $entity_id = entity_id($entity_type, $entity);
     $entity->content = array();
-    $entity->title = filter_xss($entity->name);
+    $entity->title = filter_xss($entity->container_name);
     field_attach_prepare_view($entity_type, array($entity_id => $entity), $view_mode);
     entity_prepare_view($entity_type, array($entity_id => $entity));
     $entity->content += field_attach_view($entity_type, $entity, $view_mode);
@@ -560,6 +577,8 @@ function security_samurai_docker_container_view_entity($entity, $view_mode = 'fu
       '#view_mode' => $view_mode,
       '#language'  => LANGUAGE_NONE,
     );
+
+    drupal_set_title($entity->title);
 
     return $entity->content;
 }
