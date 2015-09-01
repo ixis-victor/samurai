@@ -8,7 +8,7 @@
  * Implements hook_schema()
  */
 function security_samurai_docker_schema() {
-    
+
   $schema = array();
 
   // Schema for Docker images
@@ -56,6 +56,12 @@ function security_samurai_docker_schema() {
         'description' => 'Primary key of the container.',
         'type' => 'serial',
         'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'associated_site_id' => array(
+        'description' => 'Associated site ID',
+        'type' => 'int',
+        'length' => 11,
         'not null' => TRUE,
       ),
       'container_id' => array(
