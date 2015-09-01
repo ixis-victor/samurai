@@ -60,6 +60,10 @@ function security_samurai_views_views_default_views() {
       'empty_column' => 0,
     ),
   );
+  /* Relationship: Environment: Associated site ID */
+  $handler->display->display_options['relationships']['associated_site_id']['id'] = 'associated_site_id';
+  $handler->display->display_options['relationships']['associated_site_id']['table'] = 'securitysamurai_dockercontainers';
+  $handler->display->display_options['relationships']['associated_site_id']['field'] = 'associated_site_id';
   /* Field: Environment: ID */
   $handler->display->display_options['fields']['id']['id'] = 'id';
   $handler->display->display_options['fields']['id']['table'] = 'securitysamurai_dockercontainers';
@@ -71,17 +75,14 @@ function security_samurai_views_views_default_views() {
   $handler->display->display_options['fields']['container_name']['id'] = 'container_name';
   $handler->display->display_options['fields']['container_name']['table'] = 'securitysamurai_dockercontainers';
   $handler->display->display_options['fields']['container_name']['field'] = 'container_name';
-  $handler->display->display_options['fields']['container_name']['label'] = 'Name';
   $handler->display->display_options['fields']['container_name']['alter']['alter_text'] = TRUE;
   $handler->display->display_options['fields']['container_name']['alter']['text'] = '<a style="text-decoration: underline;" href="/jobs/environments/[id]">[container_name]</a>';
-  /* Field: Environment: Environment ID */
-  $handler->display->display_options['fields']['container_id']['id'] = 'container_id';
-  $handler->display->display_options['fields']['container_id']['table'] = 'securitysamurai_dockercontainers';
-  $handler->display->display_options['fields']['container_id']['field'] = 'container_id';
-  $handler->display->display_options['fields']['container_id']['label'] = 'Machine ID';
-  $handler->display->display_options['fields']['container_id']['alter']['max_length'] = '15';
-  $handler->display->display_options['fields']['container_id']['alter']['word_boundary'] = FALSE;
-  $handler->display->display_options['fields']['container_id']['alter']['trim'] = TRUE;
+  /* Field: Site: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'securitysamurai_site';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['relationship'] = 'associated_site_id';
+  $handler->display->display_options['fields']['name']['label'] = 'Site name';
   /* Field: Environment: Environment branch */
   $handler->display->display_options['fields']['container_branch']['id'] = 'container_branch';
   $handler->display->display_options['fields']['container_branch']['table'] = 'securitysamurai_dockercontainers';
@@ -109,6 +110,40 @@ function security_samurai_views_views_default_views() {
       'title' => 'Inactive',
       'operator' => '=',
       'value' => '0',
+    ),
+  );
+  /* Filter criterion: Site: Name */
+  $handler->display->display_options['filters']['name']['id'] = 'name';
+  $handler->display->display_options['filters']['name']['table'] = 'securitysamurai_site';
+  $handler->display->display_options['filters']['name']['field'] = 'name';
+  $handler->display->display_options['filters']['name']['relationship'] = 'associated_site_id';
+  $handler->display->display_options['filters']['name']['operator'] = 'contains';
+  $handler->display->display_options['filters']['name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['name']['expose']['operator_id'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['label'] = 'Site name';
+  $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+  );
+  $handler->display->display_options['filters']['name']['group_info']['label'] = 'Name';
+  $handler->display->display_options['filters']['name']['group_info']['identifier'] = 'name';
+  $handler->display->display_options['filters']['name']['group_info']['group_items'] = array(
+    1 => array(
+      'title' => '',
+      'operator' => '=',
+      'value' => '',
+    ),
+    2 => array(
+      'title' => '',
+      'operator' => '=',
+      'value' => '',
+    ),
+    3 => array(
+      'title' => '',
+      'operator' => '=',
+      'value' => '',
     ),
   );
 

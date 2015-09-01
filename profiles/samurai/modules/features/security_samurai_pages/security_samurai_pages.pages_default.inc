@@ -72,7 +72,7 @@ function security_samurai_pages_default_page_manager_pages() {
   $display->panels = array();
     $pane = new stdClass();
     $pane->pid = 'new-53ceb197-e3d5-4520-be84-a9ed2d385400';
-    $pane->panel = 'right';
+    $pane->panel = 'left';
     $pane->type = 'block';
     $pane->subtype = 'block-1';
     $pane->shown = TRUE;
@@ -92,7 +92,26 @@ function security_samurai_pages_default_page_manager_pages() {
     $pane->locks = array();
     $pane->uuid = '53ceb197-e3d5-4520-be84-a9ed2d385400';
     $display->content['new-53ceb197-e3d5-4520-be84-a9ed2d385400'] = $pane;
-    $display->panels['right'][0] = 'new-53ceb197-e3d5-4520-be84-a9ed2d385400';
+    $display->panels['left'][0] = 'new-53ceb197-e3d5-4520-be84-a9ed2d385400';
+    $pane = new stdClass();
+    $pane->pid = 'new-c9b4a110-064a-40d2-9947-272a8683ad71';
+    $pane->panel = 'left';
+    $pane->type = 'views_panes';
+    $pane->subtype = 'environments-panel_pane_1';
+    $pane->shown = TRUE;
+    $pane->access = array();
+    $pane->configuration = array();
+    $pane->cache = array();
+    $pane->style = array(
+      'settings' => NULL,
+    );
+    $pane->css = array();
+    $pane->extras = array();
+    $pane->position = 1;
+    $pane->locks = array();
+    $pane->uuid = 'c9b4a110-064a-40d2-9947-272a8683ad71';
+    $display->content['new-c9b4a110-064a-40d2-9947-272a8683ad71'] = $pane;
+    $display->panels['left'][1] = 'new-c9b4a110-064a-40d2-9947-272a8683ad71';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;
