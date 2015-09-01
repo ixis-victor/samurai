@@ -281,11 +281,15 @@ function security_samurai_docker_build_environment_ajax() {
       }
 
       // Append ':80' on to the end of the available_port string
-      $available_port = $available_port . ':80';
+      $available_port_cmd = $available_port . ':80';
+      $webserver_forwarded = array('80' => $available_port);
+
+      // Encode the forwarded ports for database storage
+      $json_encoded_ports = drupal_json_encode($webserver_forwarded);
 
       // Init docker and run the create container command
       $docker = new Docker();
-      $docker->create_container($available_port, $container_information['image']);
+      $docker->create_container($available_port_cmd, $container_information['image']);
 
       // Start apache on the container
       $docker->execute_command('service apache2 start');
@@ -298,7 +302,7 @@ function security_samurai_docker_build_environment_ajax() {
         'container_description' => $container_information['description'],
         'container_branch' => $container_information['branch'],
         'image_name' => $docker->image_name,
-        'assigned_ports' => $docker->assigned_ports,
+        'assigned_ports' => $json_encoded_ports,
         'status' => 1,
         'creation_date' => REQUEST_TIME,
       ));
@@ -487,16 +491,24 @@ function samurai_docker_get_image_row_id($image_name) {
 }
 
 /**
- * Returns the id of the client_site associated with a container
+ * Returns an absolute URL for accessing the container
+ *
+ * @param int $container_id The ID of the docker_containers entity.
  */
-function samurai_docker_get_associated_site($container_id) {
+function samurai_docker_get_accessible_url($container_id) {
 
-  $result = db_query('SELECT site_id FROM {securitysamurai_dockersites}
-    WHERE container_id = :container_id', array(
+  // Retrieve the assigned ports from the database
+  $result = db_query('SELECT assigned_ports FROM {securitysamurai_dockercontainers}
+    WHERE id = :container_id', array(
       ':container_id' => $container_id,
     ))->fetchField();
 
-  return $result;
+  if (!empty($result)) {
+
+    // Construct the URL.
+    $assigned_ports = drupal_json_decode($result);
+    return $base_url . ':' . $assigned_ports['80'];
+  }
 }
 
 /**
@@ -562,6 +574,23 @@ function client_site_form_step_2($form, $form_state) {
       1 => 'PHP 5.5 latest',
       2 => 'PHP 5.4 latest',
       3 => 'PHP 5.3 latest',
+    ),
+  );
+  // Select the docker image to use
+  if (isset($form_state['values']['docker_chosenimage'])) {
+    $chosenimage_default = $form_state['values']['docker_chosenimage'];
+  } elseif (isset($docker->chosenimage)) {
+    // Placeholder, will eventually be filled.
+  } else {
+    $chosenimage_default = '';
+  }
+  $form['docker_fieldset']['docker_chosenimage'] = array(
+    '#type' => 'select',
+    '#title' => t('Docker image to use'),
+    '#description' => t('What docker image would you like the Docker container to use when running your site?'),
+    '#default_value' => $chosenimage_default,
+    '#options' => array(
+      0 => 'default',
     ),
   );
   // Form back button.

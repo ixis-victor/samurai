@@ -16,12 +16,13 @@
             <span class="card-title">Environment information</span>
             <?php
               // Load the associated client site entity
-              $client_site = client_site_load(samurai_docker_get_associated_site($element->id));
+              $client_site = client_site_load($element->associated_site_id);
             ?>
             <p><strong>Site: </strong><a style="text-decoration: underline;" href="/client-site/<?php print samurai_docker_get_associated_site($element->id); ?>"><?php print render($client_site->name); ?></a></p>
             <p><strong>Branch: </strong><?php print render($element->container_branch); ?></p>
             <p><strong>Environment ID: </strong><?php print render($element->container_id); ?></p>
             <p><strong>Environment base image: </strong><?php print render($element->image_name); ?></p>
+            <p><strong>Environment URL: </strong><?php print samurai_docker_get_accessible_url($element->id); ?></p>
           </div>
         </div>
       </div>
