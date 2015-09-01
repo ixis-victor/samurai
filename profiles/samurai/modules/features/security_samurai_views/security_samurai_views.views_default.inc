@@ -146,6 +146,20 @@ function security_samurai_views_views_default_views() {
       'value' => '',
     ),
   );
+  /* Filter criterion: Environment: Environment name */
+  $handler->display->display_options['filters']['container_name']['id'] = 'container_name';
+  $handler->display->display_options['filters']['container_name']['table'] = 'securitysamurai_dockercontainers';
+  $handler->display->display_options['filters']['container_name']['field'] = 'container_name';
+  $handler->display->display_options['filters']['container_name']['operator'] = 'contains';
+  $handler->display->display_options['filters']['container_name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['container_name']['expose']['operator_id'] = 'container_name_op';
+  $handler->display->display_options['filters']['container_name']['expose']['label'] = 'Environment name';
+  $handler->display->display_options['filters']['container_name']['expose']['operator'] = 'container_name_op';
+  $handler->display->display_options['filters']['container_name']['expose']['identifier'] = 'container_name';
+  $handler->display->display_options['filters']['container_name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+  );
 
   /* Display: Content pane */
   $handler = $view->new_display('panel_pane', 'Content pane', 'panel_pane_1');
