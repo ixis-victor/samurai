@@ -507,7 +507,7 @@ function samurai_docker_get_accessible_url($container_id) {
 
     // Construct the URL.
     $assigned_ports = drupal_json_decode($result);
-    return $base_url . ':' . $assigned_ports['80'];
+    return $GLOBALS['base_url'] . ':' . $assigned_ports['80'];
   }
 }
 
