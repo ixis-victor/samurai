@@ -6,25 +6,29 @@
         <?php if (!is_null($element->container_description)): ?>
           <div class="card popup">
             <div class="card-content">
-              <span class="card-title">Environment description</span>
+              <span class="card-title">About</span>
               <p><?php print render($element->container_description); ?></p>
             </div>
           </div>
         <?php endif; ?>
-        <div class="card popup">
-          <div class="card-content">
-            <span class="card-title">Environment information</span>
-            <?php
-              // Load the associated client site entity
-              $client_site = client_site_load($element->associated_site_id);
-            ?>
-            <p><strong>Site: </strong><?php print l($client_site->name, '/client-site/' . $element->associated_site_id); ?></p>
-            <p><strong>Branch: </strong><?php print render($element->container_branch); ?></p>
-            <p><strong>Environment ID: </strong><?php print render($element->container_id); ?></p>
-            <p><strong>Environment base image: </strong><?php print render($element->image_name); ?></p>
-            <p><strong>Environment URL: </strong><?php print l(samurai_docker_get_accessible_url($element->id), samurai_docker_get_accessible_url($element->id)); ?></p>
-          </div>
-        </div>
+        <?php
+          // Load the associated client site entity
+          $client_site = client_site_load($element->associated_site_id);
+        ?>
+        <table class="card popup">
+          <thead>
+            <tr>
+              <th>Environment information</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Site</td><td><?php print l($client_site->name, '/client-site/' . $element->associated_site_id); ?></td></tr>
+            <tr><td>Active branch</td><td><?php print render($element->container_branch); ?></td></tr>
+            <tr><td>Environment URL</td><td><?php print l(samurai_docker_get_accessible_url($element->id), samurai_docker_get_accessible_url($element->id)); ?></td></tr>
+            <tr><td>Environment ID</td><td><?php print render($element->container_id); ?></td></tr>
+            <tr><td>Environment base image</td><td><?php print render($element->image_name); ?></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -32,10 +36,8 @@
     <div id="column-right">
       <div class="card popup">
         <div class="card-content">
-          <span class="card-title">Environment actions</span>
-          <p class="content">Stop environment</p>
-          <p class="content">Export environment</p>
-          <p class="content">Delete environment</p>
+          <span class="card-title"></span>
+          <?php print render(drupal_get_form('samurai_docker_container_actions_form')); ?>
         </div>
       </div>
     </div>

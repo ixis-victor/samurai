@@ -644,11 +644,98 @@ function client_site_form_step_2_validate($form, $form_state) {
  */
 function client_site_form_submit_details_step_2($form_id, $form_state) {
 
-  // Set the useful form_state to shorter variables.
-  //$site_name = $form_state['multistep_values']['client_site_form_step_1']['name'];
+  // Submit the details
+  // TODO
+}
 
-  // Get the client_site ID
-  //$client_site_id = samurai_get_site_id($site_name);
+/**
+ * Returns a form array for docker container actions
+ */
+function samurai_docker_container_actions_form($form, &$form_state) {
+
+  $form = array();
+
+  $form['stop_container'] = array(
+    '#type' => 'submit',
+    '#value' => t('Stop environment'),
+    '#op' => 'stop',
+    '#attributes' => array(
+      'style' => array('width: 100%'),
+    ),
+  );
+
+  $form['delete_container'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete environment'),
+    '#op' => 'delete',
+    '#attributes' => array(
+      'style' => array('width: 100%'),
+    ),
+  );
+
+  $form['export_container'] = array(
+    '#type' => 'submit',
+    '#value' => t('Export environment'),
+    '#op' => 'export',
+    '#attributes' => array(
+      'class' => array('disabled'),
+      'disabled' => array('disabled'),
+      'style' => array('width: 100%'),
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * Form handler for samurai_docker_container_actions_form()
+ */
+function samurai_docker_container_actions_form_submit($form, $form_state) {
+
+  drupal_set_message($form_state['triggering_element']['#op']);
+  $docker = new Docker();
+
+  // Load the current docker entity
+  $container = docker_containers_load(arg(2));
+
+  switch ($form_state['triggering_element']['#op']) {
+    case 'stop':
+
+      // Stop the container
+      $docker->stop_container($container->container_id);
+
+      // - Update container status
+      // - Save the updated docker_containers entity
+      $container->status = 0;
+      $container->save();
+      break;
+    case 'delete':
+
+      // Delete the container
+      $docker->delete_container($container->container_id);
+
+      // Delete the docker containers entity.
+      entity_delete('docker_containers', $container_id);
+
+      // Redirect to a safe place after the environment has been deleted.
+      $form_state['redirect'] = 'jobs';
+      break;
+    case 'start':
+
+      // Start the container
+      $docker->start_container($container->container_id);
+
+      // - Update the container status
+      // - Save the updated docker_containers entity
+      $container->status = 1;
+      $container->save();
+      break;
+    case 'export':
+
+      // Export the container
+
+      break;
+  }
 }
 
 /**
