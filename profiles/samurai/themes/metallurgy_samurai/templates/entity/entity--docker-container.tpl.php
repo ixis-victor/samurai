@@ -37,7 +37,8 @@
       <div class="card popup">
         <div class="card-content">
           <span class="card-title"></span>
-          <?php print render(drupal_get_form('samurai_docker_container_actions_form')); ?>
+          <?php $container_actions_form = drupal_get_form('samurai_docker_container_actions_form'); ?>
+          <?php print render($container_actions_form); ?>
         </div>
       </div>
     </div>
