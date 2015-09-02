@@ -757,6 +757,11 @@ function samurai_docker_container_actions_form_submit($form, $form_state) {
       // Start the container
       $docker->start_container($container->container_id);
 
+      // - Start apache2
+      // - Restart the SSH service
+      $docker->execute_command('service apache2 start');
+      $docker->execute_command('service ssh restart');
+
       // - Update the container status
       // - Save the updated docker_containers entity
       $container->status = 1;
