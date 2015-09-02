@@ -685,6 +685,16 @@ function samurai_docker_container_actions_form($form, &$form_state) {
         'style' => array('width: 100%'),
       ),
     );
+    $form['delete_container'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete environment'),
+      '#op' => 'delete',
+      '#attributes' => array(
+        'style' => array('width: 100%'),
+        'class' => array('disabled'),
+        'disabled' => array('disabled'),
+      ),
+    );
   } else {
     $form['start_container'] = array(
       '#type' => 'submit',
@@ -694,16 +704,15 @@ function samurai_docker_container_actions_form($form, &$form_state) {
         'style' => array('width: 100%'),
       ),
     );
+    $form['delete_container'] = array(
+      '#type' => 'submit',
+      '#value' => t('Delete environment'),
+      '#op' => 'delete',
+      '#attributes' => array(
+        'style' => array('width: 100%'),
+      ),
+    );
   }
-
-  $form['delete_container'] = array(
-    '#type' => 'submit',
-    '#value' => t('Delete environment'),
-    '#op' => 'delete',
-    '#attributes' => array(
-      'style' => array('width: 100%'),
-    ),
-  );
 
   $form['export_container'] = array(
     '#type' => 'submit',
