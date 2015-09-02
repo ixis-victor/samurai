@@ -458,6 +458,28 @@ function samurai_docker_get_available_port() {
 }
 
 /**
+ * Update the samurai_docker_ports variable, removing ports that are no longer used.
+ *
+ * @param array[mixed] $assigned_ports The ports a docker_containers entity has been assigned
+ */
+function samurai_docker_free_up_ports($assigned_ports) {
+
+  // Retrieve the array of ports currently in use
+  $samurai_docker_ports = variable_get('samurai_docker_ports', NULL);
+
+  if (!is_null($samurai_docker_ports)) {
+
+    // Unset each docker ports entry that matches the assigned_ports values
+    foreach ($assigned_ports as $key => $value) {
+      unset($samurai_docker_ports[$value]);
+    }
+
+    // Set the samurai_docker_ports variable
+    variable_set('samurai_docker_ports', $samurai_docker_ports);
+  }
+}
+
+/**
  * Returns the number of active containers
  */
 function samurai_docker_get_active_containers() {
@@ -758,8 +780,11 @@ function samurai_docker_container_actions_form_submit($form, $form_state) {
       // Delete the docker containers entity.
       entity_delete('docker_containers', $container->id);
 
+      // Update the docker ports array
+      samurai_docker_free_up_ports(drupal_json_decode($container->assigned_ports));
+
       // Redirect to a safe place after the environment has been deleted.
-      $form_state['redirect'] = 'jobs';
+      drupal_goto('jobs');
       break;
     case 'start':
 
