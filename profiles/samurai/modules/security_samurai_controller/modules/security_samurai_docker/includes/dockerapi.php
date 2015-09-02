@@ -237,6 +237,7 @@ class Docker {
     exec($command . ' 2>&1');
 
     // Set the container status variable to 1 (ON).
+    $this->container_id = $container_id;
     $this->status = 1;
   }
 
