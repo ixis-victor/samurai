@@ -196,10 +196,6 @@ class Docker {
    */
   public function stop_container($container_id = NULL) {
 
-    // Structure
-    // docker stop {container_id}
-    // $command
-
     if (is_null($container_id) && !is_null($this->container_id)) {
       // If container_id is NULL, get the class' value of the variable.
       $container_id = $this->container_id;
@@ -211,7 +207,7 @@ class Docker {
     // - Escape shell metascharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    system($command);
+    exec($command . ' 2>&1');
 
     // No return output for this function.
 
@@ -238,9 +234,7 @@ class Docker {
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    system($command);
-
-    // No return output for this function.
+    exec($command . ' 2>&1');
 
     // Set the container status variable to 1 (ON).
     $this->status = 1;
