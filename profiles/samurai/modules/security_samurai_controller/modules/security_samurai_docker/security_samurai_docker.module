@@ -280,16 +280,19 @@ function security_samurai_docker_build_environment_ajax() {
         variable_set('samurai_docker_ports', $docker_ports);
       }
 
+      $port_configuration = array();
+      $entity_port_configuration = array();
+
       // Append ':80' on to the end of the available_port string
-      $available_port_cmd = $available_port . ':80';
-      $webserver_forwarded = array('80' => $available_port);
+      $port_configuration[] = $available_port . ':80'
+      $entity_port_configuration['80'] = $available_port;
 
       // Encode the forwarded ports for database storage
-      $json_encoded_ports = drupal_json_encode($webserver_forwarded);
+      $json_encoded_ports = drupal_json_encode($entity_port_configuration);
 
       // Init docker and run the create container command
       $docker = new Docker();
-      $docker->create_container($available_port_cmd, $container_information['image']);
+      $docker->create_container($port_configuration, $container_information['image']);
 
       // Start apache on the container
       $docker->execute_command('service apache2 start');

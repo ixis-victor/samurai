@@ -80,7 +80,7 @@ class Docker {
       // If the dockerfile_location is NULL, get the class' value of the variable
       $dockerfile_location = $this->dockerfile_location;
     }
-    
+
     // Construct the command.
     $command = 'docker build -t ' . $image_name . ' ' . $dockerfile_location;
 
@@ -127,11 +127,11 @@ class Docker {
    * Create container
    * Create a new container.
    *
-   * @param string $assigned_ports The assigned ports e.g. 3000:80.
+   * @param array[mixed] $assigned_ports The assigned ports e.g. 3000:80 in an array.
    * @param string $image_name The name of the image to create a container from.
    */
   public function create_container($assigned_ports = NULL, $image_name = NULL) {
-    
+
     if (is_null($image_name) && !is_null($this->image_name)) {
       // If the image_name is NULL, get the class' value of the variable.
       $image_name = $this->image_name;
@@ -142,8 +142,16 @@ class Docker {
       $assigned_ports = $this->assigned_ports;
     }
 
-    // Construct the command.
-    $command = 'docker run -d -i -t -p ' . $assigned_ports . ' ' . $image_name;
+    // Construct the command
+    $command = 'docker run -d -i -t ';
+
+    // For each port configuration add it to the command
+    foreach ($assigned_ports as $key => $value) {
+      $command .= ' -p ' . $value . ' ';
+    }
+
+    // Append the image name of the image to be used
+    $command .= $image_name;
 
     // - Escape shell metacharacters.
     // - Execute the command.
@@ -240,7 +248,7 @@ class Docker {
 
   /**
    * Export a container
-   * Export a docker container for download 
+   * Export a docker container for download
    *
    * @param string $container_id The container ID.
    * @param string $output_file_location The location to save the container.
