@@ -80,6 +80,8 @@ RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 RUN ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts
 RUN ssh-keyscan codebasehq.com >> /root/.ssh/known_hosts
+
+# Clone the custom samurai scripts
 RUN git clone https://github.com/jkswoods/samurai-scripts.git
 
 # Setup Supervisor.
@@ -99,5 +101,3 @@ RUN echo -e '[program:blackfire]\ncommand=/usr/local/bin/launch-blackfire\n\n' >
 # - Set up files directory (e.g. /tmp/, sites/default/files), clear the cache.
 # - Run the codeception tests pre-update
 # - drush updb for non make file installations
-
-
