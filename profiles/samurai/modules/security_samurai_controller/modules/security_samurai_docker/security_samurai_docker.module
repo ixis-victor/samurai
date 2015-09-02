@@ -264,7 +264,7 @@ function security_samurai_docker_build_environment_ajax() {
       $html .= '<pre>' . t('You can either stop an active environment or raise the number of maximum active containers.') . '</pre>';
     } else {
 
-      // Check what ports are available
+      // Retrieve a free port available for use
       $available_port = samurai_docker_get_available_port();
 
       // Update the samurai_docker_ports variable with the new used port
@@ -280,12 +280,27 @@ function security_samurai_docker_build_environment_ajax() {
         variable_set('samurai_docker_ports', $docker_ports);
       }
 
+      // Retieve a free port available for use
+      $available_port_2 = samurai_docker_get_available_port();
+
+      $docker_ports = variable_get('samurai_docker_ports', NULL);
+      if (!is_null($docker_ports)) {
+
+        // The newly retrieved port is now in use.
+        $docker_ports[$available_port_2] = TRUE;
+        variable_set('samurai_docker_ports', $docker_ports);
+      }
+
       $port_configuration = array();
       $entity_port_configuration = array();
 
-      // Append ':80' on to the end of the available_port string
-      $port_configuration[] = $available_port . ':80'
+      // Append ':80' on to the end of the available_port int
+      $port_configuration[] = $available_port . ':80';
       $entity_port_configuration['80'] = $available_port;
+
+      // Append ':22' on to the end of the available_port_2 int
+      $port_configuration[] = $available_port_2 . ':22';
+      $entity_port_configuration['22'] = $available_port_2;
 
       // Encode the forwarded ports for database storage
       $json_encoded_ports = drupal_json_encode($entity_port_configuration);
@@ -294,8 +309,10 @@ function security_samurai_docker_build_environment_ajax() {
       $docker = new Docker();
       $docker->create_container($port_configuration, $container_information['image']);
 
-      // Start apache on the container
+      // - Start apache on the container
+      // - Restart the SSH service
       $docker->execute_command('service apache2 start');
+      $docker->execute_command('service ssh restart');
 
       // Create a new docker container entity and save it
       $container = entity_create('docker_containers', array(
