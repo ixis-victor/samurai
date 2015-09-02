@@ -25,6 +25,7 @@
             <tr><td>Site</td><td><?php print l($client_site->name, '/client-site/' . $element->associated_site_id); ?></td></tr>
             <tr><td>Active branch</td><td><?php print render($element->container_branch); ?></td></tr>
             <tr><td>Environment URL</td><td><?php print l(samurai_docker_get_accessible_url($element->id), samurai_docker_get_accessible_url($element->id)); ?></td></tr>
+            <tr><td>Environment status</td><td><?php print $element->status ? 'Active' : 'Inactive'; ?></td></tr>
             <tr><td>Environment ID</td><td><?php print render($element->container_id); ?></td></tr>
             <tr><td>Environment base image</td><td><?php print render($element->image_name); ?></td></tr>
           </tbody>
