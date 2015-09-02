@@ -756,7 +756,7 @@ function samurai_docker_container_actions_form_submit($form, $form_state) {
       $docker->delete_container($container->container_id);
 
       // Delete the docker containers entity.
-      entity_delete('docker_containers', $container_id);
+      entity_delete('docker_containers', $container->id);
 
       // Redirect to a safe place after the environment has been deleted.
       $form_state['redirect'] = 'jobs';
