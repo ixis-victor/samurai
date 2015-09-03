@@ -82,7 +82,8 @@ RUN ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts
 RUN ssh-keyscan codebasehq.com >> /root/.ssh/known_hosts
 
 # Clone the custom samurai scripts
-RUN git clone https://github.com/jkswoods/samurai-scripts.git
+RUN mkdir /root/samurai-scripts
+RUN git clone https://github.com/jkswoods/samurai-scripts.git /root/samurai-scripts/
 
 # Setup Supervisor.
 RUN echo -e '[program:apache2]\ncommand=/bin/bash -c "source /etc/apache2/envvars && exec /usr/sbin/apache2 -DFOREGROUND"\nautorestart=true\n\n' >> /etc/supervisor/supervisord.conf

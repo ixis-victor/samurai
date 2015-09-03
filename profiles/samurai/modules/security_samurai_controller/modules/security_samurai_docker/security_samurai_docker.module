@@ -340,6 +340,20 @@ function security_samurai_docker_build_environment_ajax() {
       $docker->execute_command('service apache2 start');
       $docker->execute_command('service ssh restart');
 
+      // Set the private SSH key of the container
+      $private_ssh_key = variable_get('samurai_gitapi_privkey', NULL);
+      if (!is_null($private_ssh_key)) {
+
+        // Execute the command to add the ssh to the container
+        $docker->execute_command('./samurai-scripts/set_ssh_key.sh ' . decrypt($private_ssh_key));
+      }
+
+      // Prepare the environment for repository clone
+
+
+      // Use drush aliases to sync a database
+
+
       // Create a new docker container entity and save it
       $container = entity_create('docker_containers', array(
         'associated_site_id' => $container_information['site_id'],
