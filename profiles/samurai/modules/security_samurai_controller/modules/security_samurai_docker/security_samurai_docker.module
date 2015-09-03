@@ -145,17 +145,21 @@ function security_samurai_docker_permission() {
 
   // Return the security samurai docker permissions
   return array(
-    'administer security samurai docker images' => array(
-      'title' => t('Administer security samurai docker images'),
+    'administer security samurai docker' => array(
+      'title' => t('Administer configurable values for security samurai docker'),
+      'description' => t('Overrides the \'Create docker *\' and \'View docker *\' permissions.'),
     ),
-    'administer security samurai docker containers' => array(
-      'title' => t('Administer security samurai docker containers'),
+    'create security samurai docker images' => array(
+      'title' => t('Create docker images'),
+    ),
+    'create security samurai docker containers' => array(
+      'title' => t('Create docker environments'),
     ),
     'view security samurai docker images' => array(
-      'title' => t('View docker image\'s history and configuration'),
+      'title' => t('View docker image'),
     ),
-    'view security samruai docker containers' => array(
-      'title' => t('View docker container\'s history and configuration'),
+    'view security samurai docker containers' => array(
+      'title' => t('View docker environments'),
     ),
   );
 }
@@ -164,26 +168,47 @@ function security_samurai_docker_permission() {
  * Access callback for viewing docker image history and configuration
  */
 function security_samurai_docker_images_access_callback($op, $docker_image = NULL, $account = NULL) {
-  if ($op == 'view' && user_access('view security samurai docker images', $account)) {
-    return TRUE;
-  } elseif (user_access('administer security samurai images', $account) ||
-    user_access('administer security samurai', $account)) {
+
+  // Return TRUE if user has administration permission
+  if (user_access('administer security samurai docker')) {
     return TRUE;
   }
-  return FALSE;
+
+  // Check if user has access to view the Docker images
+  if ($op == 'view security samurai docker images' && user_access('view security samurai docker images')) {
+    return TRUE;
+  }
+
+  // Check if user has access to create a Docker image
+  if ($op == 'create' && user_access('create security samurai docker images')) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
 }
 
 /**
  * Access callback for viewing docker container history and configuration
  */
-function security_samurai_docker_containers_access_callback($op, $docker_container = NULL, $account = NULL) {
-  if ($op == 'view' && user_access('view security samurai docker containers', $account)) {
-    return TRUE;
-  } elseif (user_access('administer security samurai containers', $account) ||
-    user_access('administer security samurai', $account)) {
+function security_samurai_docker_containers_access_callback($op, $docker_containers = NULL,$account = NULL) {
+
+  // Return TRUE if user has administration permission
+  if (user_access('administer security samurai docker')) {
     return TRUE;
   }
-  return FALSE;
+
+  // Check if user has access to view the Docker containers
+  if ($op == 'view security samurai docker containers' && user_access('view security samurai docker containers')) {
+    return TRUE;
+  }
+
+  // Check if user has access to create a Docker container
+  if ($op == 'create' && user_access('create security samurai docker containers')) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+
 }
 
 /**
@@ -207,8 +232,8 @@ function security_samurai_docker_menu() {
     'title' => t('Docker container'),
     'page callback' => 'security_samurai_docker_container_view_entity',
     'page arguments' => array(2),
+    'access callback' => 'security_samurai_docker_containers_access_callback',
     'access arguments' => array('view security samurai docker containers'),
-    'access callback' => TRUE,
   );
 
   // Docker images view entity pages
@@ -216,7 +241,8 @@ function security_samurai_docker_menu() {
     'title' => t('Docker image'),
     'page callback' => 'security_samurai_docker_image_view_entity',
     'page arguments' => array(2),
-    'access arguments' => array('view security samurai docker images')
+    'access callback' => 'security_samurai_docker_images_access_callback',
+    'access arguments' => array('view security samurai docker images'),
   );
 
   // Ajax callback for creating images
