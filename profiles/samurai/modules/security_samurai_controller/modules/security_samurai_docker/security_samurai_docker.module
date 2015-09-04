@@ -378,9 +378,10 @@ function security_samurai_docker_build_environment_ajax() {
         // - Create a symbolic link between the site folder and default
         // - Run the makefile with Drush
         $docker->execute_command('mkdir /var/www/sites');
-        $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/sites');
+        $docker->execute_command('mkdir /var/www/sites/' . $folder_name);
+        $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/sites/' . $folder_name);
         $docker->execute_command('ln -s /var/www/sites/' . $folder_name . ' /var/www/sites/default');
-        $docker->execute_command('drush make /var/www/sites/' . $folder_name . '/' .  $gitinfo->make_location . ' /var/www');
+        $docker->execute_command('drush make /var/www/sites/' . $folder_name . '/' .  $gitinfo->make_location . ' /var/www -y');
 
       } else {
 
