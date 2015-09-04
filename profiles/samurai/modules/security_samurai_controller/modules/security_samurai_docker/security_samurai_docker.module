@@ -358,7 +358,7 @@ function security_samurai_docker_build_environment_ajax() {
 
       // Prepare the environment for repository clone
       $gitinfo_id = gitinfo_getid($container_information['site_id']);
-      $gitinfo = $gitinfo_load($gitinfo_id);
+      $gitinfo = gitinfo_load($gitinfo_id);
       $clone_url = $gitinfo->clone_url;
 
       // Check if site is makefile dependant
