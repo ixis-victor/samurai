@@ -344,8 +344,16 @@ function security_samurai_docker_build_environment_ajax() {
       $private_ssh_key = variable_get('samurai_gitapi_privkey', NULL);
       if (!is_null($private_ssh_key)) {
 
-        // Add the ssh key to the container
-        $docker->execute_command('./samurai-scripts/set_ssh_key.sh "' . decrypt($private_ssh_key) . '"');
+        // Construct a command that will add the ssh key to the container
+        $command = 'sh -c "echo ';
+        $command .= "'" . decrypt($private_ssh_key) . "'";
+        $command .= ' > /root/.ssh/id_rsa"';
+
+        // Execute the constructed command
+        $docker->execute_command($command);
+
+        // Update the permissions on the private key
+        $docker->execute_command('chmod 400 /root/.ssh/id_rsa');
       }
 
       // Prepare the environment for repository clone

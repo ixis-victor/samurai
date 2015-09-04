@@ -59,7 +59,6 @@ class Docker {
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = 'docker exec ' . $container_id . ' ' . $command;
-    $command = escapeshellcmd($command);
     $result = exec($command . ' 2>&1');
 
     // Return the result.
