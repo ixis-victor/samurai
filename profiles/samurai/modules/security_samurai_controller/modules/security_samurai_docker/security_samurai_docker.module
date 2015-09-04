@@ -250,7 +250,7 @@ function security_samurai_docker_menu() {
     'title' => t('Image creation'),
     'page callback' => 'security_samurai_docker_build_image_ajax',
     'page arguments' => array(3),
-    'access arguments' => array('administer security samurai docker images'),
+    'access arguments' => array('create security samurai docker images'),
     'type' => MENU_CALLBACK,
   );
 
@@ -258,7 +258,7 @@ function security_samurai_docker_menu() {
   $items['ajax/remote/environment'] = array(
     'title' => t('Environment creation'),
     'page callback' => 'security_samurai_docker_build_environment_ajax',
-    'access arguments' => array('administer security samurai docker containers'),
+    'access arguments' => array('create security samurai docker containers'),
     'type' => MENU_CALLBACK,
   );
 
