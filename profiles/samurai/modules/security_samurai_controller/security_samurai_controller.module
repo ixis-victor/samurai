@@ -7,7 +7,7 @@
  */
 
 /**
- * @global string SAMURAI_MODULE_PATH 
+ * @global string SAMURAI_MODULE_PATH
  * Define the path of the security_samurai module.
  *
  * @global string SAMURAI_ORG_UPDATE_URL
@@ -98,7 +98,7 @@ function security_samurai_controller_entity_info() {
  * Implements hook_entity_property_info()
  */
 function security_samurai_controller_entity_property_info() {
-  
+
   $info = array();
 
   // Define type, label and description for each of the
@@ -166,7 +166,7 @@ function security_samurai_controller_entity_property_info() {
       'schema field' => 'core_version',
     ),
   );
-  
+
   // Define type, label and description for each of the
   // security_announcement entity fields
   $info['security_announcement']['properties'] = array(
@@ -236,8 +236,8 @@ function security_samurai_controller_menu() {
     'title' => t('Site'),
     'page callback' => 'security_samurai_controller_site_view_entity',
     'page arguments' => array(1),
-    'access arguments' => array('view security samurai update status'),
-    'access callback' => TRUE
+    'access callback' => 'security_samurai_controller_access_callback',
+    'access arguments' => array('view security samurai site'),
   );
 
   // For entities of type 'security_announcement'
@@ -245,10 +245,10 @@ function security_samurai_controller_menu() {
     'title' => t('Security announcement'),
     'page callback' => 'security_samurai_controller_security_announcement_view_entity',
     'page arguments' => array(1),
-    'access arguments' => array('view content'),
-    'access callback' => TRUE
+    'access callback' => 'security_samurai_controller_access_callback',
+    'access arguments' => array('view security samurai sa'),
   );
-  
+
   // Return the menu items
   return $items;
 }
@@ -258,16 +258,22 @@ function security_samurai_controller_menu() {
  */
 function security_samurai_controller_permission() {
 
-  // Return the security samurai controller permissions.s
+  // Return the security samurai controller permissions.
   return array(
-    'administer security samurai' => array(
-      'title' => t('Administer security samurai configuration'),
+    'administer security samurai controller' => array(
+      'title' => t('Administer security samurai controller'),
     ),
-    'administer security samurai sites' => array(
-      'title' => t('Administer security samurai sites'),
+    'create security samurai site' => array(
+      'title' => t('Add a site'),
+      'description' => t('Grants ability to add site to security samurai.'),
     ),
-    'view security samurai update status' => array(
-      'title' => t('View module update status'),
+    'view security samurai site' => array(
+      'title' => t('View sites'),
+      'description' => t('Grants ability to view the update status of added sites.'),
+    ),
+    'view security samurai sa' => array(
+      'title' => t('View security announcements'),
+      'description' => t('Grants ability to view the security announcements in Samurai.'),
     ),
   );
 }
@@ -277,13 +283,27 @@ function security_samurai_controller_permission() {
  */
 function security_samurai_controller_access_callback($op, $site_entity = NULL, $account = NULL) {
 
-  if ($op == 'view' && user_access('view security samurai update status', $account)) {
-    return TRUE;
-  } elseif (user_access('administer security samurai sites', $account) || 
-    user_access('administer security samurai', $account)) {
+  // Return TRUE if user has administration permission
+  if (user_access('administer security samurai controller')) {
     return TRUE;
   }
-  return FALSE;
+
+  // Check if user has access to view a site
+  if ($op == 'view security samurai site' && user_access('view security samurai site')) {
+    return TRUE;
+  }
+
+  // Check if user has access to view a security announcement
+  if ($op == 'view security samurai sa' && user_access('view security samurai sa')) {
+    return TRUE;
+  }
+
+  // Check if user has access to add a new client_site Entity
+  if (($op == 'create' || $op == 'view' || $op == 'update') && user_access('create security samurai site')) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
 }
 
 /**
@@ -414,7 +434,7 @@ function security_samurai_controller_security_announcement_view_entity($entity, 
     '#view_mode' => $view_mode,
     '#language'  => LANGUAGE_NONE,
   );
-  
+
   drupal_set_title($entity->title);
 
   return $entity->content;

@@ -11,6 +11,161 @@ function security_samurai_views_views_default_views() {
   $export = array();
 
   $view = new view();
+  $view->name = 'environments';
+  $view->description = '';
+  $view->tag = 'default';
+  $view->base_table = 'securitysamurai_dockercontainers';
+  $view->human_name = 'Environments';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = 'Environments';
+  $handler->display->display_options['use_ajax'] = TRUE;
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'none';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'full';
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'container_branch' => 'container_branch',
+    'container_id' => 'container_id',
+    'container_name' => 'container_name',
+  );
+  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['info'] = array(
+    'container_branch' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'container_id' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'container_name' => array(
+      'sortable' => 0,
+      'default_sort_order' => 'asc',
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+  );
+  /* Relationship: Environment: Associated site ID */
+  $handler->display->display_options['relationships']['associated_site_id']['id'] = 'associated_site_id';
+  $handler->display->display_options['relationships']['associated_site_id']['table'] = 'securitysamurai_dockercontainers';
+  $handler->display->display_options['relationships']['associated_site_id']['field'] = 'associated_site_id';
+  /* Field: Environment: ID */
+  $handler->display->display_options['fields']['id']['id'] = 'id';
+  $handler->display->display_options['fields']['id']['table'] = 'securitysamurai_dockercontainers';
+  $handler->display->display_options['fields']['id']['field'] = 'id';
+  $handler->display->display_options['fields']['id']['label'] = '';
+  $handler->display->display_options['fields']['id']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['id']['element_label_colon'] = FALSE;
+  /* Field: Environment: Environment name */
+  $handler->display->display_options['fields']['container_name']['id'] = 'container_name';
+  $handler->display->display_options['fields']['container_name']['table'] = 'securitysamurai_dockercontainers';
+  $handler->display->display_options['fields']['container_name']['field'] = 'container_name';
+  $handler->display->display_options['fields']['container_name']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['container_name']['alter']['text'] = '<a style="text-decoration: underline;" href="/jobs/environments/[id]">[container_name]</a>';
+  /* Field: Site: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'securitysamurai_site';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['relationship'] = 'associated_site_id';
+  $handler->display->display_options['fields']['name']['label'] = 'Site name';
+  /* Field: Environment: Environment branch */
+  $handler->display->display_options['fields']['container_branch']['id'] = 'container_branch';
+  $handler->display->display_options['fields']['container_branch']['table'] = 'securitysamurai_dockercontainers';
+  $handler->display->display_options['fields']['container_branch']['field'] = 'container_branch';
+  $handler->display->display_options['fields']['container_branch']['label'] = 'Branch';
+  /* Filter criterion: Environment: Status */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'securitysamurai_dockercontainers';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['status']['expose']['operator_id'] = 'status_op';
+  $handler->display->display_options['filters']['status']['expose']['label'] = 'Status';
+  $handler->display->display_options['filters']['status']['expose']['operator'] = 'status_op';
+  $handler->display->display_options['filters']['status']['expose']['identifier'] = 'status';
+  $handler->display->display_options['filters']['status']['is_grouped'] = TRUE;
+  $handler->display->display_options['filters']['status']['group_info']['label'] = 'Status';
+  $handler->display->display_options['filters']['status']['group_info']['identifier'] = 'status';
+  $handler->display->display_options['filters']['status']['group_info']['group_items'] = array(
+    1 => array(
+      'title' => 'Active',
+      'operator' => '=',
+      'value' => '1',
+    ),
+    2 => array(
+      'title' => 'Inactive',
+      'operator' => '=',
+      'value' => '0',
+    ),
+  );
+  /* Filter criterion: Site: Name */
+  $handler->display->display_options['filters']['name']['id'] = 'name';
+  $handler->display->display_options['filters']['name']['table'] = 'securitysamurai_site';
+  $handler->display->display_options['filters']['name']['field'] = 'name';
+  $handler->display->display_options['filters']['name']['relationship'] = 'associated_site_id';
+  $handler->display->display_options['filters']['name']['operator'] = 'contains';
+  $handler->display->display_options['filters']['name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['name']['expose']['operator_id'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['label'] = 'Site name';
+  $handler->display->display_options['filters']['name']['expose']['operator'] = 'name_op';
+  $handler->display->display_options['filters']['name']['expose']['identifier'] = 'name';
+  $handler->display->display_options['filters']['name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+  );
+  $handler->display->display_options['filters']['name']['group_info']['label'] = 'Name';
+  $handler->display->display_options['filters']['name']['group_info']['identifier'] = 'name';
+  $handler->display->display_options['filters']['name']['group_info']['group_items'] = array(
+    1 => array(
+      'title' => '',
+      'operator' => '=',
+      'value' => '',
+    ),
+    2 => array(
+      'title' => '',
+      'operator' => '=',
+      'value' => '',
+    ),
+    3 => array(
+      'title' => '',
+      'operator' => '=',
+      'value' => '',
+    ),
+  );
+  /* Filter criterion: Environment: Environment name */
+  $handler->display->display_options['filters']['container_name']['id'] = 'container_name';
+  $handler->display->display_options['filters']['container_name']['table'] = 'securitysamurai_dockercontainers';
+  $handler->display->display_options['filters']['container_name']['field'] = 'container_name';
+  $handler->display->display_options['filters']['container_name']['operator'] = 'contains';
+  $handler->display->display_options['filters']['container_name']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['container_name']['expose']['operator_id'] = 'container_name_op';
+  $handler->display->display_options['filters']['container_name']['expose']['label'] = 'Environment name';
+  $handler->display->display_options['filters']['container_name']['expose']['operator'] = 'container_name_op';
+  $handler->display->display_options['filters']['container_name']['expose']['identifier'] = 'container_name';
+  $handler->display->display_options['filters']['container_name']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+  );
+
+  /* Display: Content pane */
+  $handler = $view->new_display('panel_pane', 'Content pane', 'panel_pane_1');
+  $export['environments'] = $view;
+
+  $view = new view();
   $view->name = 'security_announcements';
   $view->description = '';
   $view->tag = 'default';

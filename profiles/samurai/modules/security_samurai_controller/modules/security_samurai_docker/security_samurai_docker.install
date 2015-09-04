@@ -8,137 +8,182 @@
  * Implements hook_schema()
  */
 function security_samurai_docker_schema() {
-	
-	$schema = array();
 
-	// Schema for Docker images
-	$schema['securitysamurai_dockerimages'] = array(
-		'description' => 'Security samurai docker image information',
-		'fields' => array(
-			'id' => array(
-				'description' => 'Primary key of the image.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-			),
-			'image_name' => array(
-				'description' => 'Human-readable name of the docker container',
-				'type' => 'varchar',
-				'length' => 255,
-				'not null' => FALSE,
-			),
-			'image_id' => array(
-				'description' => 'The ID of the image.',
-				'type' => 'varchar',
-				'length' => 255,
-				'not null' => FALSE,
-			),
-			'creation_date' => array(
-				'decsription' => 'The creation date of the image',
-				'type' => 'int',
-				'length' => 10,
-				'not null' => TRUE,
-			),
-		),
-    'primary key' => array('id'),
-	);
+  $schema = array();
 
-	// Schema for Docker containers
-	$schema['securitysamurai_dockercontainers'] = array(
-		'description' => 'Security samurai docker container information',
-		'fields' => array(
-			'id' => array(
-				'description' => 'Primary key of the container.',
-				'type' => 'serial',
-				'unsigned' => TRUE,
-				'not null' => TRUE,
-			),
-			'container_id' => array(
-				'description' => 'The id of the container.',
-				'type' => 'varchar',
-				'length' => 255,
-				'not null' => FALSE,
-			),
-			'image_name' => array(
-				'description' => 'The name of the image.',
-				'type' => 'varchar',
-				'length' => 255,
-				'not null' => FALSE,
-			),
-			'assigned_ports' => array(
-				'description' => 'The assigned ports the container has in JSON format.',
-				'type' => 'varchar',
-				'length' => 255,
-				'not null' => FALSE,
-			),
-			'status' => array(
-				'description' => 'The status of the container. UP or DOWN.',
-				'type' => 'int',
-				'length' => 10,
-				'not null' => TRUE,
-			),
-			'creation_date' => array(
-				'description' => 'The creation date of the container',
-				'type' => 'int',
-				'length' => 10,
-				'not null' => TRUE,
-			),
-		),
-    'primary key' => array('id'),
-	);
-
-	// Schema for bridge between sites and containers
-	//   The idea of this table is so that in future sites can be prioritised
-	// 	 and containers downloaded if an error is picked up during the  
-	$schema['securitysamurai_dockersites'] = array(
-		'description' => 'The bridge between security samurai sites and docker',
-		'fields' => array(
+  // Schema for Docker images
+  $schema['securitysamurai_dockerimages'] = array(
+    'description' => 'Security samurai docker image information',
+    'fields' => array(
       'id' => array(
-        'description' => 'The field ID',
+        'description' => 'Primary key of the image.',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-			'container_id' => array(
-				'description' => 'The container ID.',
-				'type' => 'varchar',
-				'length' => 255,
-				'not null' => TRUE,
-			),
-			'image_id' => array(
-				'description' => 'The image ID.',
-				'type' => 'varchar',
-				'length' => 255,
-				'not null' => TRUE,
-			),
-			'site_id' => array(
-				'description' => 'The corresponding site ID within securitysamurai_site.',
-				'type' => 'varchar',
-				'length' => 255,
-				'not null' => TRUE,
-			),
-		),
+      'image_name' => array(
+        'description' => 'Human-readable name of the docker container',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'image_id' => array(
+        'description' => 'The ID of the image.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'creation_date' => array(
+        'description' => 'The creation date of the image',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+      'build_log' => array(
+        'description' => 'The build log of the image',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+    ),
     'primary key' => array('id'),
-	);
+  );
 
-	return $schema;
-}
+  // Schema for Docker containers
+  $schema['securitysamurai_dockercontainers'] = array(
+    'description' => 'Security samurai docker container information',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key of the container.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'associated_site_id' => array(
+        'description' => 'Associated site ID',
+        'type' => 'int',
+        'length' => 11,
+        'not null' => TRUE,
+      ),
+      'container_id' => array(
+        'description' => 'The id of the container.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'container_name' => array(
+        'description' => 'The human-readable name of the container',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'container_description' => array(
+        'description' => 'The human-readable description of the container',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'container_branch' => array(
+        'description' => 'The human-readable branch that is active on the container',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'image_name' => array(
+        'description' => 'The name of the image.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'assigned_ports' => array(
+        'description' => 'The assigned ports the container has in JSON format.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'status' => array(
+        'description' => 'The status of the container. UP or DOWN.',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+      'creation_date' => array(
+        'description' => 'The creation date of the container',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+      'build_log' => array(
+        'description' => 'The build log of the container',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
 
-/**
- * Implements hook_install()
- */
-function security_samurai_docker_install() {
+  // Schema for active builds
+  $schema['securitysamurai_dockerbuilds'] = array(
+    'description' => 'The active builds for docker images and containers',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The row ID',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'entity_type' => array(
+        'description' => 'The entity type being built',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'entity_id' => array(
+        'description' => 'The entity ID',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
 
-  // Create a default image
-  $docker = new Docker;
-  $image_id = $docker->create_image('default', drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.');
+  // Schema for bridge between sites and containers
+  $schema['securitysamurai_dockersites'] = array(
+    'description' => 'The bridge between security samurai sites and docker',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The row ID',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'container_id' => array(
+        'description' => 'The container ID.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'image_id' => array(
+        'description' => 'The image ID.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'site_id' => array(
+        'description' => 'The corresponding site ID within securitysamurai_site.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'branch' => array(
+        'description' => 'The branch that is set up in the container.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
 
-  // Add a default docker image entity
-  $image = entity_create('docker_image', array(
-    'image_name' => 'default',
-    'image_id' => $image_id,
-    'creation_date' => REQUEST_TIME,
-  ));
-  $image_wrapper = entity_metadata_wrapper('docker_image', $image);
-  $image_wrapper->save();
+  return $schema;
 }

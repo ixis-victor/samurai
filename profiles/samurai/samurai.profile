@@ -37,6 +37,15 @@ function samurai_install_tasks(&$install_state) {
     'function' => 'samurai_config_form',
   );
 
+  // Add a step to create the default image
+  $task['samurai_create_default_image'] = array(
+    'display_name' => st('Create default image'),
+    'display' => TRUE,
+    'type' => 'form',
+    'run' => INSTALL_TASK_RUN_IF_NOT_COMPLETED,
+    'function' => 'samurai_create_default_image_form',
+  );
+
   return $task;
 }
 
@@ -165,7 +174,66 @@ function samurai_config_form_submit($form, $form_state) {
   variable_set('samurai_controller_sa_check_interval', strtotime($form_state['values']['security_interval']));
 
   // security_samurai_gitapi
-  variable_set('samurai_gitapi_privkey', $form_state['values']['gitapi_privkey']);
+  variable_set('samurai_gitapi_privkey', encrypt($form_state['values']['gitapi_privkey']));
+
+  // Rebuild the menu cache
+  menu_rebuild();
+
+  // Rebuild theme caches so things are right
+  system_rebuild_theme_data();
+  drupal_theme_rebuild();
+}
+
+/**
+ * Form handler samurai_create_default_image_form()
+ */
+function samurai_create_default_image_form($form, &$form_state) {
+
+  // Set the dockerfile location for the default image.
+  $dockerfile_location = drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.';
+  variable_set('samurai_default_dockerfile_location', $dockerfile_location);
+
+  $form = array();
+
+  // Simple markup for the title and info.
+  $form['title'] = array(
+    '#type' => 'markup',
+    '#markup' => '<h2>' . t('Create default image') . '</h2><p>Ensure you have the <a href="https://docs.docker.com" target="_blank">Docker CLI</a> installed and set up correctly on your server.</p><p>This process may take up to 5 minutes.</p>',
+  );
+  // Attach the Ajax file
+  $form['#attached']['js'] = array(
+    drupal_get_path('profile', 'samurai') . '/samurai-ajax.js',
+  );
+  // Attach ajax libraries
+  $form['#attached']['library'] = array(
+    array('system', 'drupal.ajax'),
+  );
+  // Container
+  $form['container'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'id' => 'samurai-remote-wrapper',
+      'title' => t('Click to create image.'),
+    ),
+  );
+  // Container content
+  $form['container']['content'] = array(
+    '#prefix' => '<pre>',
+    '#suffix' => '</pre>',
+    '#markup' => t('Loading data...'),
+  );
+  // Submit button will remain hidden while the build is in progress
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save and continue'),
+    '#attributes' => array(
+      'style' => array(
+        'display: none',
+      ),
+    ),
+  );
+
+  return $form;
 }
 
 /**

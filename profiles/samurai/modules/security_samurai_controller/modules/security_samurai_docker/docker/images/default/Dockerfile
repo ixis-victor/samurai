@@ -81,6 +81,10 @@ RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 RUN ssh-keyscan bitbucket.org >> /root/.ssh/known_hosts
 RUN ssh-keyscan codebasehq.com >> /root/.ssh/known_hosts
 
+# Clone the custom samurai scripts
+RUN mkdir /root/samurai-scripts
+RUN git clone https://github.com/jkswoods/samurai-scripts.git /root/samurai-scripts/
+
 # Setup Supervisor.
 RUN echo -e '[program:apache2]\ncommand=/bin/bash -c "source /etc/apache2/envvars && exec /usr/sbin/apache2 -DFOREGROUND"\nautorestart=true\n\n' >> /etc/supervisor/supervisord.conf
 RUN echo -e '[program:mysql]\ncommand=/usr/bin/pidproxy /var/run/mysqld/mysqld.pid /usr/sbin/mysqld\nautorestart=true\n\n' >> /etc/supervisor/supervisord.conf
@@ -98,5 +102,3 @@ RUN echo -e '[program:blackfire]\ncommand=/usr/local/bin/launch-blackfire\n\n' >
 # - Set up files directory (e.g. /tmp/, sites/default/files), clear the cache.
 # - Run the codeception tests pre-update
 # - drush updb for non make file installations
-
-

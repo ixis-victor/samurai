@@ -55,13 +55,11 @@ class Docker {
       $container_id = $this->container_id;
     }
 
-    // Construct the command.
-    $command = 'docker exec ' . $container_id . ' ' . $command;
-
+    // - Construct the command.
     // - Escape shell metacharacters.
     // - Execute the command.
-    $command = escapeshellcmd($command);
-    $result = system($command);
+    $command = 'docker exec ' . $container_id . ' ' . $command;
+    $result = exec($command . ' 2>&1');
 
     // Return the result.
     return $result;
@@ -73,6 +71,7 @@ class Docker {
    *
    * @param string $image_name The name of the image to create.
    * @param string $dockerfile_location The absolute location to the dockerfile.
+   * @param string $log The path to log the output to.
    */
   public function create_image($image_name, $dockerfile_location = NULL) {
 
@@ -80,14 +79,14 @@ class Docker {
       // If the dockerfile_location is NULL, get the class' value of the variable
       $dockerfile_location = $this->dockerfile_location;
     }
-    
+
     // Construct the command.
     $command = 'docker build -t ' . $image_name . ' ' . $dockerfile_location;
 
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    $result = system($command);
+    $result = exec($command . ' 2>&1');
 
     // Parse the ID from the last line of output
     $start = strpos($result, 'built') + 6;
@@ -118,7 +117,7 @@ class Docker {
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    system($command);
+    exec($command . ' 2>&1');
 
     // No return output for this function.
   }
@@ -127,11 +126,11 @@ class Docker {
    * Create container
    * Create a new container.
    *
-   * @param string $assigned_ports The assigned ports e.g. 3000:80.
+   * @param array[mixed] $assigned_ports The assigned ports e.g. 3000:80 in an array.
    * @param string $image_name The name of the image to create a container from.
    */
   public function create_container($assigned_ports = NULL, $image_name = NULL) {
-    
+
     if (is_null($image_name) && !is_null($this->image_name)) {
       // If the image_name is NULL, get the class' value of the variable.
       $image_name = $this->image_name;
@@ -142,13 +141,21 @@ class Docker {
       $assigned_ports = $this->assigned_ports;
     }
 
-    // Construct the command.
-    $command = 'docker run -d -i -t -p ' . $assigned_ports . ' ' . $image_name;
+    // Construct the command
+    $command = 'docker run -d -i -t ';
+
+    // For each port configuration add it to the command
+    foreach ($assigned_ports as $key => $value) {
+      $command .= ' -p ' . $value . ' ';
+    }
+
+    // Append the image name of the image to be used
+    $command .= $image_name;
 
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    $result = system($command);
+    $result = exec($command . ' 2>&1');
 
     // The result returned is the container ID.
     $this->image_name = $image_name;
@@ -175,7 +182,7 @@ class Docker {
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    system($command);
+    exec($command . ' 2>&1');
 
     // No return output for this function.
   }
@@ -188,10 +195,6 @@ class Docker {
    */
   public function stop_container($container_id = NULL) {
 
-    // Structure
-    // docker stop {container_id}
-    // $command
-
     if (is_null($container_id) && !is_null($this->container_id)) {
       // If container_id is NULL, get the class' value of the variable.
       $container_id = $this->container_id;
@@ -203,7 +206,7 @@ class Docker {
     // - Escape shell metascharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    system($command);
+    exec($command . ' 2>&1');
 
     // No return output for this function.
 
@@ -230,17 +233,16 @@ class Docker {
     // - Escape shell metacharacters.
     // - Execute the command.
     $command = escapeshellcmd($command);
-    system($command);
-
-    // No return output for this function.
+    exec($command . ' 2>&1');
 
     // Set the container status variable to 1 (ON).
+    $this->container_id = $container_id;
     $this->status = 1;
   }
 
   /**
    * Export a container
-   * Export a docker container for download 
+   * Export a docker container for download
    *
    * @param string $container_id The container ID.
    * @param string $output_file_location The location to save the container.

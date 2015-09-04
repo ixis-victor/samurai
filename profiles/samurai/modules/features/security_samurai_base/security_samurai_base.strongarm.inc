@@ -128,14 +128,14 @@ function security_samurai_base_strongarm() {
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'site_mail';
-  $strongarm->value = 'samurai@samurai.drupal.dev';
+  $strongarm->value = 'samurai@drupal.dev';
   $export['site_mail'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'site_name';
-  $strongarm->value = 'Security samurai';
+  $strongarm->value = 'Samurai';
   $export['site_name'] = $strongarm;
 
   $strongarm = new stdClass();
