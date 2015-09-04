@@ -367,10 +367,10 @@ function security_samurai_docker_build_environment_ajax() {
       } else {
 
         // Remove the index.html file
-        $docker->execute_command('rm -rf /var/www/html/index.html');
+        $docker->execute_command('rm -rf /var/www/index.html');
 
         // Clone the repository
-        $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/html/.');
+        $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/.');
       }
 
       // Create a new docker container entity and save it
