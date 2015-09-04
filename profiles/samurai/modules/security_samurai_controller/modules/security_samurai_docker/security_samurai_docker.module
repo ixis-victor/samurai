@@ -345,7 +345,7 @@ function security_samurai_docker_build_environment_ajax() {
       if (!is_null($private_ssh_key)) {
 
         // Add the ssh key to the container
-        $docker->execute_command('bash -c "echo -e \'' .  decrypt($private_ssh_key) . '\' > /root/.ssh/id_rsa"');
+        $docker->execute_command('./samurai-scripts/set_ssh_key.sh "' . decrypt($private_ssh_key) . '"');
       }
 
       // Prepare the environment for repository clone
