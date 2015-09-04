@@ -357,10 +357,21 @@ function security_samurai_docker_build_environment_ajax() {
       }
 
       // Prepare the environment for repository clone
+      $gitinfo = gitinfo_getid($container_information['site_id']);
+      $clone_url = $gitinfo->clone_url
 
+      // Check if site is makefile dependant
+      if ($gitinfo->is_make) {
 
-      // Use drush aliases to sync a database
+        // makefile dependant
+      } else {
 
+        // Remove the index.html file
+        $docker->execute_command('rm -rf /var/www/html/index.html');
+
+        // Clone the repository
+        $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/html/.');
+      }
 
       // Create a new docker container entity and save it
       $container = entity_create('docker_containers', array(
