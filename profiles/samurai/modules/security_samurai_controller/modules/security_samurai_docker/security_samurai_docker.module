@@ -361,18 +361,36 @@ function security_samurai_docker_build_environment_ajax() {
       $gitinfo = gitinfo_load($gitinfo_id);
       $clone_url = $gitinfo->clone_url;
 
+      // Remove the default index.html file
+      $docker->execute_command('rm -rf /var/www/index.html');
+
       // Check if site is makefile dependant
       if ($gitinfo->is_make) {
 
-        // makefile dependant
+        // Split the gitinfo name so we know the folder name
+        // Git will clone the repo into.
+        $position = strpos($gitinfo->name, '/');
+        $folder_name = substr($gitinfo->name, $position);
+
+        // The site setup is makefile dependant
+        // - Create the sites directory
+        // - Clone the repository into the sites directory
+        // - Create a symbolic link between the site folder and default
+        // - Run the makefile with Drush
+        $docker->execute_command('mkdir /var/www/sites');
+        $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/sites');
+        $docker->execute_command('ln -s /var/www/sites/' . $folder_name . ' /var/www/sites/default');
+        $docker->execute_command('drush make /var/www/sites/' . $folder_name . $gitinfo->make_location . ' /var/www');
+
       } else {
 
-        // Remove the index.html file
-        $docker->execute_command('rm -rf /var/www/index.html');
-
+        // The site setup can be cloned as normal
         // Clone the repository
         $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/.');
       }
+
+      // Setup settings.php
+      // TODO
 
       // Create a new docker container entity and save it
       $container = entity_create('docker_containers', array(
