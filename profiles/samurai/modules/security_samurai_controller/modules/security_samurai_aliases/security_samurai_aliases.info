@@ -1,0 +1,4 @@
+name = Security samurai aliases
+description = Perform general drush commands e.g. sql-sync
+core = 7.x
+version = 7.x-1.0

@@ -7,5 +7,6 @@ version = 7.x-0.1
 dependencies[] = entity
 dependencies[] = security_samurai_docker
 dependencies[] = security_samurai_gitapi
+dependencies[] = security_samurai_aliases
 
 files[] = includes/codebase.php
