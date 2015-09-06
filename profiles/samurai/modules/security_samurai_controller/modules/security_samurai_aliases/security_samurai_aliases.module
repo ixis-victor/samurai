@@ -1,1 +1,78 @@
 <?php
+/**
+ * @file
+ * security_samurai_aliases.module
+ */
+
+/**
+ * Implements hook_cron()
+ */
+function security_samurai_aliases_cron() {
+
+  // On run, rebuild the site alias variable
+
+  // - Retrieve the last run timestamp
+  // - Retrieve the run interval - default to 12 hours
+  $last_run = variable_get('security_samurai_aliases_last_run', 0);
+  $run_interval = variable_get('security_samurai_aliases_interval', 43200);
+
+  if (REQUEST_TIME <= ($last_run + $run_interval)) {
+    // - Retrieve the array of aliases
+    // - Set the Drupal variable
+    $aliases = security_samurai_aliases_retrieve_aliases();
+    variable_set('security_samurai_aliases', $aliases);
+    variable_set('security_samurai_last_run', REQUEST_TIME);
+  }
+}
+
+/**
+ * Returns an array of all aliases active on the server
+ * @self and @none are not included
+ */
+function security_samurai_aliases_retrieve_aliases() {
+
+  // Invoke the sa drush command, returning all site
+  // aliases
+  $site_aliases_raw = drush_invoke_process('@self', 'sa');
+
+  // Only the output is needed, reassign the site_aliases_raw value
+  $site_aliases_raw = $site_aliases_raw['output'];
+
+  // Explode the output into an array
+  $exploded_output = explode("/n", $site_aliases_raw);
+
+  // Remove the @self, @none and empty values
+  foreach ($exploded_output as $key => $value) {
+    if ($value == '@none' || $value == '@self' || $value == 'default' || $value == '') {
+      unset($exploded_output[$key]);
+    }
+  }
+
+  return $exploded_output;
+}
+
+/**
+ * Check if an alias is present on the server
+ * Returns TRUE/FALSE
+ *
+ * @param string $site_alias The name of the site alias
+ */
+function security_samurai_aliases_alias_exists($site_alias) {
+
+  // Not yet implemented
+}
+
+/**
+ * Sync a database with an existing container
+ *
+ * @param string $site_alias The name of the site alias
+ * @param int $container_row_id The row ID of the container
+ */
+function security_samurai_aliases_sync_database($site_alias, $container_row_id) {
+
+  // Not yet implemented
+
+  // - Dump the database
+  // - Sync up to the docker container
+  // - Delete the database dump
+}
