@@ -21,7 +21,7 @@ function security_samurai_aliases_cron() {
     // - Set the Drupal variable
     $aliases = security_samurai_aliases_retrieve_aliases();
     variable_set('security_samurai_aliases', $aliases);
-    variable_set('security_samurai_last_run', REQUEST_TIME);
+    variable_set('security_samurai_aliases_last_run', REQUEST_TIME);
   }
 }
 
