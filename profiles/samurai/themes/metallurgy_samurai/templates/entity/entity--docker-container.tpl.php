@@ -3,7 +3,7 @@
     <div id="content-main-wrapper">
       <div id="content-main">
         <h4 class="publish-info card">Created: <?php print date('d-m-Y H:i:s', $element->creation_date); ?></h4>
-        <?php if (!is_null($element->container_description)): ?>
+        <?php if (!isset($element->container_description)): ?>
           <div class="card popup">
             <div class="card-content">
               <span class="card-title">About</span>
