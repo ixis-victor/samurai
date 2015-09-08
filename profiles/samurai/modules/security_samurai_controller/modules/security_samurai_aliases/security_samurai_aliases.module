@@ -4,6 +4,11 @@
  * security_samurai_aliases.module
  */
 
+/*
+  Retrieving update data in a readable format:
+    drush ups --format="json" - depends on drush 6.x +
+*/
+
 /**
  * Implements hook_cron()
  */
