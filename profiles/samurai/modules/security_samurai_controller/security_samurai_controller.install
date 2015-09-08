@@ -7,7 +7,7 @@
  * Implements hook_schema
  */
 function security_samurai_controller_schema() {
-  
+
   $schema = array();
 
   // Schema for site entities
@@ -72,6 +72,18 @@ function security_samurai_controller_schema() {
         'type' => 'varchar',
         'length' => 255,
         'not null' => FALSE,
+      ),
+      'site_alias_name' => array(
+        'description' => 'The site alias name in human-readable format',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+      'site_alias_id' => array(
+        'description' => 'The site alias ID',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => TRUE,
       ),
     ),
     'primary key' => array('id'),

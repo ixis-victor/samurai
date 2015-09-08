@@ -43,8 +43,9 @@ class SamuraiAliases {
    *
    * @param string $alias The site alias
    * @param string $command The command to execute on the site alias
+   * @param string $args The EOL arguments
    */
-  public function invoke_process($alias, $command) {
+  public function invoke_process($alias, $command, $args = NULL) {
 
     // Scope variables
     $build_command = NULL;
@@ -52,7 +53,16 @@ class SamuraiAliases {
     // Only allow 'safe' commands to be executed
     switch ($command) {
       case 'sa':
+        // drush @alias sa
         $build_command = 'drush ' . $alias . ' sa';
+        break;
+      case 'sql-dump':
+        // drush @alias sql-dump > /tmp/blah.sql
+        $build_command = 'drush ' . $alias . ' sql-dump ' . $args;
+        break;
+      case 'uli':
+        // drush @alias uli
+        // drush @alias uli USERNAME
         break;
     }
 

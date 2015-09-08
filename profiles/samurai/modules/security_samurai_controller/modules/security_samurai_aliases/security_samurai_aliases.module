@@ -21,17 +21,37 @@ function security_samurai_aliases_cron() {
   $last_run = variable_get('security_samurai_aliases_last_run', 0);
   $run_interval = variable_get('security_samurai_aliases_interval', 43200);
 
+  // Check interval time is correct
   if (REQUEST_TIME <= ($last_run + $run_interval) || $last_run == 0) {
 
     // - Initalise new SamuraiAliases class
     // - Retrieve the array of aliases
-    $aliases = new SamuraiAliases();
-    $return = $aliases->get_all_aliases();
+    $s_aliases = new SamuraiAliases();
+    $return = $s_aliases->get_all_aliases();
 
     // Set the Drupal variables
     variable_set('security_samurai_aliases', $return);
     variable_set('security_samurai_aliases_last_run', REQUEST_TIME);
   }
+}
+
+/**
+ * Dumps a site-alias database and returns the location
+ *
+ * @param string $alias The site alias
+ */
+function security_samurai_dump_database($alias) {
+
+  // Initalise a new SamuraiAliases class
+  $s_aliases = new SamuraiAliases();
+
+  // - Create the dump file name
+  // - Execute the sql-dump command
+  $file_name = str_replace('@', '', $alias) . REQUEST_TIME . '-dump.sql';
+  $dump_location = $s_aliases->invoke_process($alias, 'sql-dump', '> /tmp/' . $file_name);
+
+  // Return the dump location
+  return $dump_location;
 }
 
 /**
@@ -42,20 +62,19 @@ function security_samurai_aliases_cron() {
  */
 function security_samurai_aliases_alias_exists($site_alias) {
 
-  // Not yet implemented
-}
+  // Get the drush aliases variable
+  $aliases = variable_get('security_samurai_aliases', NULL);
 
-/**
- * Sync a database with an existing container
- *
- * @param string $site_alias The name of the site alias
- * @param int $container_row_id The row ID of the container
- */
-function security_samurai_aliases_sync_database($site_alias, $container_row_id) {
+  if (!is_null($aliases)) {
+    foreach ($aliases as $key => $value) {
+      if ($value == $aliases) {
 
-  // Not yet implemented
+        // Alias exists, return TRUE
+        return TRUE;
+      }
+    }
+  }
 
-  // - Dump the database
-  // - Sync up to the docker container
-  // - Delete the database dump
+  // Return FALSE, alias does not exist
+  return FALSE;
 }

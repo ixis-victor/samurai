@@ -165,6 +165,18 @@ function security_samurai_controller_entity_property_info() {
       'description' => t('The core major version e.g. 7.x'),
       'schema field' => 'core_version',
     ),
+    'site_alias_name' => array(
+      'type' => 'text',
+      'label' => t('Site alias name'),
+      'description' => t('The site alias name, human-readable.'),
+      'schema field' => 'site_alias_name',
+    ),
+    'site_alias_id' => array(
+      'type' => 'integer',
+      'label' => t('Site alias ID'),
+      'description' => t('The site alias unique ID'),
+      'schema field' => 'site_alias_id',
+    ),
   );
 
   // Define type, label and description for each of the

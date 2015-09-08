@@ -11,7 +11,7 @@
  * Implements hook_form
  */
 function client_site_form($form, &$form_state, $site = NULL) {
-  
+
 
   // If no current step is defined, set it to the first one.
   if (!isset($form_state['step'])) $form_state['step'] = 'client_site_form_step_1';
@@ -127,6 +127,15 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
     );
   }
 
+  $form['client_fieldset']['drush_alias'] = array(
+    '#title' => t('Drush alias'),
+    '#description' => t('The drush alias used by the site'),
+    '#type' => 'select',
+    '#values' => variable_get('security_samurai_aliases', array(1 => 'No aliases available'));
+    '#default_value' => isset($site->site_alias) ? $site->site_alias : 0,
+    '#required' => TRUE,
+  );
+
   // Default form submit actions.
   $form['form_next'] = array(
     '#type' => 'submit',
@@ -179,7 +188,7 @@ function client_site_form_step_1_validate($form, $form_state) {
 
     // Attempt connection to the site.
     if (!samurai_check_site_access($site_url)) {
-      return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and 
+      return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and
         Samurai is configured properly to access the site'));
     }
   }
@@ -259,11 +268,11 @@ function client_site_form_submit_details_step_1($form, $form_state) {
   // Check if the site is being updated or saved.
   if (!samurai_site_exists($form_state['values']['name'], $form_state['values']['site_url'])) {
 
-    // Set the update_next_check to 0, so the updates are checked 
+    // Set the update_next_check to 0, so the updates are checked
     // on the next cron execution - every minute.
     $form_state['values']['update_next_check'] = 0;
   }
-  
+
   // -- Save the entity.
   // -- Print notification messages.
   // -- Log to watchdoge.
@@ -277,6 +286,8 @@ function client_site_form_submit_details_step_1($form, $form_state) {
       'encryption_key' => $form_state['values']['encryption_key'],
       'site_url' => $form_state['values']['site_url'],
       'update_next_check' => 0,
+      'site_alias_id' => $form_state['values']['drush_alias'],
+      // 'site_alias_name' =>
     ));
     $site_wrapper = entity_metadata_wrapper('client_site', $site);
     $site_wrapper->save();
@@ -287,6 +298,8 @@ function client_site_form_submit_details_step_1($form, $form_state) {
     $site->name = $form_state['values']['name'];
     $site->encryption_key = $form_state['values']['encryption_key'];
     $site->site_url = $form_state['values']['site_url'];
+    $site->site_alias_id = $form_state['values']['drush_alias'];
+    // $site->site_alias_name = /** @todo */
     $site->update_next_check = 0;
     $site->save();
   }
