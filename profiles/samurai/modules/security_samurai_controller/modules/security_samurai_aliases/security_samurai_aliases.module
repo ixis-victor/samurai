@@ -16,39 +16,17 @@ function security_samurai_aliases_cron() {
   $last_run = variable_get('security_samurai_aliases_last_run', 0);
   $run_interval = variable_get('security_samurai_aliases_interval', 43200);
 
-  if (REQUEST_TIME <= ($last_run + $run_interval)) {
+  if (REQUEST_TIME <= ($last_run + $run_interval) || $last_run == 0) {
+
+    // - Initalise new SamuraiAliases class
     // - Retrieve the array of aliases
-    // - Set the Drupal variable
-    $aliases = security_samurai_aliases_retrieve_aliases();
-    variable_set('security_samurai_aliases', $aliases);
+    $aliases = new SamuraiAliases();
+    $return = $aliases->get_all_aliases();
+
+    // Set the Drupal variables
+    variable_set('security_samurai_aliases', $return);
     variable_set('security_samurai_aliases_last_run', REQUEST_TIME);
   }
-}
-
-/**
- * Returns an array of all aliases active on the server
- * @self and @none are not included
- */
-function security_samurai_aliases_retrieve_aliases() {
-
-  // Invoke the sa drush command, returning all site
-  // aliases
-  $site_aliases_raw = drush_invoke_process('@self', 'sa');
-
-  // Only the output is needed, reassign the site_aliases_raw value
-  $site_aliases_raw = $site_aliases_raw['output'];
-
-  // Explode the output into an array
-  $exploded_output = explode("/n", $site_aliases_raw);
-
-  // Remove the @self, @none and empty values
-  foreach ($exploded_output as $key => $value) {
-    if ($value == '@none' || $value == '@self' || $value == 'default' || $value == '') {
-      unset($exploded_output[$key]);
-    }
-  }
-
-  return $exploded_output;
 }
 
 /**

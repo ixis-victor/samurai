@@ -1,4 +1,8 @@
 name = Security samurai aliases
-description = Perform general drush commands e.g. sql-sync
+description = Perform general drush commands (Samurai specific uses)e.g. sql-sync
 core = 7.x
 version = 7.x-1.0
+
+dependencies[] = security_samurai_docker
+
+files[] = includes/security_samurai_aliases.php
