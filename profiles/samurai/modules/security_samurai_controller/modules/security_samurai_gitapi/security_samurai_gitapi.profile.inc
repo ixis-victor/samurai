@@ -56,6 +56,12 @@ function security_samurai_gitapi_profile_config_form($form, &$form_state) {
     '#required' => TRUE
   );
 
+  // Submit button
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save and continue'),
+  );
+
   return $form;
 }
 
