@@ -131,7 +131,7 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
     '#title' => t('Drush alias'),
     '#description' => t('The drush alias used by the site'),
     '#type' => 'select',
-    '#values' => variable_get('security_samurai_aliases', array(1 => 'No aliases available')),
+    '#options' => variable_get('security_samurai_aliases', array(1 => 'No aliases available')),
     '#default_value' => isset($site->site_alias) ? $site->site_alias : 0,
     '#required' => TRUE,
   );
