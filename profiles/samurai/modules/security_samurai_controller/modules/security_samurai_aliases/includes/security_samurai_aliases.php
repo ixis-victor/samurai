@@ -24,14 +24,11 @@ class SamuraiAliases {
     $output = $site_aliases['output'];
     foreach ($output as $key => $value) {
       if ($exclude_self) {
-        if ($value == 'none' || $value == 'self') {
+        if ($value == '@none' || $value == '@self') {
           // Remove the value
           unset($output[$key]);
         }
       }
-
-      // Prepend '@' onto the start of the alias
-      $output[$key] = '@' . $value;
     }
 
     return $output;
