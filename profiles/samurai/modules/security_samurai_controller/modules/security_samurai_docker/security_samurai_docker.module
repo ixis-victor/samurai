@@ -337,8 +337,10 @@ function security_samurai_docker_build_environment_ajax() {
 
       // - Start apache on the container
       // - Restart the SSH service
+      // - Start mysql
       $docker->execute_command('service apache2 start');
       $docker->execute_command('service ssh restart');
+      $docker->execute_command('service mysql start');
 
       // Set the private SSH key of the container
       $private_ssh_key = variable_get('samurai_gitapi_privkey', NULL);
@@ -394,10 +396,18 @@ function security_samurai_docker_build_environment_ajax() {
       // Run a drush sql-dump on the external site via drush alias
       $alias = samurai_get_site_alias($container_information['site_id']);
       $dump_location = security_samurai_aliases_dump_database($alias);
-
       // Move the database dump to the container and remove the
       // original dump from /tmp
       $docker->execute_command('sh -c "cat > ~/database.sql" < ' . $dump_location);
+      // Remove the original database dump from the host
+      security_samurai_aliases_remove_database_dump($dump_location);
+
+      // Create the database
+      $docker->execute_command('sh -c "echo \"CREATE DATABASE drupal;\" | mysql -u root"');
+      // Create new user and grant privileges
+      $default_database_pass = variable_get('security_samurai_docker_default_database_pass', 'password');
+      $docker->execute_command('sh -c "echo \"CREATE USER \'docker\'@\'localhost\' IDENTIFIED BY \'' . $default_database_pass . '\'\" | mysql -u root"');
+      $docker->execute_command('sh -c "echo \"GRANT ALL PRIVILEGES ON drupal . * TO \'docker\'@\'localhost\'\" | mysql -u root"');
 
       // Create a new docker container entity and save it
       $container = entity_create('docker_containers', array(
