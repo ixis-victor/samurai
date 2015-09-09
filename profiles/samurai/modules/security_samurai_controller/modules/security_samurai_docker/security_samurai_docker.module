@@ -335,6 +335,9 @@ function security_samurai_docker_build_environment_ajax() {
       $docker = new Docker();
       $docker->create_container($port_configuration, $container_information['image']);
 
+      // Pull the latest samurai scripts changes
+      $docker->execute_command('sh -c "cd ~/samurai-scripts && git pull"');
+
       // - Start apache on the container
       // - Restart the SSH service
       // - Start mysql
@@ -411,7 +414,7 @@ function security_samurai_docker_build_environment_ajax() {
 
       // Setup the settings.php file - this is drupal 7 specific
       $docker->execute_command('sh -c "cd /var/www/sites/default && cp default.settings.php settings.php"');
-      $docker->execute_command('sh -c \'echo -e \'$databases=array("default"=>array("default"=>array("driver"=>"mysql","database"=>"drupal","username"=>"docker","password"=>"' . $default_database_pass . '","host"=>"localhost","prefix"=>"")));\' >> /var/www/sites/default/settings.php\'');
+      $docker->execute_command('sh -c "cd ~/samurai-scipts && ./set_settings.sh ' . $default_database_pass . ' ~/var/www/sites/default/settings.php"');
 
       // Create a new docker container entity and save it
       $container = entity_create('docker_containers', array(
