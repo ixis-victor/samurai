@@ -391,9 +391,13 @@ function security_samurai_docker_build_environment_ajax() {
 
       // Have a script on the container set up the settings.php
 
-      // Run a drush sql-dump on the external site
+      // Run a drush sql-dump on the external site via drush alias
       $alias = samurai_get_site_alias($container_information['site_id']);
       $dump_location = security_samurai_aliases_dump_database($alias);
+
+      // Move the database dump to the container and remove the
+      // original dump from /tmp
+      $docker->execute_command('sh -c "cat > ~/database.sql" < ' . $dump_location);
 
       // Create a new docker container entity and save it
       $container = entity_create('docker_containers', array(
