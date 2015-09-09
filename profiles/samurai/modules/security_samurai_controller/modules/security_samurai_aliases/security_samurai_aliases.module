@@ -48,7 +48,9 @@ function security_samurai_aliases_dump_database($alias) {
   // - Create the dump file name
   // - Execute the sql-dump command
   $file_name = str_replace('@', '', $alias) . REQUEST_TIME . '-dump.sql';
-  $dump_location = $s_aliases->invoke_process($alias, 'sql-dump', '> /tmp/' . $file_name);
+  $s_aliases->invoke_process($alias, 'sql-dump', '> /tmp/' . $file_name);
+
+  $dump_location = '/tmp/' . $file_name;
 
   // Return the dump location
   return $dump_location;
