@@ -409,6 +409,10 @@ function security_samurai_docker_build_environment_ajax() {
       $docker->execute_command('sh -c "echo \"CREATE USER \'docker\'@\'localhost\' IDENTIFIED BY \'' . $default_database_pass . '\'\" | mysql -u root"');
       $docker->execute_command('sh -c "echo \"GRANT ALL PRIVILEGES ON drupal . * TO \'docker\'@\'localhost\'\" | mysql -u root"');
 
+      // Setup the settings.php file - this is drupal 7 specific
+      $docker->execute_command('sh -c "cd /var/www/sites/default && cp default.settings.php settings.php"');
+      $docker->execute_command('sh -c "echo -e \"$databases=array(\'default\'=>array(\'default\'=>\'driver\'=>\'mysql\',\'database\'=>\'drupal\',\'username\'=>\'docker\',\'password\'=>\'' . $default_database_pass . '\',\'host\'=>\'localhost\',\'prefix\'=>\'\'))\" >> /var/www/sites/default/settings.php"');
+
       // Create a new docker container entity and save it
       $container = entity_create('docker_containers', array(
         'associated_site_id' => $container_information['site_id'],
