@@ -392,8 +392,8 @@ function security_samurai_docker_build_environment_ajax() {
       // Have a script on the container set up the settings.php
 
       // Run a drush sql-dump on the external site
-      $alias_key = samurai_get_site_alias($container_information['site_id']);
-      $dump_location = security_samurai_aliases_dump_database();
+      $alias = samurai_get_site_alias($container_information['site_id']);
+      $dump_location = security_samurai_aliases_dump_database($alias);
 
       // Create a new docker container entity and save it
       $container = entity_create('docker_containers', array(
