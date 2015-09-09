@@ -414,7 +414,7 @@ function security_samurai_docker_build_environment_ajax() {
 
       // Setup the settings.php file - this is drupal 7 specific
       $docker->execute_command('sh -c "cd /var/www/sites/default && cp default.settings.php settings.php"');
-      $docker->execute_command('sh -c "cd ~/samurai-scipts && ./set_settings.sh ' . $default_database_pass . ' /var/www/sites/default/settings.php"');
+      $docker->execute_command('sh -c "cd ~/samurai-scripts && ./set_settings.sh ' . $default_database_pass . ' /var/www/sites/default/settings.php"');
 
       // Create a new docker container entity and save it
       $container = entity_create('docker_containers', array(
