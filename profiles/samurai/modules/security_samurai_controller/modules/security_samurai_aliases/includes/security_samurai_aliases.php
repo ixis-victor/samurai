@@ -18,7 +18,7 @@ class SamuraiAliases {
   public function get_all_aliases($exclude_self = TRUE) {
 
     // Call invoke process to execute 'drush @self sa'
-    $site_aliases = $this->invoke_process('@self', 'sa');
+    $site_aliases = $this->invoke_process('', 'sa');
 
     // - Reassign variable for management
     $output = $site_aliases['output'];

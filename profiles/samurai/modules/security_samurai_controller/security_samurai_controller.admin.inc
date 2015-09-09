@@ -273,6 +273,10 @@ function client_site_form_submit_details_step_1($form, $form_state) {
     $form_state['values']['update_next_check'] = 0;
   }
 
+  // Retrieve the site alias name
+  $site_aliases = variable_get('security_samurai_aliases', NULL);
+  $site_alias_name = $site_aliases[$form_state['values']['drush_alias']];
+
   // -- Save the entity.
   // -- Print notification messages.
   // -- Log to watchdoge.
@@ -287,7 +291,7 @@ function client_site_form_submit_details_step_1($form, $form_state) {
       'site_url' => $form_state['values']['site_url'],
       'update_next_check' => 0,
       'site_alias_id' => $form_state['values']['drush_alias'],
-      // 'site_alias_name' =>
+      'site_alias_name' => $site_alias_name
     ));
     $site_wrapper = entity_metadata_wrapper('client_site', $site);
     $site_wrapper->save();
@@ -299,7 +303,7 @@ function client_site_form_submit_details_step_1($form, $form_state) {
     $site->encryption_key = $form_state['values']['encryption_key'];
     $site->site_url = $form_state['values']['site_url'];
     $site->site_alias_id = $form_state['values']['drush_alias'];
-    // $site->site_alias_name = /** @todo */
+    $site->site_alias_name = $site_alias_name;
     $site->update_next_check = 0;
     $site->save();
   }

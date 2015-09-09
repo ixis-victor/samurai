@@ -55,7 +55,7 @@ function samurai_get_affected_sites($sa_id, $project_name, $core) {
           if ($core == $split_version_core['major'] . '.x') {
 
             // Check that the site minor version is less than the secure version.
-            if ($split_version_contrib['minor'] < 
+            if ($split_version_contrib['minor'] <
               samurai_project_secure_minor($machine_name, $core, $split_version_contrib['major'])) {
 
               // If the core versions are correct, return the site markup.
@@ -271,7 +271,7 @@ function samurai_get_project_entity_id($machine_name, $core, $major_version) {
 
 /**
  * Adds a project to the securitysamurai_projects table.
- * 
+ *
  * @param string $name The human readable name of the project.
  * @param string $machine_name The machine name of the project.
  * @param string $type The project type.
@@ -322,7 +322,7 @@ function samurai_add_project(
 
 /**
  * Split the XML data, to retrieve specific values.
- * 
+ *
  * This will retrieve the string in between $str1 and $str2.
  *
  * @param string $xml_string The whole string.
@@ -416,7 +416,7 @@ function samurai_split_version_number($version_number) {
     // Remove the ending version e.g. -beta1
     $pos = strpos($version_number, '-');
     $version_number = substr($version_number, 0, $pos);
-  } 
+  }
   if (strpos($version_number, '+') !== FALSE) {
 
     // Remove the ending version e.g. +rc1
@@ -571,16 +571,16 @@ function samurai_render_update_data($update_data) {
     $split_version_project = samurai_split_version_number($value['version']);
 
     // Get the stored project data.
-    $result = db_query("SELECT 
-      name, 
-      major_version, 
-      latest_minor_version, 
+    $result = db_query("SELECT
+      name,
+      major_version,
+      latest_minor_version,
       latest_secure_minor_version,
       project_type,
       supported
       FROM {securitysamurai_projects}
       WHERE machine_name = :key
-      AND core = :core 
+      AND core = :core
       AND major_version = :major_version
       AND project_type != 'module_custom'",
       array(
@@ -638,7 +638,7 @@ function samurai_render_update_data($update_data) {
 
     return $return;
   } else {
-    
+
     return NULL;
   }
 }
@@ -651,7 +651,7 @@ function samurai_render_update_data($update_data) {
  * @return int $update_counter THe available security updates.
  */
 function samurai_count_available_security_updates($update_data) {
-  
+
   $projects = array();
   $projects = $update_data['modules'];
   $projects = array_merge($update_data['themes'], $projects);
@@ -718,6 +718,13 @@ function samurai_get_site_core_major($site_name, $site_update_data = NULL) {
 }
 
 /**
+ * Returns the alias
+ */
+function samurai_get_site_alias_id($site_id) {
+
+}
+
+/**
  * Returns a site id from the database.
  *
  * @param string $site_name The site name as present in the database.
@@ -728,6 +735,26 @@ function samurai_get_site_id($site_name) {
   $result = db_query('SELECT id FROM {securitysamurai_site} WHERE
     name = :name', array(
       ':name' => $site_name
+    ))->fetchField();
+
+  if (!empty($result)) {
+    return $result;
+  } else {
+    return NULL;
+  }
+}
+
+/**
+ * Returns the site alias
+ *
+ * @param string $site_id The unique ID of the client_site entity
+ */
+function samurai_get_site_alias($site_id) {
+
+  // Query the database and return the result
+  $result = db_query('SELECT site_alias_name FROM {securitysamurai_site} WHERE
+    id = :id', array(
+      ':id' => $site_id
     ))->fetchField();
 
   if (!empty($result)) {

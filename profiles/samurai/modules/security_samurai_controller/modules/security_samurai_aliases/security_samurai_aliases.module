@@ -40,7 +40,7 @@ function security_samurai_aliases_cron() {
  *
  * @param string $alias The site alias
  */
-function security_samurai_dump_database($alias) {
+function security_samurai_aliases_dump_database($alias) {
 
   // Initalise a new SamuraiAliases class
   $s_aliases = new SamuraiAliases();
