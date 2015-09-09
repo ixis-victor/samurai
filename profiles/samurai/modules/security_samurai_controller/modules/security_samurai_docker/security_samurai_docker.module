@@ -400,7 +400,7 @@ function security_samurai_docker_build_environment_ajax() {
       // original dump from /tmp
       $docker->execute_command('sh -c "cat > ~/database.sql" < ' . $dump_location);
       // Remove the original database dump from the host
-      security_samurai_aliases_remove_database_dump($dump_location);
+      // security_samurai_aliases_remove_database_dump($dump_location);
 
       // Create the database
       $docker->execute_command('sh -c "echo \"CREATE DATABASE drupal;\" | mysql -u root"');
