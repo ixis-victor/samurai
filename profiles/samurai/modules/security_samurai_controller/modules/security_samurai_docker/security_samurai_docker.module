@@ -401,7 +401,7 @@ function security_samurai_docker_build_environment_ajax() {
       $dump_location = security_samurai_aliases_dump_database($alias);
       // Move the database dump to the container and remove the
       // original dump from /tmp
-      $docker->execute_command('sh -c "cat > ~/database.sql" < ' . $dump_location);
+      $docker->cp($dump_location, '/root/database.sql');
       // Remove the original database dump from the host
       // security_samurai_aliases_remove_database_dump($dump_location);
 
