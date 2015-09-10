@@ -4,6 +4,9 @@
  * dockerapi.php
  *
  * Functions for managing active docker containers
+ *
+ * Requirements:
+ * - Docker minimum version 1.8.1
  */
 
 /**
@@ -63,6 +66,38 @@ class Docker {
 
     // Return the result.
     return $result;
+  }
+
+  /**
+   * Copy files/folders to/from containers/local file system
+   *
+   * @param string $localhost_location The location of the file on the localhost
+   * @param string $container_location The location of the file on the container
+   * @param bool $copy_to_container Copy data to container = TRUE
+   *  Set this variable to FALSE to copy data from a container
+   * @param string $container_id The container ID
+   */
+  public function cp($localhost_location, $container_location, $copy_to_container = TRUE, $container_id = NULL) {
+
+    if (is_null($container_id) && !is_null($this->container_id)) {
+      // If the container_id is NULL, get the class' value of the variable
+      $container_id = $this->container_id;
+    }
+
+    if ($copy_to_container) {
+      // Copy files to a location in the container
+      $command = 'docker cp ' . $localhost_location . ' ' . $container_id . ':' . $container_location;
+    } else {
+      // Copy file to a location in the localhost
+      $command = 'docker cp ' . $container_id . ':' . $container_location . ' ' $localhost_location;
+    }
+
+    // - Escape shell metacharacters
+    // - Execute the command
+    $command = escapeshellcmd($command);
+    exec($command . ' 2>&1');
+
+    // No result is given from use of this command
   }
 
   /**
