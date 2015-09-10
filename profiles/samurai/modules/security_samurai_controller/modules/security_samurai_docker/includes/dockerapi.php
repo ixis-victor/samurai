@@ -89,7 +89,7 @@ class Docker {
       $command = 'docker cp ' . $localhost_location . ' ' . $container_id . ':' . $container_location;
     } else {
       // Copy file to a location in the localhost
-      $command = 'docker cp ' . $container_id . ':' . $container_location . ' ' $localhost_location;
+      $command = 'docker cp ' . $container_id . ':' . $container_location . ' ' . $localhost_location;
     }
 
     // - Escape shell metacharacters
