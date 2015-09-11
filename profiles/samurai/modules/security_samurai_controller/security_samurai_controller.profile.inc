@@ -73,7 +73,7 @@ function security_samurai_controller_interval_form_validate($form, $form_state) 
 function security_samurai_controller_interval_form_submit($form, $form_state) {
 
   // Set the variables
-  variable_set('samurai_controller_site_check_interval', strtotime($form_state['values']['site_check_interval']));
-  variable_set('samurai_controller_module_check_interval', strtotime($form_state['values']['module_check_interval']));
-  variable_set('samurai_controller_sa_check_interval', strtotime($form_state['values']['security_interval']));
+  variable_set('security_samurai_controller_site_check_interval', strtotime($form_state['values']['site_check_interval']));
+  variable_set('security_samurai_controller_module_check_interval', strtotime($form_state['values']['module_check_interval']));
+  variable_set('security_samurai_controller_sa_check_interval', strtotime($form_state['values']['security_interval']));
 }

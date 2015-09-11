@@ -101,7 +101,7 @@ function security_samurai_docker_default_image_form($form, &$form_state) {
 
   // Set the dockerfile location for the default image.
   $dockerfile_location = drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.';
-  variable_set('samurai_default_dockerfile_location', $dockerfile_location);
+  variable_set('security_samurai_default_dockerfile_location', $dockerfile_location);
 
   $form = array();
 

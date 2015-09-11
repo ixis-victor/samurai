@@ -475,7 +475,7 @@ function security_samurai_docker_build_image_ajax($image_name) {
   $selector = '#samurai-remote-wrapper';
 
   $image_created = variable_get('samurai_' . $image_name . '_image_created', NULL);
-  $image_dockerfile_location = variable_get('samurai_' . $image_name . '_dockerfile_location', NULL);
+  $image_dockerfile_location = variable_get('security_samurai_' . $image_name . '_dockerfile_location', NULL);
 
   // Check if the image_name image created Drupal variable exists.
   if (is_null($image_created) && !is_null($image_dockerfile_location)) {
