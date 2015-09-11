@@ -101,15 +101,12 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
     $encryption_default = $site->encryption_key;
   } else if (isset($form_state['values']['encryption_key'])) {
     $encryption_default = $form_state['values']['encryption_key'];
-  } else {
-    $encryption_default = '';
   }
   $form['client_fieldset']['encryption_key'] = array(
     '#title' => t('Encryption key'),
     '#type' => 'textfield',
-    '#default_value' => $encryption_default,
+    '#default_value' => isset($encryption_default) ? $encryption_default : FALSE,
     '#description' => t('The key provided by the site.'),
-    '#required' => TRUE,
   );
   // Check if the sites site_url is already an existing value.
   // If it isn't, then the site has not been submitted before and the site_url
@@ -123,21 +120,25 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
       '#required' => TRUE,
     );
   }
+  // Markup to make it look nicer
+  $form['client_fieldset']['markup'] = array(
+    '#type' => 'markup',
+    '#markup' => '<h1 class="center" style="margin: 0; padding: 0">OR</h1><p class="center" style="margin: 0; padding: 0">In place of the encryption key, you can connect a site directly via drush!</p>',
+  );
   // The drush alias
   if (isset($site->drush_alias)) {
     $drush_alias_default = $site->drush_alias;
   } else if (isset($form_state['values']['drush_alias'])) {
     $drush_alias_default = $form_state['values']['drush_alias'];
   } else {
-    $drush_alias_default = '';
+    $drush_alias_default = 0;
   }
   $form['client_fieldset']['drush_alias'] = array(
     '#title' => t('Drush alias'),
     '#description' => t('The drush alias used by the site'),
     '#type' => 'select',
-    '#options' => variable_get('security_samurai_aliases', array(1 => 'No aliases available')),
+    '#options' => array_merge(array(0 => '- Select -'), variable_get('security_samurai_aliases', array(1 => 'No aliases available'))),
     '#default_value' => $drush_alias_default,
-    '#required' => TRUE,
   );
   // Default form submit actions.
   $form['form_next'] = array(
@@ -177,23 +178,35 @@ function client_site_form_validate($form, &$form_state) {
  */
 function client_site_form_step_1_validate($form, $form_state) {
 
-  // The encryption key must be 32 or more characters long.
-  if (strlen($form_state['values']['encryption_key']) < 32) {
-    // Error handling.
-    return form_set_error('encryption_key', t('Please enter a valid encryption key.'));
+  variable_set('security_samurai_debugging_yo', $form_state['values']['drush_alias']);
+
+  // drush aliases OR encryption key must be set
+  if ($form_state['values']['drush_alias'] == 0 && strlen($form_state['values']['encryption_key']) == 0) {
+    return form_set_error('encryption_key', t('A value must be given for either the Drush alias select or the encryption key textfield'));
   }
 
-  if (!isset($form_state['values']['site_url'])) {
-    // Retrieve the site_url.
-    $encryptionsiteurl = $form_state['values']['encryption_key'];
-    $site_url = substr($encryptionsiteurl, 32);
-    $site_url = base64_decode($site_url);
+  if (strlen($form_state['values']['encryption_key']) != 0) {
 
-    // Attempt connection to the site.
-    if (!samurai_check_site_access($site_url)) {
-      return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and
-        Samurai is configured properly to access the site'));
+    if (strlen($form_state['values']['encryption_key'] < 32)) {
+      return form_set_error('encryption_key', t('Enter a valid encryption key'));
     }
+
+    if (!isset($form_state['values']['site_url'])) {
+      // Retrieve the site_url.
+      $encryptionsiteurl = $form_state['values']['encryption_key'];
+      $site_url = substr($encryptionsiteurl, 32);
+      $site_url = base64_decode($site_url);
+
+      // Attempt connection to the site.
+      if (!samurai_check_site_access($site_url)) {
+        return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and
+          Samurai is configured properly to access the site'));
+      }
+    }
+  }
+
+  if (isset($form_state['values']['drush_alias'])) {
+    // If drush aliases is set
   }
 }
 

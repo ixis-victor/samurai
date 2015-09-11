@@ -721,7 +721,7 @@ function client_site_form_step_2($form, $form_state) {
     '#title' => t('Docker container OS'),
     '#description' => t('What operating system would you like the Docker container to use?'),
     '#options' => array(
-      'ubuntu-14.04',
+      'debian:wheezy',
     ),
   );
   // Select docker PHP version
@@ -738,10 +738,7 @@ function client_site_form_step_2($form, $form_state) {
     '#description' => t('What PHP version would you like the Docker container to install when running your site?'),
     '#default_value' => $phpversion_default,
     '#options' => array(
-      0 => '- Please select one -',
       1 => 'PHP 5.5 latest',
-      2 => 'PHP 5.4 latest',
-      3 => 'PHP 5.3 latest',
     ),
   );
   // Select the docker image to use
