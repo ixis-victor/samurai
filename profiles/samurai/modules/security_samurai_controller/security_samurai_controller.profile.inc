@@ -80,8 +80,8 @@ function security_samurai_controller_interval_form_submit($form, $form_state) {
 
   // Set the variables
   variable_set('security_samurai_controller_site_check_interval', $site_check_interval);
-  variable_set('security_samurai_controller_module_check_interval', $module_check_interval));
-  variable_set('security_samurai_controller_sa_check_interval', $security_interval));
+  variable_set('security_samurai_controller_module_check_interval', $module_check_interval);
+  variable_set('security_samurai_controller_sa_check_interval', $security_interval);
 }
 
 /**
