@@ -81,7 +81,6 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
       'class' => array('active'),
     ),
   );
-
   // The human readable name to give the site.
   if (isset($site->name)) {
     $name_default = $site->name;
@@ -97,7 +96,6 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
     '#description' => t('The name of the site.'),
     '#required' => TRUE,
   );
-
   // The encryption key.
   if (isset($site->encryption_key)) {
     $encryption_default = $site->encryption_key;
@@ -113,7 +111,6 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
     '#description' => t('The key provided by the site.'),
     '#required' => TRUE,
   );
-
   // Check if the sites site_url is already an existing value.
   // If it isn't, then the site has not been submitted before and the site_url
   // will be extracted from the enryption_key
@@ -126,16 +123,22 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
       '#required' => TRUE,
     );
   }
-
+  // The drush alias
+  if (isset($site->drush_alias)) {
+    $drush_alias_default = $site->drush_alias;
+  } else if (isset($form_state['values']['drush_alias'])) {
+    $drush_alias_default = $form_state['values']['drush_alias'];
+  } else {
+    $drush_alias_default = '';
+  }
   $form['client_fieldset']['drush_alias'] = array(
     '#title' => t('Drush alias'),
     '#description' => t('The drush alias used by the site'),
     '#type' => 'select',
     '#options' => variable_get('security_samurai_aliases', array(1 => 'No aliases available')),
-    '#default_value' => isset($site->site_alias) ? $site->site_alias : 0,
+    '#default_value' => $drush_alias_default,
     '#required' => TRUE,
   );
-
   // Default form submit actions.
   $form['form_next'] = array(
     '#type' => 'submit',
