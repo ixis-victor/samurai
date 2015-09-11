@@ -59,18 +59,31 @@ function samurai_xml_curl_request($url) {
  */
 function security_samurai_controller_cron() {
 
-  // Retrieve the contrib sa XML
-  $xml_contrib = samurai_xml_curl_request(SAMURAI_ORG_SA_CONTRIB);
-  if (!is_null($xml_contrib)) {
-    // Process the contrib projects security announcements.
-    samurai_process_sa($xml_contrib, 'contrib');
-  }
+  // Check the SA based on time
+  $last_sa_check = variable_get('security_samurai_controller_last_sa_check', 0);
+  $next_sa_check = variable_get('security_samurai_controller_next_sa_check', 0);
+  if (REQUEST_TIME >= $next_sa_check) {
 
-  // Retrieve the core sa XML
-  $xml_core = samurai_xml_curl_request(SAMURAI_ORG_SA_CORE);
-  if (!is_null($xml_core)) {
-    // Process the core projects security announements.
-    samurai_process_sa($xml_core, 'core');
+    // Retrieve the SA check interval variable
+    $interval_sa_check = strtotime(variable_get('security_samurai_controller_sa_check_interval', '5 minutes'));
+
+    // Update the interval variables
+    variable_set('security_samurai_controller_last_sa_check', REQUEST_TIME);
+    variable_set('security_samurai_controller_next_sa_check', $interval_sa_check);
+
+    // Retrieve the contrib sa XML
+    $xml_contrib = samurai_xml_curl_request(SAMURAI_ORG_SA_CONTRIB);
+    if (!is_null($xml_contrib)) {
+      // Process the contrib projects security announcements.
+      samurai_process_sa($xml_contrib, 'contrib');
+    }
+    // Retrieve the core sa XML
+    $xml_core = samurai_xml_curl_request(SAMURAI_ORG_SA_CORE);
+    if (!is_null($xml_core)) {
+      // Process the core projects security announements.
+      samurai_process_sa($xml_core, 'core');
+    }
+
   }
 
   // Get an array of sites that have not yet had their sites checked/need to be checked.
@@ -99,7 +112,7 @@ function security_samurai_controller_cron() {
     // Assign values to the loaded entity
     $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
     $site->update_count = samurai_count_available_security_updates($decrypted_update_data);
-    $site->update_next_check = strtotime('+24 hours');
+    $site->update_next_check = REQUEST_TIME + strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
     $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
 
     // Save the entity
@@ -130,7 +143,7 @@ function security_samurai_controller_cron() {
     $core = $project->core;
 
     // Save the entity with a new time to check for another update.
-    $project->update_next_check = strtotime('+24 hours');
+    $project->update_next_check = REQUEST_TIME + strtotime(variable_get('security_samurai_controller_module_check_interval', '1 hour'));
     entity_save('project', $project);
 
     // Get the latest project versions.
@@ -660,7 +673,7 @@ function samurai_get_project_latest_secure_version($machine_name, $core, $major_
           if (strlen($return) > 0) {
             break;
           }
-        } 
+        }
       }
     }
   } else {

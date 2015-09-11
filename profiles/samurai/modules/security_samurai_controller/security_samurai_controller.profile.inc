@@ -30,7 +30,7 @@ function security_samurai_controller_interval_form($form, &$form_state) {
     '#type' => 'select',
     '#title' => t('Interval to scan a site'),
     '#description' => t('Scan a site at an interval for module updates. Recommended 2 days.'),
-    '#options' => getIntervalOptions(),
+    '#options' => security_samurai_controller_get_interval_options(),
     '#required' => TRUE,
   );
   // Check projects for new updates
@@ -38,7 +38,7 @@ function security_samurai_controller_interval_form($form, &$form_state) {
     '#type' => 'select',
     '#title' => t('Interval to check for general module updates'),
     '#description' => t('Interval to check a module for a new version, this is used to indicate you when a module becomes out of date. Recommended 1 day.'),
-    '#options' => getIntervalOptions(),
+    '#options' => security_samurai_controller_get_interval_options(),
     '#required' => TRUE,
   );
   // Check for new security updates
@@ -46,7 +46,7 @@ function security_samurai_controller_interval_form($form, &$form_state) {
     '#type' => 'select',
     '#title' => t('Interval to check for security updates'),
     '#description' => t('Interval to check for a security update, upon a security announcement affecting an attached site, samurai will initiate the update process. Recommended 5 mins'),
-    '#options' => getIntervalOptions(),
+    '#options' => security_samurai_controller_get_interval_options(),
     '#required' => TRUE,
   );
   $form['submit'] = array(
@@ -72,8 +72,36 @@ function security_samurai_controller_interval_form_validate($form, $form_state) 
  */
 function security_samurai_controller_interval_form_submit($form, $form_state) {
 
+  // Retrieve the strings of the security_samurai_controller_get_interval_options
+  $options = security_samurai_controller_get_interval_options();
+  $site_check_interval = $options[$form_state['values']['site_check_interval']];
+  $module_check_interval = $options[$form_state['values']['module_check_interval']];
+  $security_interval = $options[$form_state['values']['security_interval']];
+
   // Set the variables
-  variable_set('samurai_controller_site_check_interval', strtotime($form_state['values']['site_check_interval']));
-  variable_set('samurai_controller_module_check_interval', strtotime($form_state['values']['module_check_interval']));
-  variable_set('samurai_controller_sa_check_interval', strtotime($form_state['values']['security_interval']));
+  variable_set('security_samurai_controller_site_check_interval', $site_check_interval);
+  variable_set('security_samurai_controller_module_check_interval', $module_check_interval);
+  variable_set('security_samurai_controller_sa_check_interval', $security_interval);
+}
+
+/**
+ * Helper function, returns an array of intervals
+ * @see security_samurai_controller_interval_form()
+ */
+function security_samurai_controller_get_interval_options() {
+
+  // Return the array of intervals
+  return array(
+    0 => '5 minutes',
+    1 => '30 minutes',
+    2 => '1 hour',
+    3 => '3 hours',
+    4 => '6 hours',
+    5 => '12 hours',
+    6 => '1 day',
+    7 => '2 days',
+    8 => '4 days',
+    9 => '1 week',
+    10 => '1 month',
+  );
 }

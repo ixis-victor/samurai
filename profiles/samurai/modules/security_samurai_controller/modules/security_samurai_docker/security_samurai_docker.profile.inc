@@ -71,28 +71,6 @@ function security_samurai_docker_profile_config_form_submit($form, $form_state) 
 }
 
 /**
- * Helper function, returns an array of intervals
- * @see samurai_docker_config_form()
- */
-function getIntervalOptions() {
-
-  // Return the array of intervals
-  return array(
-    0 => '5 minutes',
-    1 => '30 minutes',
-    2 => '1 hour',
-    3 => '3 hours',
-    4 => '6 hours',
-    5 => '12 hours',
-    6 => '1 day',
-    7 => '2 days',
-    8 => '4 days',
-    9 => '1 week',
-    10 => '1 month',
-  );
-}
-
-/**
  * Returns form for creating the default docker image
  *
  * No validate or submit handler is required for this form
@@ -101,7 +79,7 @@ function security_samurai_docker_default_image_form($form, &$form_state) {
 
   // Set the dockerfile location for the default image.
   $dockerfile_location = drupal_get_path('module', 'security_samurai_docker') . '/docker/images/default/.';
-  variable_set('samurai_default_dockerfile_location', $dockerfile_location);
+  variable_set('security_samurai_default_dockerfile_location', $dockerfile_location);
 
   $form = array();
 

@@ -86,6 +86,6 @@ function security_samurai_gitapi_profile_config_form_submit($form, $form_state) 
   // Codebase usernmae and apikey
   $codebase_user = $form_state['values']['gitapi_codebase_user'];
   $codebase_apikey = $form_state['values']['gitapi_codebase_api_key'];
-  variable_set('security_samruai_gitapi_codebase_user', $codebase_user);
+  variable_set('security_samurai_gitapi_codebase_user', $codebase_user);
   variable_set('security_samurai_gitapi_codebase_api_key', encrypt($codebase_apikey));
 }
