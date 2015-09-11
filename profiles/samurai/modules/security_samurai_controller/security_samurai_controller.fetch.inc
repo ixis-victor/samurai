@@ -69,7 +69,7 @@ function security_samurai_controller_cron() {
 
     // Update the interval variables
     variable_set('security_samurai_controller_last_sa_check', REQUEST_TIME);
-    variable_set('security_samurai_controller_next_sa_check', REQUEST_TIME + $interval_sa_check);
+    variable_set('security_samurai_controller_next_sa_check', $interval_sa_check);
 
     // Retrieve the contrib sa XML
     $xml_contrib = samurai_xml_curl_request(SAMURAI_ORG_SA_CONTRIB);
