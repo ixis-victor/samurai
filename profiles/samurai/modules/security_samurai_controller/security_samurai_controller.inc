@@ -81,6 +81,7 @@ function samurai_get_affected_sites($sa_id, $project_name, $core) {
   }
 }
 
+
 /**
  * Retrieve the risk category e.g. Low, moderate... etc.
  *
@@ -747,12 +748,32 @@ function samurai_get_site_id($site_name) {
 /**
  * Returns the site alias
  *
- * @param string $site_id The unique ID of the client_site entity
+ * @param int $site_id The unique ID of the client_site entity
  */
 function samurai_get_site_alias($site_id) {
 
   // Query the database and return the result
   $result = db_query('SELECT site_alias_name FROM {securitysamurai_site} WHERE
+    id = :id', array(
+      ':id' => $site_id
+    ))->fetchField();
+
+  if (!empty($result)) {
+    return $result;
+  } else {
+    return NULL;
+  }
+}
+
+/**
+ * Returns the site update checking method
+ *
+ * @param int $site_id The unique ID of the client_site entity
+ */
+function samurai_get_site_update_method($site_id) {
+
+  // Query the database and return the result
+  $result = db_query('SELECT update_check_method FROM {securitysamurai_site} WHERE
     id = :id', array(
       ':id' => $site_id
     ))->fetchField();
