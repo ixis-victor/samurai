@@ -7,6 +7,7 @@ Usually this process is quite slow to do manually, but with Samurai, the update 
 
 ### Requirements
  - Docker >= 1.8.1 (version)
+ - Drush >= 7.0.0 (version)
 
 ### Installation
 This installation assumes you already have a server set up that can run Drupal. More info: https://www.drupal.org/requirements
