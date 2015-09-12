@@ -178,8 +178,6 @@ function client_site_form_validate($form, &$form_state) {
  */
 function client_site_form_step_1_validate($form, $form_state) {
 
-  variable_set('security_samurai_debugging_yo', $form_state['values']['drush_alias']);
-
   // drush aliases OR encryption key must be set
   if ($form_state['values']['drush_alias'] == 0 && strlen($form_state['values']['encryption_key']) == 0) {
     return form_set_error('encryption_key', t('A value must be given for either the Drush alias select or the encryption key textfield'));
@@ -293,6 +291,16 @@ function client_site_form_submit_details_step_1($form, $form_state) {
   $site_aliases = variable_get('security_samurai_aliases', NULL);
   $site_alias_name = $site_aliases[$form_state['values']['drush_alias']];
 
+  // Set the update method for the site
+  // 1 = encryption key
+  // 2 = drush aliases
+  $update_check_method = 0;
+  if (strlen($form_state['values']['encryption_key']) > 0) {
+    $update_check_method = 1;
+  } elseif (isset($form_state['values']['drush_alias']) ) {
+    $update_check_method = 2;
+  }
+
   // -- Save the entity.
   // -- Print notification messages.
   // -- Log to watchdoge.
@@ -306,6 +314,7 @@ function client_site_form_submit_details_step_1($form, $form_state) {
       'encryption_key' => $form_state['values']['encryption_key'],
       'site_url' => $form_state['values']['site_url'],
       'update_next_check' => 0,
+      'update_check_method' => $update_check_method,
       'site_alias_id' => $form_state['values']['drush_alias'],
       'site_alias_name' => $site_alias_name
     ));
@@ -321,6 +330,7 @@ function client_site_form_submit_details_step_1($form, $form_state) {
     $site->site_alias_id = $form_state['values']['drush_alias'];
     $site->site_alias_name = $site_alias_name;
     $site->update_next_check = 0;
+    $site->update_check_method = $update_check_method;
     $site->save();
   }
   drupal_set_message(t('@name has been saved.', array('@name' => $site->name)));
