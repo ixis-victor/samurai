@@ -61,6 +61,9 @@ class SamuraiAliases {
         // drush @alias uli
         // drush @alias uli USERNAME
         break;
+      case 'pm-list':
+        $build_command = 'drush ' . $alias . ' pm-list';
+        break;
     }
 
     // Check build_command isn't null before attempting
