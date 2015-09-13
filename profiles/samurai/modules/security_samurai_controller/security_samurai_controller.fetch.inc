@@ -99,21 +99,47 @@ function security_samurai_controller_cron() {
     // Load the site.
     $site = client_site_load($record->id);
 
-    // -- Get the update data from the site's site.
-    // -- Decode the json encoded update data, to use as a PHP array.
-    // -- Decrypt the update data.
-    $encoded_update_data = samurai_get_site_update_data($site->site_url);
-    $encrypted_update_data = drupal_json_decode($encoded_update_data);
-    $decrypted_update_data = drupal_json_decode(
-      trim(samurai_decrypt_update_data(
-            $encrypted_update_data['encrypted'],
-            $site->encryption_key)));
+    // The retrieval of update data for each site is slightly different
+    // depending on the method
+    // $site->update_check_method can have two values:
+    // - 1 = encryption key
+    // - 2 = drush aliases
+    // In future this should become extensible, allowing for custom
+    // update retrieval methods
+    if ($site->update_check_method == 1) {
 
-    // Assign values to the loaded entity
-    $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
-    $site->update_count = samurai_count_available_security_updates($decrypted_update_data);
-    $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
-    $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
+      // -- Get the update data from the site.
+      // -- Decode the json encoded update data, to use as a PHP array.
+      // -- Decrypt the update data.
+      $encoded_update_data = samurai_get_site_update_data($site->site_url);
+      $encrypted_update_data = drupal_json_decode($encoded_update_data);
+      $decrypted_update_data = drupal_json_decode(
+      trim(samurai_decrypt_update_data(
+        $encrypted_update_data['encrypted'],
+        $site->encryption_key)));
+
+      // Assign values to the loaded entity
+      $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
+      $site->update_count = samurai_count_available_security_updates($decrypted_update_data);
+      $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
+      $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
+    } elseif ($site->update_check_method == 2) {
+
+      // Initialise a new SamuraiDocker object
+      $aliases = new SamuraiDocker();
+
+      // -- Get the update data from the site via drush (drush @alias pm-list)
+      // -- Format the retrieved data into an array
+      //
+      $unformatted_update_data = $aliases->invoke_process($site->site_alias_name, 'pm-list');
+      $formatted_update_data = samurai_process_drush_update_data($unformatted_update_data['output']);
+
+      // Assign values to the loaded entity
+      $site->site_update_data = drupal_json_encode($formatted_update_data);
+      $site->update_count = samurai_count_available_security_updates($formatted_update_data);
+      $site->update_next_Check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
+      $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
+    }
 
     // Save the entity
     entity_save('client_site', $site);
@@ -293,7 +319,7 @@ function samurai_get_site_update_data($site_url) {
 }
 
 /**
- * Add the update data to the securitysamurai_projects table.
+ * Returns an array of update data
  *
  * @param array[mixed] $decrypted_update_data Decrypted update data array.
  */
@@ -516,6 +542,135 @@ function samurai_process_update_data($decrypted_update_data) {
 
   // Return the projects array for manipulation.
   return $projects_array;
+}
+
+/**
+ * Returns an array of update data
+ *
+ * @param array[mixed] $unformatted_update_data Decrypted update data array.
+ */
+function samurai_process_drush_update_data($unformatted_update_data) {
+
+  // The first entry is the header for the pm-list table
+  // - Retrieve it and remove it from the array
+  $first_entry = $unformatted_update_data[0];
+  unset($unformatted_update_data[0]);
+
+  // The string lengths of the headers will determine how long the strings
+  // in the table data are
+  // - Retrieve the start of each header
+  $package_start = strpos($first_entry, 'Package');
+  $name_start = strpos($first_entry, 'Name');
+  $type_start = strpos($first_entry, 'Type');
+  $status_start = strpos($first_entry, 'Status');
+  $version_start = strpos($first_entry, 'Version');
+  // - Retrieve the length of each header
+  $package_length = $name_start - $package_start;
+  $name_length = $type_start - $name_start;
+  $type_length = $status_start - $type_start;
+  $status_length = $version_start - $status_start;
+  // The version does not need a $version_start due to it being the
+  // last header item
+
+  $update_data = array();
+
+  // Loop through each entry in $unformatted_update_data
+  foreach ($unformatted_update_data as $key => $data) {
+
+    // Split the human readable name from the machine name
+    $name = substr($data, $name_start, $name_length);
+    $machine_name_start = strpos($name, '(');
+    $machine_name_end = strpos($name, ')') - 1;
+    $human_readable_length = ($machine_name_start - 1) - $name;
+    $human_readable_name = substr($name, 0, $human_readable_length);
+    $machine_name = substr($name, $machine_name_start + 1, $machine_name_end - $machine_name_start);
+
+    // Get the package so Drupal core modules can be omitted
+    $package = substr($data, $package_start, $package_length);
+    $package = str_replace(' ', '', $package);
+
+    // Get the version numbers
+    $version = substr($data, $version_start);
+    $version_splitted = samurai_split_version_number($version);
+    $core_version = samurai_split_version_number_core($version);
+
+    if ($package == 'Core') {
+      $core_version = $version_splitted['major'] . '.x';
+    }
+
+    // Get the project status
+    $status = substr($data, $status_start, $status_length);
+    $status = str_replace(' ', '', $status);
+
+    // Get the project type
+    $type = substr($data, $type_start, $type_length);
+
+    if (!empty($name) && $status == 'Enabled') {
+      if ($package == 'Core') {
+        if (!isset($update_data['drupal'])) {
+          $update_data['drupal']['name'] = 'Drupal core';
+          $update_data['drupal']['machine_name'] = 'drupal';
+          $update_data['drupal']['version'] = $version;
+          $human_readable_name = 'Drupal core';
+          $machine_name = 'drupal';
+        }
+      } else {
+        $update_data[$machine_name]['name'] = $human_readable_name;
+        $update_data[$machine_name]['machine_name'] = $machine_name;
+        $update_data[$machine_name]['core'] = $core_version;
+        $update_data[$machine_name]['version'] = $version;
+      }
+
+      if (!samurai_project_exists($machine_name, $core_version, $version_splitted['major'])) {
+
+        $xml = samurai_xml_curl_request(SAMURAI_ORG_UPDATE_URL . $machine_name . '/' . $core_version);
+
+        $type = str_replace(' ', '', $type);
+        $type = strtolower($type) . samurai_get_project_type(
+          $machine_name,
+          $core_version,
+          $version_splitted['major'],
+          $xml);
+
+        if ($package == 'Core') {
+          $type == 'core';
+        }
+
+        // -- Retrieve the latest secure minor version of core.
+        // -- Retrieve the latest minor version of core.
+        // -- Check if the core version is still supported.
+        $latest_minor_secure = samurai_get_project_latest_secure_version(
+          $machine_name,
+          $core_version,
+          $version_splitted['major'],
+          $xml);
+        $latest_minor = samurai_get_project_latest_version(
+          $machine_name,
+          $core_version,
+          $version_splitted['major'],
+          $xml);
+        $supported = samurai_get_project_is_supported(
+          $machine_name,
+          $core_version,
+          $version_splitted['major'],
+          $xml);
+
+        // Add the project to the database
+        samurai_add_project(
+          $human_readable_name,
+          $machine_name,
+          $type,
+          $core_version,
+          $version_splitted['major'],
+          $latest_minor,
+          $latest_minor_secure,
+          $supported
+        );
+      }
+    }
+  }
+
+  return $update_data;
 }
 
 /**
