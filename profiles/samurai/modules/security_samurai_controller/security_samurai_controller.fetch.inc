@@ -126,7 +126,7 @@ function security_samurai_controller_cron() {
     } elseif ($site->update_check_method == 2) {
 
       // Initialise a new SamuraiDocker object
-      $aliases = new SamuraiDocker();
+      $aliases = new SamuraiAliases();
 
       // -- Get the update data from the site via drush (drush @alias pm-list)
       // -- Format the retrieved data into an array
