@@ -130,14 +130,13 @@ function security_samurai_controller_cron() {
 
       // -- Get the update data from the site via drush (drush @alias pm-list)
       // -- Format the retrieved data into an array
-      //
       $unformatted_update_data = $aliases->invoke_process($site->site_alias_name, 'pm-list');
       $formatted_update_data = samurai_process_drush_update_data($unformatted_update_data['output']);
 
       // Assign values to the loaded entity
       $site->site_update_data = drupal_json_encode($formatted_update_data);
       $site->update_count = samurai_count_available_security_updates($formatted_update_data);
-      $site->update_next_Check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
+      $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
       $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
     }
 
