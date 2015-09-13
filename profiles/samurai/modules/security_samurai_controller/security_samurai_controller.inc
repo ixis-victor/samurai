@@ -442,6 +442,21 @@ function samurai_split_version_number($version_number) {
 }
 
 /**
+ * Splits a drupal.org project version number returning the
+ * compatible core version
+ *
+ * @param string $version_number The version number of the project e.g. 7.x-1.1
+ */
+function samurai_split_version_number_core($version_number) {
+
+  // Retrieve the position of '-'
+  $core_version_end = strpos($version_number, '-');
+
+  // Return the core version number
+  return substr($version_number, 0, $core_version_end);
+}
+
+/**
  * Retrieve the latest secure version as stored in the database.
  *
  * @param string $machine_name The machine name of the project.
