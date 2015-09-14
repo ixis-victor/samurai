@@ -120,7 +120,7 @@ function security_samurai_controller_cron() {
 
       // Assign values to the loaded entity
       $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
-      $site->update_count = samurai_count_available_security_updates($site->site_update_data);
+      $site->update_count = samurai_count_available_security_updates(drupal_json_decode($site->site_update_data));
       $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
       $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
     } elseif ($site->update_check_method == 2) {
@@ -135,7 +135,7 @@ function security_samurai_controller_cron() {
 
       // Assign values to the loaded entity
       $site->site_update_data = drupal_json_encode($formatted_update_data);
-      $site->update_count = samurai_count_available_security_updates($formatted_update_data);
+      $site->update_count = samurai_count_available_security_updates(drupal_json_decode($site->site_update_data));
       $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
       $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
     }
@@ -631,7 +631,7 @@ function samurai_process_drush_update_data($unformatted_update_data) {
           $version_splitted['major'],
           $xml);
 
-        if ($package == 'Core') {
+        if ($package == 'core') {
           $type == 'core';
         }
 
@@ -655,17 +655,37 @@ function samurai_process_drush_update_data($unformatted_update_data) {
           $xml);
 
         if ($type != 'module_custom' || $type != 'theme_custom') {
-          // Add the project to the database
-          samurai_add_project(
-            $human_readable_name,
-            $machine_name,
-            $type,
-            $core_version,
-            $version_splitted['major'],
-            $latest_minor,
-            $latest_minor_secure,
-            $supported
-          );
+
+          if ($type == 'core') {
+
+            if ($machine_name == 'drupal') {
+              // Add the project to the database
+              samurai_add_project(
+                $human_readable_name,
+                $machine_name,
+                $type,
+                $core_version,
+                $version_splitted['major'],
+                $latest_minor,
+                $latest_minor_secure,
+                $supported
+              );
+            }
+          } else {
+            // Add the project to the database
+            samurai_add_project(
+              $human_readable_name,
+              $machine_name,
+              $type,
+              $core_version,
+              $version_splitted['major'],
+              $latest_minor,
+              $latest_minor_secure,
+              $supported
+            );
+          }
+        } else {
+          unset($update_data[$machine_name]);
         }
       }
     }
