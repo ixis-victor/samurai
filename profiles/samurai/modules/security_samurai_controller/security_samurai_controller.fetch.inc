@@ -576,6 +576,10 @@ function samurai_process_drush_update_data($unformatted_update_data) {
   // Loop through each entry in $unformatted_update_data
   foreach ($unformatted_update_data as $key => $data) {
 
+    if (strlen($data) == 0) {
+      continue;
+    }
+
     // Split the human readable name from the machine name
     $name = substr($data, $name_start, $name_length);
     $machine_name_start = strpos($name, '(');
@@ -617,7 +621,7 @@ function samurai_process_drush_update_data($unformatted_update_data) {
         $update_data[$machine_name]['name'] = $human_readable_name;
         $update_data[$machine_name]['machine_name'] = $machine_name;
         $update_data[$machine_name]['core'] = $core_version;
-        $update_data[$machine_name]['version'] = $version_splitted['major'] . '.' . $version_splitted['minor'];
+        $update_data[$machine_name]['version'] = $version;
       }
 
       if (!samurai_project_exists($machine_name, $core_version, $version_splitted['major'])) {
