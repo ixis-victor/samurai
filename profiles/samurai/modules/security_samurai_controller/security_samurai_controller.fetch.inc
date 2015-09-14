@@ -654,17 +654,19 @@ function samurai_process_drush_update_data($unformatted_update_data) {
           $version_splitted['major'],
           $xml);
 
-        // Add the project to the database
-        samurai_add_project(
-          $human_readable_name,
-          $machine_name,
-          $type,
-          $core_version,
-          $version_splitted['major'],
-          $latest_minor,
-          $latest_minor_secure,
-          $supported
-        );
+        if ($type != 'module_custom' || $type != 'theme_custom') {
+          // Add the project to the database
+          samurai_add_project(
+            $human_readable_name,
+            $machine_name,
+            $type,
+            $core_version,
+            $version_splitted['major'],
+            $latest_minor,
+            $latest_minor_secure,
+            $supported
+          );
+        }
       }
     }
   }
