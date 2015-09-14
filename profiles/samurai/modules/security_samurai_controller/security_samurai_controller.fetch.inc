@@ -617,7 +617,7 @@ function samurai_process_drush_update_data($unformatted_update_data) {
         $update_data[$machine_name]['name'] = $human_readable_name;
         $update_data[$machine_name]['machine_name'] = $machine_name;
         $update_data[$machine_name]['core'] = $core_version;
-        $update_data[$machine_name]['version'] = $version;
+        $update_data[$machine_name]['version'] = $version_splitted['major'] . '.' . $version_splitted['minor'];
       }
 
       if (!samurai_project_exists($machine_name, $core_version, $version_splitted['major'])) {
@@ -668,8 +668,7 @@ function samurai_process_drush_update_data($unformatted_update_data) {
                 $version_splitted['major'],
                 $latest_minor,
                 $latest_minor_secure,
-                $supported
-              );
+                $supported);
             }
           } else {
             // Add the project to the database
@@ -681,8 +680,7 @@ function samurai_process_drush_update_data($unformatted_update_data) {
               $version_splitted['major'],
               $latest_minor,
               $latest_minor_secure,
-              $supported
-            );
+              $supported);
           }
         } else {
           unset($update_data[$machine_name]);
