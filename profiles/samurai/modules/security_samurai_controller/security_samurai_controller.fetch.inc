@@ -120,7 +120,7 @@ function security_samurai_controller_cron() {
 
       // Assign values to the loaded entity
       $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
-      $site->update_count = samurai_count_available_security_updates($decrypted_update_data);
+      $site->update_count = samurai_count_available_security_updates($site->site_update_data);
       $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
       $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
     } elseif ($site->update_check_method == 2) {

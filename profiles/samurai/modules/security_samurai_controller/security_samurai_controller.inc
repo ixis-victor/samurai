@@ -660,23 +660,18 @@ function samurai_render_update_data($update_data) {
 }
 
 /**
- * The PHP array of the decrypted update data
+ * Returns a count of available security updates for a site
  *
- * @param array[mixed] $update_data The update data.
- *
- * @return int $update_counter THe available security updates.
+ * @param array[mixed] $site_update_data The update data
  */
 function samurai_count_available_security_updates($update_data) {
 
-  $projects = array();
-  $projects = $update_data['modules'];
-  $projects = array_merge($update_data['themes'], $projects);
-  $core = $update_data['core'];
   $update_counter = 0;
-  foreach ($projects as $project => $p) {
 
-    $version = samurai_split_version_number($p['version']);
-    $secure_minor = samurai_project_secure_minor($p['machine_name'], $p['core'], $version['major']);
+  foreach ($update_data as $machine_name => $data) {
+
+    $version = samurai_split_version_number($data['version']);
+    $secure_minor = samurai_project_secure_minor($data['machine_name'], $data['core'], $data['version']);
     if ($version['minor'] < $secure_minor) {
 
       $update_counter++;
@@ -686,17 +681,6 @@ function samurai_count_available_security_updates($update_data) {
     }
   }
 
-  // Check the core version number.
-  // The core array isn't structured the same as the modules and themes.
-  $core_version = samurai_split_version_number($core['version']);
-  $core_secure_minor = samurai_project_secure_minor('drupal', $core_version['major'] . '.x', $core_version['major']);
-
-  if ($core_version['minor'] < $core_secure_minor) {
-
-    $update_counter++;
-  }
-
-  // Return the update counter.
   return $update_counter;
 }
 
