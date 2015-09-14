@@ -654,7 +654,7 @@ function samurai_process_drush_update_data($unformatted_update_data) {
           $version_splitted['major'],
           $xml);
 
-        if ($type != 'module_custom' || $type != 'theme_custom') {
+        if ($type != 'module_custom' && $type != 'theme_custom') {
 
           if ($type == 'core') {
 
