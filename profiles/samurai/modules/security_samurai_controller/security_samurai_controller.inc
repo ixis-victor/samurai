@@ -668,7 +668,7 @@ function samurai_count_available_security_updates($update_data) {
 
   $update_counter = 0;
 
-  $drupal_major = samurai_split_version_number($data['version']);
+  $drupal_major = samurai_split_version_number($update_data['drupal']['version']);
 
   foreach ($update_data as $machine_name => $data) {
 
