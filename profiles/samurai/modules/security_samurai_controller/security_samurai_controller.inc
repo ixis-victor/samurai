@@ -670,8 +670,13 @@ function samurai_count_available_security_updates($update_data) {
 
   foreach ($update_data as $machine_name => $data) {
 
-    $version = samurai_split_version_number($data['version']);
-    $secure_minor = samurai_project_secure_minor($data['machine_name'], $data['core'], $data['version']);
+    if ($machine_name == 'drupal') {
+      $version = samurai_split_version_number_core($data['version'])
+      $secure_minor = samurai_project_secure_minor($data['machine_name'], $core_version['major'] . '.x', $data['version'])
+    } else {
+      $version = samurai_split_version_number($data['version']);
+      $secure_minor = samurai_project_secure_minor($data['machine_name'], $data['core'], $data['version']);
+    }
     if ($version['minor'] < $secure_minor) {
 
       $update_counter++;
