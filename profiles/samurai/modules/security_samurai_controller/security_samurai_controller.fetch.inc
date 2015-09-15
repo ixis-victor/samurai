@@ -568,8 +568,87 @@ function samurai_process_drush_update_data($unformatted_update_data) {
   $name_length = $type_start - $name_start;
   $type_length = $status_start - $type_start;
   $status_length = $version_start - $status_start;
-  // The version does not need a $version_start due to it being the
-  // last header item
+  // Retrieve the values for determining the position of the status
+
+  $package_max_length = 0;
+  $name_max_length = 0;
+  $version_max_length = 0;
+
+  // This addresses the console $COLUMNS defaulting to 80
+  // Reorder the items IF an column is empty
+  // This means the data was too long for the previous column and was slotted underneath
+  foreach ($unformatted_update_data as $key => $data) {
+
+    // Type will always have a value
+    // IF it is empty - there is something in the current row that is too long for
+    // the row before
+    $type = substr($data, $type_start, $type_length);
+    $type_strlen = str_replace(' ', '', $type);
+
+    if (strlen($type_strlen) == 0) {
+
+      // A field in the previous entry is too long
+
+      // Check the package is set
+      $package = substr($data, $package_start, $package_length);
+      $package_strlen = str_replace(' ', '', $package);
+
+      if (strlen($package_strlen) > 0) {
+
+        // Package is too long
+        // Retrieve the previous unformatted_update_data entry
+        $previous = $unformatted_update_data[$key - 1];
+        // Append $package on to the end of $previous_package
+        $previous_package = substr($previous, $package_start, $package_length);
+        $previous_data = substr($previous, $name_start);
+        $unformatted_update_data[$key - 1] = $previous_package . $package . ' ' . $previous_data;
+
+        // each entry needs to be reordered to fit with the new package_max_length
+        // this can be done in a new foreach loop or a function
+
+        if (strlen($previous_package . $package) > $package_max_length) {
+          $package_max_length = strlen($previous_package . $package);
+        }
+      }
+
+      // Check the name and machine name is set
+      $name = substr($data, $name_start, $name_length);
+      $name_str = str_replace(' ', '', $name);
+
+      if (strlen($name_str) > 0) {
+
+        // Name is too long
+        // Retrieve the previous unformatted_update_data entry
+        $previous = $unformatted_update_data[$key - 1];
+        // Append $name on to the end of $previous_name
+        $previous_name = substr($previous, $name_start, $name_length);
+        $previous_data = substr($previous, $type_start);
+        $unformatted_update_data[$key - 1] = $previous_name . $name . ' ' . $previous_data;
+
+        // Assign the max_length variable
+        if (strlen($previous_name . $name) > $name_max_length) {
+          $name_max_length = strlen($previous_name . $name);
+        }
+      }
+
+      // Check the version is set
+      $version = substr($data, $version_start);
+      $version_str = str_replace(' ', '', $version);
+
+      if (strlen($version_str) > 0) {
+
+        // Version is too long
+        // Retrieve the previous unformatted_update_data entry
+        $previous = $unformatted_update_data[$key - 1];
+        // Append $version on to the of $previous_version
+        $previous_version = substr($previous, $version_start);
+        $previous_version = str_replace(' ', '', $previous_version);
+        $previous_data_start_position = strlen($previous_version) - strlen($previous);
+        $previous_data = substr($previous, $previous_data_start_position);
+      }
+
+    }
+  }
 
   $update_data = array();
 
