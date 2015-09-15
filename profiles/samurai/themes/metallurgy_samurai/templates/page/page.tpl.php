@@ -87,7 +87,7 @@
           'class' => array(
             'links',
           ),
-        ), 
+        ),
         'heading' => t('Navigation'),
       )); ?>
     </div>
@@ -127,7 +127,7 @@
         ),
         'heading' => t('User menu'),
       )); ?>
-    </div>  
+    </div>
   </section>
   <section id="content-wrapper" class="col s12 m12 l10 offset-l2">
     <div id="content">
@@ -149,10 +149,13 @@
         </a>
         <ul>
           <li>
-            <a onclick="location.href='/client-site/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Add site"><i class="material-icons" style="color: #333;">playlist_add</i></a>
+            <a onclick="location.href='/client-site/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Add site"><i class="material-icons" style="color: #333;">note_add</i></a>
           </li>
           <li>
-            <a onclick="location.href='/client-site/config'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Manage sites"><i class="material-icons" style="color: #333;">device_hub</i></a>
+            <a onclick="location.href='/jobs/images/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Create image"><i class="material-icons" style="color: #333;">camera</i></a>
+          </li>
+          <li>
+            <a onclick="location.href='/jobs/environments/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Create environment"><i class="material-icons" style="color: #333;">cloud</i></a>
           </li>
         </ul>
       </div>

@@ -97,9 +97,13 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
     '#required' => TRUE,
   );
   // The encryption key.
-  if (strlen($site->encryption_key) > 0) {
-    $encryption_default = $site->encryption_key;
-  } else if (isset($form_state['values']['encryption_key'])) {
+  if (isset($site->encryption_key)) {
+    if (strlen($site->encryption_key) > 0) {
+      $encryption_default = $site->encryption_key;
+    } elseif (isset($form_state['values']['encryption_key'])) {
+      $encyption_default = $form_state['values']['encryption_key'];
+    }
+  } elseif (isset($form_state['values']['encryption_key'])) {
     $encryption_default = $form_state['values']['encryption_key'];
   }
   $form['client_fieldset']['encryption_key'] = array(
@@ -111,7 +115,8 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
   // Check if the sites site_url is already an existing value.
   // If it isn't, then the site has not been submitted before and the site_url
   // will be extracted from the enryption_key
-  if (strlen($site->site_url) > 0) {
+  if (isset($site->site_url)) {
+
     $form['client_fieldset']['site_url'] = array(
       '#title' => t('Site URL'),
       '#type' => 'textfield',
