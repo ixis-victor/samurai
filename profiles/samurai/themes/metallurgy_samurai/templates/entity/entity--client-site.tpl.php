@@ -28,7 +28,7 @@
               <?php foreach($grid_data as $data): ?>
                 <tr>
                   <td><?php print $data['name']; ?></td>
-                  <td <?php 
+                  <td <?php
                     if (isset($data['status'])) {
                       print 'class="' . $data['status'] . '"';
                     }
@@ -54,8 +54,9 @@
       <!-- Print the block manually -->
       <div class="card popup">
         <div class="card-content">
-          <span class="card-title">Scan the site now</span>
-          <p class="content">Currently unavailable.</p>
+          <span class="card-title"></span>
+          <?php $site_actions_form = drupal_get_form('security_samurai_controller_site_actions_form'); ?>
+          <?php print render($site_actions_form); ?>
         </div>
       </div>
     </div>

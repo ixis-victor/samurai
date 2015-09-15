@@ -319,6 +319,89 @@ function security_samurai_controller_access_callback($op, $site_entity = NULL, $
 }
 
 /**
+ * Returns an array of form elements
+ */
+function security_samurai_controller_site_actions_form($form, &$form_state) {
+
+  $form = array();
+
+  // Scans the site for new projects
+  $form['scan_site_now'] = array(
+    '#type' => 'submit',
+    '#value' => t('Scan the site now'),
+    '#op' => 'scan_site',
+    '#attributes' => array(
+      'style' => array('width: 100%;')
+    ),
+  );
+  // Will redirect to the site edit page
+  $form['edit_site'] = array(
+    '#type' => 'submit',
+    '#value' => t('Edit site'),
+    '#op' => 'edit_site',
+    '#attributes' => array(
+      'style' => array('width: 49%;', 'float: right;')
+    ),
+  );
+  // Remove the site entity and any related containers/images/entities
+  $form['delete_site'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete site'),
+    '#op' => 'delete_site',
+    '#attributes' => array(
+      'style' => array('width: 49%;', 'float: left;')
+    ),
+  );
+
+  return $form;
+}
+
+function security_samurai_controller_site_actions_form_submit($form, $form_state) {
+
+  // Check the op of the selected button
+  switch ($form_state['triggering_element']['#op']) {
+    case 'scan_site':
+      $site = client_site_load(arg(1));
+
+      // Scan the site
+      if ($site->update_check_method == 1) {
+
+        // -- Get the update data from the site.
+        // -- Decode the json encoded update data, to use as a PHP array.
+        // -- Decrypt the update data.
+        $encoded_update_data = samurai_get_site_update_data($site->site_url);
+        $encrypted_update_data = drupal_json_decode($encoded_update_data);
+        $decrypted_update_data = drupal_json_decode(
+        trim(samurai_decrypt_update_data(
+          $encrypted_update_data['encrypted'],
+          $site->encryption_key)));
+
+        // Assign values to the loaded entity
+        $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
+        $site->update_count = samurai_count_available_security_updates(drupal_json_decode($site->site_update_data));
+        $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
+        $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
+      } elseif ($site->update_check_method == 2) {
+
+        // Initialise a new SamuraiDocker object
+        $aliases = new SamuraiAliases();
+
+        // -- Get the update data from the site via drush (drush @alias pm-list)
+        // -- Format the retrieved data into an array
+        $unformatted_update_data = $aliases->invoke_process($site->site_alias_name, 'pm-list');
+        $formatted_update_data = samurai_process_drush_update_data($unformatted_update_data['output']);
+
+        // Assign values to the loaded entity
+        $site->site_update_data = drupal_json_encode($formatted_update_data);
+        $site->update_count = samurai_count_available_security_updates(drupal_json_decode($site->site_update_data));
+        $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
+        $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
+      }
+      break;
+  }
+}
+
+/**
  * Extends the default entity class for the 'site' entity type.
  */
 class ClientSiteEntity extends Entity {
