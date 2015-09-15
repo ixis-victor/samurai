@@ -189,7 +189,7 @@ function client_site_form_step_1_validate($form, $form_state) {
   }
 
   $encryption_key_length = strlen($form_state['values']['encryption_key']);
-  if ($encryption_key_length < 32)) {
+  if ($encryption_key_length < 32) {
     return form_set_error('encryption_key', t('Enter a valid encryption key'));
   }
 
