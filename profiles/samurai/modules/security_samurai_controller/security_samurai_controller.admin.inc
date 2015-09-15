@@ -111,7 +111,7 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
   // Check if the sites site_url is already an existing value.
   // If it isn't, then the site has not been submitted before and the site_url
   // will be extracted from the enryption_key
-  if (isset($site->site_url)) {
+  if (strlen($site->site_url) > 0) {
     $form['client_fieldset']['site_url'] = array(
       '#title' => t('Site URL'),
       '#type' => 'textfield',
@@ -120,14 +120,15 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
       '#required' => TRUE,
     );
   }
+  // DRUSH ALIASES CURRENTLY A WIP FOR SCANNING SITES
   // Markup to make it look nicer
-  $form['client_fieldset']['markup'] = array(
-    '#type' => 'markup',
-    '#markup' => '<h1 class="center" style="margin: 0; padding: 0">OR</h1><p class="center" style="margin: 0; padding: 0">In place of the encryption key, you can connect a site directly via drush!</p>',
-  );
+  // $form['client_fieldset']['markup'] = array(
+  //   '#type' => 'markup',
+  //   '#markup' => '<h1 class="center" style="margin: 0; padding: 0">OR</h1><p class="center" style="margin: 0; padding: 0">In place of the encryption key, you can connect a site directly via drush!</p>',
+  // );
   // The drush alias
-  if (isset($site->drush_alias)) {
-    $drush_alias_default = $site->drush_alias;
+  if (isset($site->site_alias_id)) {
+    $drush_alias_default = $site->site_alias_id;
   } else if (isset($form_state['values']['drush_alias'])) {
     $drush_alias_default = $form_state['values']['drush_alias'];
   } else {
@@ -179,8 +180,12 @@ function client_site_form_validate($form, &$form_state) {
 function client_site_form_step_1_validate($form, $form_state) {
 
   // drush aliases OR encryption key must be set
-  if ($form_state['values']['drush_alias'] == 0 && strlen($form_state['values']['encryption_key']) == 0) {
-    return form_set_error('encryption_key', t('A value must be given for either the Drush alias select or the encryption key textfield'));
+  // Drush aliases is currently still a WIP
+  // if ($form_state['values']['drush_alias'] == 0 && strlen($form_state['values']['encryption_key']) == 0) {
+  //   return form_set_error('encryption_key', t('A value must be given for either the Drush alias select or the encryption key textfield'));
+  // }
+  if (strlen($form_state['values']['encryption_key']) == 0) {
+    return form_set_error('encryption_key', t('A value must be given for the encryption key textfield'));
   }
 
   if (strlen($form_state['values']['encryption_key']) != 0) {
