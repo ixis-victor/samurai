@@ -348,8 +348,10 @@ function security_samurai_controller_site_actions_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Delete site'),
     '#op' => 'delete_site',
+    '#disabled' => TRUE,
     '#attributes' => array(
-      'style' => array('width: 49%;', 'float: left;')
+      'style' => array('width: 49%;', 'float: left;'),
+      'disabled' => array('disabled'),
     ),
   );
 
@@ -397,6 +399,13 @@ function security_samurai_controller_site_actions_form_submit($form, $form_state
         $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
         $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
       }
+
+      // Save the entity
+      entity_save('client_site', $site);
+
+      break;
+    case 'edit_site':
+      drupal_goto('client-site/config/manage/' . arg(1));
       break;
   }
 }
