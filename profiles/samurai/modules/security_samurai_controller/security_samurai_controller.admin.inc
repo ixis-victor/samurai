@@ -99,7 +99,7 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
   // The encryption key.
   if (strlen($site->encryption_key) > 0) {
     $encryption_default = $site->encryption_key;
-  } else if (strlen($form_state['values']['encryption_key']) > 0) {
+  } else if (isset($form_state['values']['encryption_key'])) {
     $encryption_default = $form_state['values']['encryption_key'];
   }
   $form['client_fieldset']['encryption_key'] = array(
