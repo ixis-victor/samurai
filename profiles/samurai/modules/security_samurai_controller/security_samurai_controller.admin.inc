@@ -179,6 +179,13 @@ function client_site_form_validate($form, &$form_state) {
  */
 function client_site_form_step_1_validate($form, $form_state) {
 
+  // Check if the site doesn't already exist
+  if (arg(2) != 'manage') {
+    if (samurai_site_exists($form_state['values']['name'])) {
+      return form_set_error('name', t('A site with this name already exists'));
+    }
+  }
+
   // drush aliases OR encryption key must be set
   // Drush aliases is currently still a WIP
   // if ($form_state['values']['drush_alias'] == 0 && strlen($form_state['values']['encryption_key']) == 0) {
@@ -234,7 +241,7 @@ function client_site_form_submit($form, &$form_state) {
       break;
   }
 
-  if (isset($form_state['complete'])) drupal_goto('/client-site/config');
+  if (isset($form_state['complete'])) drupal_goto('/client-site/' . samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']));
 
   if ($form_state['triggering_element']['#value'] == 'Back') {
     $form_state['new_step'] = client_site_form_move_to_previous($form, $form_state);
@@ -338,5 +345,4 @@ function client_site_form_submit_details_step_1($form, $form_state) {
   }
   drupal_set_message(t('@name has been saved.', array('@name' => $site->name)));
   watchdog('Security samurai', t('@name has been saved.', array('@name' => $site->name)));
-  $form_state['redirect'] = 'site/config';
 }
