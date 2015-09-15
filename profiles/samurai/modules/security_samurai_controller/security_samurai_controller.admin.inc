@@ -97,9 +97,9 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
     '#required' => TRUE,
   );
   // The encryption key.
-  if (isset($site->encryption_key)) {
+  if (strlen($site->encryption_key) > 0) {
     $encryption_default = $site->encryption_key;
-  } else if (isset($form_state['values']['encryption_key'])) {
+  } else if (strlen($form_state['values']['encryption_key']) > 0) {
     $encryption_default = $form_state['values']['encryption_key'];
   }
   $form['client_fieldset']['encryption_key'] = array(
@@ -188,23 +188,21 @@ function client_site_form_step_1_validate($form, $form_state) {
     return form_set_error('encryption_key', t('A value must be given for the encryption key textfield'));
   }
 
-  if (strlen($form_state['values']['encryption_key']) != 0) {
+  $encryption_key_length = strlen($form_state['values']['encryption_key']);
+  if ($encryption_key_length < 32)) {
+    return form_set_error('encryption_key', t('Enter a valid encryption key'));
+  }
 
-    if (strlen($form_state['values']['encryption_key'] < 32)) {
-      return form_set_error('encryption_key', t('Enter a valid encryption key'));
-    }
+  if (!isset($form_state['values']['site_url'])) {
+    // Retrieve the site_url.
+    $encryptionsiteurl = $form_state['values']['encryption_key'];
+    $site_url = substr($encryptionsiteurl, 32);
+    $site_url = base64_decode($site_url);
 
-    if (!isset($form_state['values']['site_url'])) {
-      // Retrieve the site_url.
-      $encryptionsiteurl = $form_state['values']['encryption_key'];
-      $site_url = substr($encryptionsiteurl, 32);
-      $site_url = base64_decode($site_url);
-
-      // Attempt connection to the site.
-      if (!samurai_check_site_access($site_url)) {
-        return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and
-          Samurai is configured properly to access the site'));
-      }
+    // Attempt connection to the site.
+    if (!samurai_check_site_access($site_url)) {
+      return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and
+        Samurai is configured properly to access the site'));
     }
   }
 
