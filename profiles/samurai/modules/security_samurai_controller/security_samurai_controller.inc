@@ -67,22 +67,20 @@ function samurai_get_affected_sites($sa_id, $project_name, $core) {
           }
         }
       }
-
       if (!empty($return)) {
-
         // Return the result.
         return $return;
       } else {
-
         return NULL;
       }
     } else {
-
       // No result. return NULL.
       return NULL;
     }
   }
 }
+
+function samurai_get_affected_sites_array($sa_id, $project_name, )
 
 /**
  * Retrieve the risk category e.g. Low, moderate... etc.
@@ -725,9 +723,29 @@ function samurai_get_site_core_major($site_name, $site_update_data = NULL) {
 
 /**
  * Returns the alias
+ *
+ * NOT YET IMPLEMENTED
  */
-function samurai_get_site_alias_id($site_id) {
+function samurai_get_site_alias_id($site_id) {}
 
+/**
+ * Returns the site update count
+ *
+ * @param int $site_id The entity ID of the client_site entity
+ */
+function smaurai_get_site_update_count($site_id) {
+
+  // Query the database
+  $result = db_query('SELECT update_count FROM {securitysamurai_site} WHERE
+    id = :site_id', array(
+      ':site_id' => $site_id,
+    ))->fetchField();
+
+  if (!empty($result)) {
+    return $result;
+  } else {
+    return NULL;
+  }
 }
 
 /**

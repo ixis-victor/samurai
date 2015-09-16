@@ -54,11 +54,18 @@
       <!-- Print the block manually -->
       <div class="card popup">
         <div class="card-content">
-          <span class="card-title"></span>
           <?php $site_actions_form = drupal_get_form('security_samurai_controller_site_actions_form'); ?>
           <?php print render($site_actions_form); ?>
         </div>
       </div>
+      <?php $security_actions_form = drupal_get_form('security_samurai_controller_security_actions_form'); ?>
+      <?php if (!is_null($security_actions_form)): ?>
+      <div class="card popup">
+        <div class="card-content">
+          <?php print render($security_actions_form); ?>
+        </div>
+      </div>
+      <?php endif; ?>
     </div>
   </div>
 </div>

@@ -358,6 +358,10 @@ function security_samurai_controller_site_actions_form($form, &$form_state) {
   return $form;
 }
 
+/**
+ * Form submit handler
+ * @see security_samurai_controller_site_actions_form
+ */
 function security_samurai_controller_site_actions_form_submit($form, $form_state) {
 
   // Check the op of the selected button
@@ -408,6 +412,43 @@ function security_samurai_controller_site_actions_form_submit($form, $form_state
       drupal_goto('client-site/config/manage/' . arg(1));
       break;
   }
+}
+
+/**
+ * Returns an array of form elements
+ */
+function security_samurai_controller_security_actions_form($form, &$form_state) {
+
+  // Retrieve the site update count
+  $update_count = smaurai_get_site_update_count(arg(1));
+  if ($update_count > 0) {
+
+    $form = array();
+
+    $form['markup'] = array(
+      '#type' => 'markup',
+      '#markup' => t('It looks like there is pending security updates for this site, would you Samurai to secure this site?'),
+    );
+
+    $form['secure_the_site'] = array(
+      '#type' => 'submit',
+      '#value' => t('Secure the site'),
+      '#op' => 'secure_site',
+      '#attributes' => array(
+        'style' => array('width: 100%;'),
+      ),
+    );
+
+    return $form;
+  }
+}
+
+/**
+ * Form submit handler
+ * @see security_samurai_controller_security_actions_form
+ */
+function security_samurai_controller_security_actions_form($form, $form_state) {
+
 }
 
 /**
