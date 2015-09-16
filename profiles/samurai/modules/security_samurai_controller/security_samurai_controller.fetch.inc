@@ -233,16 +233,16 @@ function samurai_process_sa($xml, $type) {
             foreach ($am as $available_major) {
               // Retrieve the update.
               samurai_get_project_update($machine_name, $available_major, $core_major);
-              $secure_version_array[] = $available_major . samurai_project_secure_minor($machine_name, $core_major, $available_major);
+              $secure_version_array[$core_major][] = $available_major . samurai_project_secure_minor($machine_name, $core_major, $available_major);
             }
           } else {
             samurai_get_project_update($machine_name, $am, $core_major);
-            $secure_version_array[] = $am . samurai_project_secure_minor($machine_name, $core_major, $am);
+            $secure_version_array[$core_major][] = $am . samurai_project_secure_minor($machine_name, $core_major, $am);
           }
         }
       }
 
-      $secure_version_array = drupal_json_encode($secure_minor_array);
+      $secure_version_array = drupal_json_encode($secure_version_array);
 
       // Create and save the new SA entity.
       $security_announcement = entity_create('security_announcement', array(
