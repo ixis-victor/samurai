@@ -7,6 +7,9 @@
  */
 
 /**
+ * TODO - implementing a secure minor column in the SA entity table will
+ * allow a more accurate return of the sites affected by this vulnerability
+ *
  * Retrieve an array of sites affected by a particular security announcement.
  *
  * @param string $sa_id The security announcement ID.
@@ -80,7 +83,6 @@ function samurai_get_affected_sites($sa_id, $project_name, $core) {
     }
   }
 }
-
 
 /**
  * Retrieve the risk category e.g. Low, moderate... etc.

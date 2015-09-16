@@ -219,6 +219,31 @@ function samurai_process_sa($xml, $type) {
       $vulnerability = samurai_split_sa_data($description, 'Vulnerability:', 'CVE identifier(s)');
       $solution  = samurai_split_sa_data($description, 'Solution', 'Reported by');
 
+      // Retrieve the machine_name for the project
+      $machine_name = samurai_project_machine_name($project_name);
+
+      // Check for a security update concerning the project_name from the SA.
+      $core = drupal_json_decode($version_aff);
+      $secure_version_array = array();
+      if (!empty($machine_name)) {
+        // Check update for each core version
+        foreach ($core as $c => $core_major) {
+          $am = samurai_get_available_major_versions($machine_name, $core_major);
+          if (is_array($am)) {
+            foreach ($am as $available_major) {
+              // Retrieve the update.
+              samurai_get_project_update($machine_name, $available_major, $core_major);
+              $secure_version_array[] = $available_major . samurai_project_secure_minor($machine_name, $core_major, $available_major);
+            }
+          } else {
+            samurai_get_project_update($machine_name, $am, $core_major);
+            $secure_version_array[] = $am . samurai_project_secure_minor($machine_name, $core_major, $am);
+          }
+        }
+      }
+
+      $secure_version_array = drupal_json_encode($secure_minor_array);
+
       // Create and save the new SA entity.
       $security_announcement = entity_create('security_announcement', array(
         'sa_id' => $sa,
@@ -228,7 +253,7 @@ function samurai_process_sa($xml, $type) {
         'vulnerability' => $vulnerability,
         'solution' => $solution,
         'project_name' => $project_name,
-        'secure_minor' => 'EMPTY'
+        'secure_version' => $secure_version_array
       ));
       $sa_wrapped = entity_metadata_wrapper('security_announcement', $security_announcement);
       $sa_wrapped->save();
@@ -236,26 +261,6 @@ function samurai_process_sa($xml, $type) {
       // Log the creation of the SA entity to watchdog.
       watchdog('Security samurai', $sa . t(' New security update data'));
 
-      // Check for a security update concerning the project_name from the SA.
-      $core = drupal_json_decode($version_aff);
-      if (!empty($machine_name)) {
-
-        // Check update for each core version
-        foreach ($core as $c => $core_major) {
-
-          $am = samurai_get_available_major_versions($machine_name, $core_major);
-
-          if (is_array($am)) {
-            foreach ($am as $available_major) {
-
-              // Retrieve the update.
-              samurai_get_project_update($machine_name, $available_major, $core_major);
-            }
-          } else {
-            samurai_get_project_update($machine_name, $am, $core_major);
-          }
-        }
-      }
     } else {
       continue;
     }

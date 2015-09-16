@@ -213,8 +213,8 @@ function security_samurai_controller_schema() {
         'length' => 255,
         'not null' => TRUE,
       ),
-      'secure_minor' => array(
-        'description' => 'The secure minor this for this update. JSON list of corresponding core versions.',
+      'secure_version' => array(
+        'description' => 'The secure version for the SA. JSON list of corresponding core versions.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
