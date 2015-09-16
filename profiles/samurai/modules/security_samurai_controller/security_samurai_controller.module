@@ -435,7 +435,10 @@ function security_samurai_controller_security_actions_form($form, &$form_state) 
       '#value' => t('Secure the site'),
       '#op' => 'secure_site',
       '#attributes' => array(
-        'style' => array('width: 100%;'),
+        'style' => array(
+          'width: 100%;',
+          'margin-top: 1em;',
+          'margin-bottom: 0px;'),
       ),
     );
 
