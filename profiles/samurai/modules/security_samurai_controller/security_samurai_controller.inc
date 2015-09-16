@@ -80,7 +80,9 @@ function samurai_get_affected_sites($sa_id, $project_name, $core) {
   }
 }
 
-function samurai_get_affected_sites_array($sa_id, $project_name, )
+function samurai_get_affected_sites_array($sa_id, $project_name, $core) {
+  // Not yet implemented
+}
 
 /**
  * Retrieve the risk category e.g. Low, moderate... etc.
