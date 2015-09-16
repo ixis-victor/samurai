@@ -447,7 +447,7 @@ function security_samurai_controller_security_actions_form($form, &$form_state) 
  * Form submit handler
  * @see security_samurai_controller_security_actions_form
  */
-function security_samurai_controller_security_actions_form($form, $form_state) {
+function security_samurai_controller_security_actions_form_submit($form, $form_state) {
 
 }
 
