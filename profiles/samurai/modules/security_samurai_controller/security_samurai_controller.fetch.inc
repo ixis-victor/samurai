@@ -219,6 +219,45 @@ function samurai_process_sa($xml, $type) {
       $vulnerability = samurai_split_sa_data($description, 'Vulnerability:', 'CVE identifier(s)');
       $solution  = samurai_split_sa_data($description, 'Solution', 'Reported by');
 
+      // Retrieve the machine_name for the project
+      $machine_name = samurai_project_machine_name($project_name);
+
+      // Check for a security update concerning the project_name from the SA
+      // If $machine_name is empty - then the project doesn't exist
+      $core = drupal_json_decode($version_aff);
+      $secure_version_array = array();
+      if (!is_null($machine_name)) {
+
+        if ($type == 'core') {
+          foreach ($core as $c => $core_major) {
+            // Retrieve the update
+            $core_version = substr($core_major, 0, 1);
+            samurai_get_project_update($machine_name, $core_version, $core_major);
+            $secure_minor = samurai_project_secure_minor($machine_name, $core_version, $core_major);
+            if (isset($secure_minor)) {
+              $secure_version_array[$core_major][] = $core_version . '.' . $secure_minor;
+            }
+          }
+        } else {
+          // Check update for each core version
+          foreach ($core as $c => $core_major) {
+            $am = samurai_get_available_major_versions($machine_name, $core_major);
+            if (is_array($am)) {
+              foreach ($am as $available_major) {
+                // Retrieve the update.
+                samurai_get_project_update($machine_name, $available_major, $core_major);
+                $secure_version_array[$core_major][] = $available_major . '.' . samurai_project_secure_minor($machine_name, $core_major, $available_major);
+              }
+            } else {
+              samurai_get_project_update($machine_name, $am, $core_major);
+              $secure_version_array[$core_major][] = $am . '.' . samurai_project_secure_minor($machine_name, $core_major, $am);
+            }
+          }
+        }
+      }
+
+      $secure_version_array = drupal_json_encode($secure_version_array);
+
       // Create and save the new SA entity.
       $security_announcement = entity_create('security_announcement', array(
         'sa_id' => $sa,
@@ -228,7 +267,7 @@ function samurai_process_sa($xml, $type) {
         'vulnerability' => $vulnerability,
         'solution' => $solution,
         'project_name' => $project_name,
-        'secure_minor' => 'EMPTY'
+        'secure_version' => $secure_version_array
       ));
       $sa_wrapped = entity_metadata_wrapper('security_announcement', $security_announcement);
       $sa_wrapped->save();
@@ -236,26 +275,6 @@ function samurai_process_sa($xml, $type) {
       // Log the creation of the SA entity to watchdog.
       watchdog('Security samurai', $sa . t(' New security update data'));
 
-      // Check for a security update concerning the project_name from the SA.
-      $core = drupal_json_decode($version_aff);
-      if (!empty($machine_name)) {
-
-        // Check update for each core version
-        foreach ($core as $c => $core_major) {
-
-          $am = samurai_get_available_major_versions($machine_name, $core_major);
-
-          if (is_array($am)) {
-            foreach ($am as $available_major) {
-
-              // Retrieve the update.
-              samurai_get_project_update($machine_name, $available_major, $core_major);
-            }
-          } else {
-            samurai_get_project_update($machine_name, $am, $core_major);
-          }
-        }
-      }
     } else {
       continue;
     }
@@ -267,12 +286,12 @@ function samurai_process_sa($xml, $type) {
  *
  * The way this function works is:
  *  - Checks for an update on at least each project once every day
- *  - It will then load and update the entity with the updated data.
- *  - Only check updates for projects that are supported.
+ *  - It will then load and update the entity with the updated data
+ *  - Only check updates for projects that are supported
  *
- * @param string $machine_name The machine name of the project.
- * @param int $major_version The major_version of the project.
- * @param string $core The core version that the project is for e.g. 7.x
+ * @param string $machine_name The machine name of the project
+ * @param int $major_version The major_version of the project
+ * @param string $core The core version that the project is compatible with e.g. 7.x
  */
 function samurai_get_project_update($machine_name, $major_version, $core, $xml = NULL) {
 
@@ -288,18 +307,20 @@ function samurai_get_project_update($machine_name, $major_version, $core, $xml =
   // Get the entity ID of the project.
   $result = samurai_get_project_entity_id($machine_name, $core, $major_version);
 
-  // -- Load the entity
-  // -- Update the entity fields:
-  // ---- latest_secure_minor_version
-  // ---- latest_minor_version
-  $project_entity = project_load($result);
-  $project_entity->latest_secure_minor_version = $latest_secure_version;
-  $project_entity->latest_minor_version = $latest_version;
-  $project_entity->update_next_check = strtotime('+24 hours');
-  $project_entity = entity_metadata_wrapper('project', $project_entity);
+  if (!is_null($result)) {
+    // -- Load the entity
+    // -- Update the entity fields:
+    // ---- latest_secure_minor_version
+    // ---- latest_minor_version
+    $project_entity = project_load($result);
+    $project_entity->latest_secure_minor_version = (int)$latest_secure_version;
+    $project_entity->latest_minor_version = (int)$latest_version;
+    $project_entity->update_next_check = strtotime('+24 hours');
+    $project_entity = entity_metadata_wrapper('project', $project_entity);
 
-  // Save the entity.
-  $project_entity->save();
+    // Save the entity.
+    $project_entity->save();
+  }
 }
 
 /**
@@ -861,23 +882,25 @@ function samurai_get_project_latest_version($machine_name, $core, $major_version
     $xml = samurai_xml_curl_request(SAMURAI_ORG_UPDATE_URL . $machine_name . '/' . $core);
   }
 
-  // Loop through each release entry looking for the corresponding major version
-  // with the latest minor version.
-  $return = '';
-  foreach ($xml->releases as $release => $rel) {
-    foreach ($rel as $key => $r) {
-      if ($major_version == (string)$r->version_major) {
+  if (isset($xml->releases)) {
+    // Loop through each release entry looking for the corresponding major version
+    // with the latest minor version.
+    $return = '';
+    foreach ($xml->releases as $release => $rel) {
+      foreach ($rel as $key => $r) {
+        if ($major_version == (string)$r->version_major) {
 
-        // -- A match has been found for the latest major version.
-        // -- Break out of the foreach loop.
-        $return = (string)$r->version_patch;
-        break;
+          // -- A match has been found for the latest major version.
+          // -- Break out of the foreach loop.
+          $return = (string)$r->version_patch;
+          break;
+        }
       }
     }
-  }
 
-  // Return the latest project version.
-  return $return;
+    // Return the latest project version.
+    return $return;
+  }
 }
 
 /**
@@ -903,7 +926,7 @@ function samurai_get_project_latest_secure_version($machine_name, $core, $major_
   $return = '';
 
   // If major version parameter is set.
-  if (!is_null($major_version)) {
+  if (!is_null($major_version) && isset($xml->releases)) {
 
     // Loop through each release entry looking for the corresponding major
     // version with the term 'security update'
