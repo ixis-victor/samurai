@@ -122,7 +122,7 @@ function security_samurai_docker_schema() {
   );
 
   // Schema for active builds
-  $schema['securitysamurai_dockerbuilds'] = array(
+  $schema['securitysamurai_dockerbatches'] = array(
     'description' => 'The active builds for docker images and containers',
     'fields' => array(
       'id' => array(
@@ -131,17 +131,23 @@ function security_samurai_docker_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-      'entity_type' => array(
-        'description' => 'The entity type being built',
+      'process_type' => array(
+        'description' => 'The type of batch process',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
       ),
-      'entity_id' => array(
-        'description' => 'The entity ID',
+      'clientsite_entity_id' => array(
+        'description' => 'The entity ID of the client_site',
         'type' => 'int',
         'length' => 10,
         'not null' => TRUE,
+      ),
+      'args' => array(
+        'description' => 'Arguments to be included in the batch process',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
       ),
     ),
     'primary key' => array('id'),
