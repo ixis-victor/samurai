@@ -286,7 +286,7 @@ function security_samurai_docker_build_environment_ajax() {
       $html .= '<pre>' . t('You can either stop an active environment or raise the number of maximum active containers.') . '</pre>';
     } else {
       // Send container_information over to the function that will build the environment
-      security_samurai_docker_build_environment($container_information)
+      security_samurai_docker_build_environment($container_information);
       // Success message
       $html = '<pre>' . t('Environment has been created') . '</pre>';
       $html .= t('You will be redirected to a page that will allow you to manage this environment upon submission of this form.');
