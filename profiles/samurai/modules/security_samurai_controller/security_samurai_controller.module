@@ -452,6 +452,20 @@ function security_samurai_controller_security_actions_form($form, &$form_state) 
  */
 function security_samurai_controller_security_actions_form_submit($form, $form_state) {
 
+  if ($form_state['triggering_element']['#op'] == 'secure_site') {
+
+    // Create a new batch process
+    batch_set(array(
+      'title' => t('Performing security update'),
+      'operations' => array(
+        array('security_samurai_docker_secupdate_batch', array(arg(1))),
+      ),
+      'finished' => 'security_samurai_docker_secupdate_batch_finished',
+    ));
+
+    // Start the batch process
+    batch_process('client-site/' . arg(1));
+  }
 }
 
 /**

@@ -911,6 +911,45 @@ function samurai_docker_container_actions_form_submit($form, $form_state) {
   }
 }
 
+function security_samurai_docker_secupdate_batch($site_id, &$context) {
+
+  // Set the progress, title and maximum value
+  if (!isset($context['sandbox']['progress'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['title'] = t('Performing security update');
+    $context['sandbox']['max'] = 100;
+  }
+
+  // Create the new environment
+  $context['results'][] = check_plain('Creating environment to perform updates');
+  $context['message'] = 'Creating environment to perform updates';
+  $container_information = array(
+    'site_id' => $site_id,
+    'branch' => 'master',
+    'image' => 'default',
+    'name' => 'Security update BATCH ' . $site_id,
+    'description' => 'Security update',
+  );
+  variable_set('samurai_container_temp_information', $container_information);
+  security_samurai_docker_build_environment_ajax();
+  $context['sandbox']['progress'] += 10;
+  $context['results'][] = check_plain('Created environment to perform updates');
+  $context['message'] = 'Performing updates';
+  $context['sandbox']['progress'] = 100;
+  $context['finished'] = TRUE;
+}
+
+function security_samurai_docker_secupdate_batch_finished($success, $results, $operations) {
+
+  // Set a display message based on the value of $success
+  if ($success) {
+    $message = t('Security updates have been performed');
+  } else {
+    $message = t('Finished with an error.');
+  }
+  drupal_set_message($message);
+}
+
 /**
  * Extends the default entity class for the 'project' entity type.
  */
