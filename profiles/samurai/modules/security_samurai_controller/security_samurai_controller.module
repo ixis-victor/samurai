@@ -449,7 +449,7 @@ function security_samurai_controller_security_actions_form_submit($form, $form_s
     // Create a new batch process
     batch_set(array(
       'title' => t('Performing security update'),
-      'init_message' => t('Building environment...')
+      'init_message' => t('Building environment...'),
       'operations' => array(
         array('security_samurai_docker_secupdate_batch', array($site_id_array)),
       ),
