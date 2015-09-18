@@ -859,7 +859,7 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     $context['sandbox']['title'] = t('Performing security update');
     $context['sandbox']['max'] = count($site_id);
     $context['sandbox']['security_samurai_current_site_id'] = $site_id[0];
-    $context['sandbox']['security_samurai_current_site_id_key'] = key($site_id[0]);
+    $context['sandbox']['security_samurai_current_site_id_key'] = 0;
   } else {
     // Set the new key and update the current site ID
     $new_key = $context['sandbox']['security_samurai_current_site_id_key'] + 1;
@@ -883,7 +883,7 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     $context['sandbox']['progress']++;
   }
 
-  if ($context['sandbox']['progress'] >= $sandbox['context']['max']) {
+  if ($context['sandbox']['progress'] == $context['sandbox']['max']) {
     $context['finished'] = 1;
   }
 }
