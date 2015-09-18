@@ -857,67 +857,34 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
   if (!isset($context['sandbox']['progress'])) {
     $context['sandbox']['progress'] = 0;
     $context['sandbox']['title'] = t('Performing security update');
-    $context['sandbox']['max'] = 100;
-    $context['sandbox']['security_samurai_sites_in_array'] = sizeof($site_id);
-  }
-  if (!isset($context['sandbox']['security_samurai_current_site_id'])) {
-    // Create the current site id variable
+    $context['sandbox']['max'] = count($site_id);
     $context['sandbox']['security_samurai_current_site_id'] = $site_id[0];
     $context['sandbox']['security_samurai_current_site_id_key'] = key($site_id[0]);
   } else {
-    if ((sizeof($site_id) - 1) < key($context['sandbox']['security_samurai_current_site_id_key'])) {
-      // Size of the site_id - 1 is less than the current site ID key
-      // This means there is no more sites to process
-      $context['finished'] = 1;
-    } else {
-      // Only increment the current_site_id if a build isn't in progress
-      if ($context['sandbox']['security_samurai_build_in_progress'] == FALSE) {
-        // Not yet finished increment the current site_id_key
-        // by 1 and the current_site_id
-        $new_key = $context['sandbox']['security_samurai_current_site_id_key'] + 1;
-        $context['sandbox']['security_samurai_current_site_id'] = $site_id[$new_key];
-        $context['sandbox']['security_samurai_current_site_id_key'] = $new_key;
-        $context['sandbox']['progress'] = 0;
-      }
-    }
+    // Set the new key and update the current site ID
+    $new_key = $context['sandbox']['security_samurai_current_site_id_key'] + 1;
+    $context['sandbox']['security_samurai_current_site_id'] = $site_id[$new_key];
+    $context['sandbox']['security_samurai_current_site_id_key'] = $new_key;
   }
-  // Switch the value of progress
-  switch ($context['sandbox']['progress']) {
-    case 0:
-      $max_active_containers = variable_get('samurai_docker_max_active_containers', 0);
-      if (samurai_docker_get_active_containers() >= $max_active_containers) {
-        $context['results'][] = check_plain('Creating environment to perform updates');
-        $container_information = array(
-          'site_id' => $context['sandbox']['security_samurai_current_site_id'],
-          'branch' => 'master',
-          'image' => 'default',
-          'name' => 'Security update BATCH ' . $context['sandbox']['security_samurai_current_site_id'],
-          'description' => 'Security update',
-        );
-        $context['sandbox']['security_samurai_docker_container_id'] = security_samurai_docker_build_environment($container_information);
-        $context['results'][] = check_plain('Created environment to perform updates');
-        $context['message'] = t('Performing updates');
-        $context['sandbox']['progress'] = 20;
-      }
-      break;
-    case 20:
-      // Perform security updates
-      break;
-    case 40:
-      // Commit to Git
-      break;
-    case 60:
-      // Run tests
-      break;
-    case 80:
-      // Deploy
-      break;
-    case 100:
-      // Rescan the site for update_data
-      break;
-    default:
-      $context['finished'] = 1;
-      break;
+
+  $max_active_containers = variable_get('samurai_docker_max_active_containers', 0);
+  if (samurai_docker_get_active_containers() >= $max_active_containers) {
+    $context['results'][] = check_plain('Creating environment to perform updates');
+    $container_information = array(
+      'site_id' => $context['sandbox']['security_samurai_current_site_id'],
+      'branch' => 'master',
+      'imaage' => 'default',
+      'name' => 'Security update BATCH ' . $context['sandbox']['security_samurai_current_site_id'],
+      'description' => 'Security update',
+    );
+    $context['sandbox']['security_samurai_docker_container_id'] = security_samurai_docker_build_environment($container_information);
+    $context['results'][] = check_plain('Created environment to perform updates');
+    $context['message'] = t('Performing updates');
+    $context['sandbox']['progress']++;
+  }
+
+  if ($context['sandbox']['progress'] >= $sandbox['context']['max']) {
+    $context['finished'] = 1;
   }
 }
 
