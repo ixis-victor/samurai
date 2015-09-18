@@ -887,15 +887,17 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     $context['results'][] = check_plain('Created environment to perform updates');
     // Perform the updates on the container
     $context['message'] = t('Performing updates');
-    $context['sandbox']['progress']++;
     // Test the updates on the container
-
-    // Commit the updates on the container
-
+    $context['message'] = t('Running tests');
+    // Commit the updates on the containers
+    $context['message'] = t('Committing changes');
     // Deploy the updates on the container
-
+    $context['message'] = t('Deploying changes');
     // Schedule the container to check for updates in 5 minutes
     // roughly when the site has finished deployment
+    $context['message'] = t('Scheduling a site scan for 5 minutes');
+    // Increment the progress by + 1
+    $context['sandbox']['progress']++;
   }
   if ($context['sandbox']['progress'] >= $context['sandbox']['max']) {
     $context['finished'] = 1;
