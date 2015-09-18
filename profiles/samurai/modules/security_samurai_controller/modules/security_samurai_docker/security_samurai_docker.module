@@ -313,7 +313,6 @@ function security_samurai_docker_build_environment($container_information) {
 
   // Retrieve a free port available for use
   $available_port = samurai_docker_get_available_port();
-
   // Update the samurai_docker_ports variable with the new used port
   $docker_ports = variable_get('samurai_docker_ports', NULL);
   if (!is_null($docker_ports)) {
@@ -326,10 +325,8 @@ function security_samurai_docker_build_environment($container_information) {
     $docker_ports[$available_port] = TRUE;
     variable_set('samurai_docker_ports', $docker_ports);
   }
-
   // Retieve a free port available for use
   $available_port_2 = samurai_docker_get_available_port();
-
   $docker_ports = variable_get('samurai_docker_ports', NULL);
   if (!is_null($docker_ports)) {
     // Update the samurai_docker_ports variable
@@ -337,7 +334,6 @@ function security_samurai_docker_build_environment($container_information) {
     $docker_ports[$available_port_2] = TRUE;
     variable_set('samurai_docker_ports', $docker_ports);
   }
-
   // Initalise arrays for later use
   $port_configuration = array();
   $entity_port_configuration = array();
@@ -349,7 +345,6 @@ function security_samurai_docker_build_environment($container_information) {
   $entity_port_configuration['22'] = $available_port_2;
   // Encode the forwarded ports for database storage
   $json_encoded_ports = drupal_json_encode($entity_port_configuration);
-
   // Init docker and run the create container command
   $docker = new Docker();
   $docker->create_container($port_configuration, $container_information['image']);
@@ -361,7 +356,6 @@ function security_samurai_docker_build_environment($container_information) {
   $docker->execute_command('service apache2 start');
   $docker->execute_command('service ssh restart');
   $docker->execute_command('service mysql start');
-
   // Set the private SSH key of the container
   $private_ssh_key = variable_get('samurai_gitapi_privkey', NULL);
   if (!is_null($private_ssh_key)) {
@@ -374,15 +368,12 @@ function security_samurai_docker_build_environment($container_information) {
     // Update the permissions on the private key
     $docker->execute_command('chmod 400 /root/.ssh/id_rsa');
   }
-
   // Prepare the environment for repository clone
   $gitinfo_id = gitinfo_getid($container_information['site_id']);
   $gitinfo = gitinfo_load($gitinfo_id);
   $clone_url = $gitinfo->clone_url;
-
   // Remove the default index.html file
   $docker->execute_command('rm -rf /var/www/index.html');
-
   // Check if site is makefile dependant
   if ($gitinfo->is_make) {
     // Split the gitinfo name so we know the folder name
@@ -412,7 +403,6 @@ function security_samurai_docker_build_environment($container_information) {
   $docker->cp($dump_location, '/root/database.sql');
   // Remove the original database dump from the host
   unlink($dump_location);
-
   // Create the database
   $docker->execute_command('sh -c "echo \"CREATE DATABASE drupal;\" | mysql -u root"');
   // Create new user and grant privileges
@@ -424,7 +414,6 @@ function security_samurai_docker_build_environment($container_information) {
   $docker->execute_command('sh -c "cd ~/samurai-scripts && ./set_settings.sh ' . $default_database_pass . ' /var/www/sites/default/settings.php"');
   // Sync the database
   $docker->execute_command('sh -c "cd /var/www/sites/default && drush sqlc < ~/database.sql"');
-
   // Create a new docker container entity and save it
   $container = entity_create('docker_containers', array(
     'associated_site_id' => $container_information['site_id'],
@@ -439,13 +428,14 @@ function security_samurai_docker_build_environment($container_information) {
   ));
   $container_wrapper = entity_metadata_wrapper('docker_containers', $container);
   $container_wrapper->save();
-
   // Create a link between the new container and an existing site
   $container_id = samurai_docker_get_container_row_id($docker->container_id);
   $image_id = samurai_docker_get_image_row_id($docker->image_name);
   $site_id = $container_information['site_id'];
   $branch = $container_information['branch'];
   samurai_docker_create_dockersite_link($container_id, $site_id, $image_id, $branch);
+  // Return the container_id
+  return $docker->container_id;
 }
 
 /**
@@ -856,6 +846,11 @@ function samurai_docker_container_actions_form_submit($form, $form_state) {
   }
 }
 
+/**
+ * Perform security updates on a site
+ *
+ * @param array[mixed] $site_id An array of site IDs to perform security updates on
+ */
 function security_samurai_docker_secupdate_batch($site_id, &$context) {
 
   // Set the progress, title and maximum value
@@ -863,23 +858,67 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     $context['sandbox']['progress'] = 0;
     $context['sandbox']['title'] = t('Performing security update');
     $context['sandbox']['max'] = 100;
+    $context['sandbox']['security_samurai_sites_in_array'] = sizeof($site_id);
   }
-
-  // Create the new environment
-  $context['results'][] = check_plain('Creating environment to perform updates');
-  $context['message'] = 'Creating environment to perform updates';
-  $container_information = array(
-    'site_id' => $site_id,
-    'branch' => 'master',
-    'image' => 'default',
-    'name' => 'Security update BATCH ' . $site_id,
-    'description' => 'Security update',
-  );
-  security_samurai_docker_build_environment($container_information);
-  $context['results'][] = check_plain('Created environment to perform updates');
-  $context['message'] = 'Performing updates';
-  $context['sandbox']['progress'] = 100;
-  $context['finished'] = 1;
+  if (!isset($context['sandbox']['security_samurai_current_site_id'])) {
+    // Create the current site id variable
+    $context['sandbox']['security_samurai_current_site_id'] = $site_id[0];
+    $context['sandbox']['security_samurai_current_site_id_key'] = key($site_id[0]);
+  } else {
+    if ((sizeof($site_id) - 1) < key($context['sandbox']['security_samurai_current_site_id_key'])) {
+      // Size of the site_id - 1 is less than the current site ID key
+      // This means there is no more sites to process
+      $context['finished'] = 1;
+    } else {
+      // Only increment the current_site_id if a build isn't in progress
+      if ($context['sandbox']['security_samurai_build_in_progress'] == FALSE) {
+        // Not yet finished increment the current site_id_key
+        // by 1 and the current_site_id
+        $new_key = $context['sandbox']['security_samurai_current_site_id_key'] + 1;
+        $context['sandbox']['security_samurai_current_site_id'] = $site_id[$new_key];
+        $context['sandbox']['security_samurai_current_site_id_key'] = $new_key;
+        $context['sandbox']['progress'] = 0;
+      }
+    }
+  }
+  // Switch the value of progress
+  switch ($context['sandbox']['progress']) {
+    case 0:
+      $max_active_containers = variable_get('samurai_docker_max_active_containers', 0);
+      if (samurai_docker_get_active_containers() >= $max_active_containers) {
+        $context['results'][] = check_plain('Creating environment to perform updates');
+        $container_information = array(
+          'site_id' => $context['sandbox']['security_samurai_current_site_id'],
+          'branch' => 'master',
+          'image' => 'default',
+          'name' => 'Security update BATCH ' . $context['sandbox']['security_samurai_current_site_id'],
+          'description' => 'Security update',
+        );
+        $context['sandbox']['security_samurai_docker_container_id'] = security_samurai_docker_build_environment($container_information);
+        $context['results'][] = check_plain('Created environment to perform updates');
+        $context['message'] = t('Performing updates');
+        $context['sandbox']['progress'] = 20;
+      }
+      break;
+    case 20:
+      // Perform security updates
+      break;
+    case 40:
+      // Commit to Git
+      break;
+    case 60:
+      // Run tests
+      break;
+    case 80:
+      // Deploy
+      break;
+    case 100:
+      // Rescan the site for update_data
+      break;
+    default:
+      $context['finished'] = 1;
+      break;
+  }
 }
 
 function security_samurai_docker_secupdate_batch_finished($success, $results, $operations) {
