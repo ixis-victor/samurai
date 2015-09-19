@@ -895,12 +895,13 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     $gitinfo_id = gitinfo_getid($container_information['site_id']);
     $gitinfo = gitinfo_load($gitinfo_id);
     if ($gitinfo->is_make) {
-      foreach ($updates_array as $key => $value) {
-        $docker->execute_command('./samurai-scripts/makefile_update.sh "' . $key . '" "' . $value['new_version'] . '" "' . $gitinfo->make_location . '"');
-      }
-      // Run the makefile
       $position = strpos($gitinfo->name, '/');
       $folder_name = substr($gitinfo->name, $position);
+      $makefile_location = '/var/www/sites/' . $folder_name . '/' . $gitinfo->make_location;
+      foreach ($updates_array as $key => $value) {
+        $docker->execute_command('./samurai-scripts/makefile_update.sh "' . $key . '" "' . $value['new_version'] . '" "' . $make_location . '"');
+      }
+      // Run the makefile
       $docker->execute_command('sh -c "cd /var/www && drush make sites' . $folder_name . '/' .  $gitinfo->make_location . ' . -y"');
       // Run the tests
       $context['message'] = t('Running tests');
