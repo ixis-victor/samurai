@@ -355,7 +355,7 @@ function security_samurai_docker_build_environment($container_information) {
   // - Start mysql
   $docker->execute_command('service apache2 start');
   $docker->execute_command('service ssh restart');
-  $docker->execute_command('service mysql start');
+  $docker->execute_command('service mysql restart');
   // Set the private SSH key of the container
   $private_ssh_key = variable_get('samurai_gitapi_privkey', NULL);
   if (!is_null($private_ssh_key)) {
