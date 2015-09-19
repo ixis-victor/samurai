@@ -899,15 +899,18 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
         $docker->execute_command('./samurai-scripts/makefile_update.sh "' . $key . '" "' . $value['new_version'] . '" "' . $gitinfo->make_location . '"');
       }
       // Run the makefile
+      $position = strpos($gitinfo->name, '/');
+      $folder_name = substr($gitinfo->name, $position);
       $docker->execute_command('sh -c "cd /var/www && drush make sites' . $folder_name . '/' .  $gitinfo->make_location . ' . -y"');
+      // Run the tests
+      $context['message'] = t('Running tests');
+      // Commit the updates
+      $context['message'] = t('Committing changes');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git add -u && git checkout -b feature/security-' . REQUEST_TIME . ' && git commit -m \"Security updates\" && git push"');
     } else {
 
     }
-    // Test the updates on the container
-    $context['message'] = t('Running tests');
-    // Commit the updates on the containers
-    $context['message'] = t('Committing changes');
-    // Deploy the updates on the container
+    // Deploy the updates
     $context['message'] = t('Deploying changes');
     // Schedule the container to check for updates in 5 minutes
     // roughly when the site has finished deployment
