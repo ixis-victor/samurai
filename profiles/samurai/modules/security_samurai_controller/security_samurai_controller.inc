@@ -812,11 +812,11 @@ function samurai_get_sites() {
 }
 
 /**
- * Returns the site update data
+ * Returns the site update data from the client_site entity
  *
  * @param int $site_id The entity ID of the client_site
  */
-function samurai_get_site_update_data($site_id) {
+function samurai_get_site_update_data_entity($site_id) {
 
   $result = db_query('SELECT site_update_data FROM {securitysamurai_site}
     WHERE id = :site_id', array(
@@ -839,7 +839,7 @@ function samurai_get_site_update_data($site_id) {
 function samurai_retrieve_security_updates_array($site_id) {
 
   // Retrieve the site_update_data
-  $site_update_data = samurai_get_site_update_data($site_id);
+  $site_update_data = samurai_get_site_update_data_entity($site_id);
   if (!is_null($site_update_data)) {
     // Decode the JSON site_update_data
     $site_update_data_array = drupal_json_decode($site_update_data);
