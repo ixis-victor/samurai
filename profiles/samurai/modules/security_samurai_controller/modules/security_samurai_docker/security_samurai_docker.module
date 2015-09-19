@@ -906,7 +906,7 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
       $context['message'] = t('Running tests');
       // Commit the updates
       $context['message'] = t('Committing changes');
-      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git add -u && git checkout -b feature/security-' . REQUEST_TIME . ' && git commit -m \"Security updates\" && git push"');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git add -u && git checkout -b feature/security-' . REQUEST_TIME . ' && git commit -m \'Security updates\' && git push"');
     } else {
 
     }
