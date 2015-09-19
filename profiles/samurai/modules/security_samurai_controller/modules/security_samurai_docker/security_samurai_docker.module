@@ -879,7 +879,7 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     $container_information = array(
       'site_id' => $context['sandbox']['security_samurai_current_site_id'],
       'branch' => 'master',
-      'image' => 'default',
+      'image' => 'default',// This will need to be the default image
       'name' => 'Security update BATCH ' . $context['sandbox']['security_samurai_current_site_id'],
       'description' => 'Security update',
     );
@@ -887,6 +887,22 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     $context['results'][] = check_plain('Created environment to perform updates');
     // Perform the updates on the container
     $context['message'] = t('Performing updates');
+    $docker = new Docker();
+    $docker->container_id = $context['sandbox']['security_samurai_docker_container_id'];
+    // Retrieve the pending updates of projects and latest secure versions in an array
+    $updates_array = samurai_retrieve_security_updates_array($container_information['site_id']);
+    // Load the related gitinfo entity to check if the project uses a makefile
+    $gitinfo_id = gitinfo_getid($container_information['site_id']);
+    $gitinfo = gitinfo_load($gitinfo_id);
+    if ($gitinfo->is_make) {
+      foreach ($updates_array as $key => $value) {
+        $docker->execute_command('./samurai-scripts/makefile_update.sh "' . $key . '" "' . $value['new_version'] . '" "' . $gitinfo->make_location . '"');
+      }
+      // Run the makefile
+      $docker->execute_command('sh -c "cd /var/www && drush make sites' . $folder_name . '/' .  $gitinfo->make_location . ' . -y"');
+    } else {
+
+    }
     // Test the updates on the container
     $context['message'] = t('Running tests');
     // Commit the updates on the containers

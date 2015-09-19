@@ -569,25 +569,18 @@ function samurai_render_update_data($update_data) {
   // Create the return array
   $return = array();
   $array_key = 0;
-
   // Decoode the json update_data
   $decoded = drupal_json_decode($update_data);
-
   // Split the core version number - we need the major number
   if (isset($decoded['drupal'])) {
-
     $core_version = samurai_split_version_number($decoded['drupal']['version']);
   } else {
-
     return NULL;
   }
-
   // Loop through each project.
   foreach ($decoded as $key => $value) {
-
     // Get the major project version
     $split_version_project = samurai_split_version_number($value['version']);
-
     // Get the stored project data.
     $result = db_query("SELECT
       name,
@@ -606,57 +599,43 @@ function samurai_render_update_data($update_data) {
         ':major_version' => $split_version_project['major'],
         ':core' => $core_version['major'] . '.x'
     ))->fetchAll();
-
     if (!empty($result)) {
-
       $return[$array_key]['name'] = $result[0]->name;
       $return[$array_key]['type'] = str_replace('_', ' ', $result[0]->project_type);
-
       if ($value['name'] == 'Drupal core') {
-
         $return[$array_key]['installed_version'] = $value['version'];
       } else {
-
         $return[$array_key]['installed_version'] = substr($value['version'], 4);
       }
-
       $return[$array_key]['latest_version'] = $result[0]->major_version . '.' . $result[0]->latest_minor_version;
       $return[$array_key]['secure_version'] = $result[0]->major_version . '.' . $result[0]->latest_secure_minor_version;
-
       // If the module is unsupported.
       if ($result[0]->supported == 0) {
         $return[$array_key]['status'] = 'unsupported';
       }
-
       // Check if the project minor is equal to x e.g. 1.x 2.x
       // It is generally not recommended to install modules like this.
       if ($split_version_project['minor'] == 'x') {
         $return[$array_key]['status'] = 'unsecure';
       }
-
       // Check if the project minor is lest than the latest minor.
       if ($split_version_project['minor'] < $result[0]->latest_minor_version) {
         $return[$array_key]['status'] = 'secure';
       }
-
       // Check if the project minor is equal to the latest minor.
       if ($split_version_project['minor'] == $result[0]->latest_minor_version) {
         $return[$array_key]['status'] = 'latest';
       }
-
       // Check if the project minor is less than the latest secure minor.
       if ($split_version_project['minor'] < $result[0]->latest_secure_minor_version) {
         $return[$array_key]['status'] = 'unsecure';
       }
-
       $array_key++;
     }
   }
   if (!empty($return)) {
-
     return $return;
   } else {
-
     return NULL;
   }
 }
@@ -829,5 +808,75 @@ function samurai_get_sites() {
     return $return;
   } else {
     return NULL;
+  }
+}
+
+/**
+ * Returns the site update data
+ *
+ * @param int $site_id The entity ID of the client_site
+ */
+function samurai_get_site_update_data($site_id) {
+
+  $result = db_query('SELECT site_update_data FROM {securitysamurai_site}
+    WHERE id = :site_id', array(
+      ':site_id' => $site_id
+    ))->fetchField();
+
+  if (!empty($result)) {
+    return $result;
+  } else {
+    return NULL;
+  }
+}
+
+/**
+ * Returns security updates for modules that are not marked
+ * to be ignored by Samurai
+ *
+ * @param int $site_id The entity ID of the client_site
+ */
+function samurai_retrieve_security_updates_array($site_id) {
+
+  // Retrieve the site_update_data
+  $site_update_data = samurai_get_site_update_data($site_id);
+  if (!is_null($site_update_data)) {
+    // Decode the JSON site_update_data
+    $site_update_data_array = drupal_json_decode($site_update_data);
+    // Initalise an array for the projects which will require a
+    // security update
+    $security_updates = array();
+    // Loop through each project entry in the site_update_data array
+    // looking for projects which require a security update
+    foreach ($site_update_data_array as $key => $project) {
+      // The drupal version entry is structured a little differently
+      if ($key == 'drupal') {
+        // Check for the latest_version secure version of Drupal
+        $split_version = samurai_split_version_number($project['version']);
+        $core_version = $split_version['major'] . '.x';
+        $secure_minor = samurai_project_secure_minor($project['machine_name'], $core_version, $split_version['major']);
+        if ($split_version['minor'] < $secure_minor) {
+          // If the project isn't the latest secure version
+          // add the project to the secure update array with the latest
+          // secure version to update to
+          $security_update[][$project['machine_name']] = array(
+            'new_version' => $split_version['major'] . '.' . $secure_minor;
+          );
+        }
+      } else {
+        // Retrieve the latest secure minor for the current project
+        $split_version = samurai_split_version_number($project['version']);
+        $secure_minor = samurai_project_secure_minor($project['machine_name'], $project['core'], $split_version['major']);
+        if ($split_version['minor'] < $secure_minor) {
+          // If the project isn't the latest secure version
+          // add the project to the secure update array with the latest
+          // secure version to update to
+          $security_update[][$project['machine_name']] = array(
+            'new_version' => $split_version['major'] . '.' . $secure_minor;
+          );
+        }
+      }
+    }
+    return $security_updates;
   }
 }
