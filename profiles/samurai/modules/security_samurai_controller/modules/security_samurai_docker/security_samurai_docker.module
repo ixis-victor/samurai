@@ -897,9 +897,8 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     if ($gitinfo->is_make) {
       $position = strpos($gitinfo->name, '/');
       $folder_name = substr($gitinfo->name, $position);
-      $makefile_location = '/var/www/sites/' . $folder_name . '/' . $gitinfo->make_location;
       foreach ($updates_array as $key => $value) {
-        $docker->execute_command('./samurai-scripts/makefile_update.sh "' . $key . '" "' . $value['new_version'] . '" "' . $make_location . '"');
+        $docker->execute_command('./samurai-scripts/makefile_update.sh "' . $key . '" "' . $value['new_version'] . '" ' . $gitinfo->make_location);
       }
       // Run the makefile
       $docker->execute_command('sh -c "cd /var/www && drush make sites' . $folder_name . '/' .  $gitinfo->make_location . ' . -y"');
