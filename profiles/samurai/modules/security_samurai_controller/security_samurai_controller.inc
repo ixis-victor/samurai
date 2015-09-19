@@ -859,7 +859,7 @@ function samurai_retrieve_security_updates_array($site_id) {
           // If the project isn't the latest secure version
           // add the project to the secure update array with the latest
           // secure version to update to
-          $security_update[][$project['machine_name']] = array(
+          $security_updates[][$project['machine_name']] = array(
             'new_version' => $split_version['major'] . '.' . $secure_minor,
           );
         }
@@ -871,7 +871,7 @@ function samurai_retrieve_security_updates_array($site_id) {
           // If the project isn't the latest secure version
           // add the project to the secure update array with the latest
           // secure version to update to
-          $security_update[][$project['machine_name']] = array(
+          $security_updates[][$project['machine_name']] = array(
             'new_version' => $split_version['major'] . '.' . $secure_minor,
           );
         }
