@@ -879,7 +879,7 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     $container_information = array(
       'site_id' => $context['sandbox']['security_samurai_current_site_id'],
       'branch' => 'master',
-      'image' => 'default',// This will need to be the default image
+      'image' => 'default',
       'name' => 'Security update BATCH ' . $context['sandbox']['security_samurai_current_site_id'],
       'description' => 'Security update',
     );
@@ -894,12 +894,16 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     // Load the related gitinfo entity to check if the project uses a makefile
     $gitinfo_id = gitinfo_getid($container_information['site_id']);
     $gitinfo = gitinfo_load($gitinfo_id);
+    // Set the branch variable to be within scope
+    $branch = 'hotfix/security-release-' . REQUEST_TIME;
+    // Check if the client_site depends on a makefile
     if ($gitinfo->is_make) {
       $position = strpos($gitinfo->name, '/');
       $folder_name = substr($gitinfo->name, $position);
       foreach ($updates_array as $key => $value) {
         foreach ($value as $key => $project_info) {
-          $docker->execute_command('./samurai-scripts/makefile_update.sh "' . $key . '" "' . $project_info['new_version'] . '" ' . $gitinfo->make_location);
+          // Foreach project in the array update the value of the version
+          $docker->execute_command('sh -c "~/./samurai-scripts/makefile_update.sh ' . $key . ' ' . $value['new_version'] . ' ' . $gitinfo->make_location . '"');
         }
       }
       // Run the makefile
@@ -907,11 +911,28 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
       // Run the tests
       $context['message'] = t('Running tests');
       // Commit the updates
+      // - Add the changes
+      // - Checkout to a new branch
+      // - Commit the changes
+      // - Push changes to origin
       $context['message'] = t('Committing changes');
-      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git add -u && git checkout -b feature/security-' . REQUEST_TIME . ' && git commit -m \'Security updates\' && git push"');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git checkout master"');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git add -u"');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git checkout -b ' . $branch . '"');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git commit -m \'Security updates\'"');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git push origin ' . $branch . '"');
     } else {
+      // Process for non makefile installations
 
     }
+    // Finish the process of merging and committing the changes
+    // - Merge the changes into both master and develop
+    // - Push the changes
+    $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git checkout master"');
+    $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git merge ' . $branch . '"');
+    $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git checkout develop"');
+    $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git merge ' . $branch . '"');
+    $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git push"');
     // Deploy the updates
     $context['message'] = t('Deploying changes');
     // Schedule the container to check for updates in 5 minutes
@@ -919,6 +940,9 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
     $context['message'] = t('Scheduling a site scan for 5 minutes');
     // Increment the progress by + 1
     $context['sandbox']['progress']++;
+    // Stop the container
+    // TODO will also need to update the container entity
+    $docker->stop_container();
   }
   if ($context['sandbox']['progress'] >= $context['sandbox']['max']) {
     $context['finished'] = 1;
