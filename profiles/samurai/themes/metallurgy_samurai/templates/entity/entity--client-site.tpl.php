@@ -28,7 +28,10 @@
               </thead>
               <?php foreach($grid_data as $data): ?>
                 <tr>
-                  <td class="center"><?php print render(drupal_get_form('security_samurai_controller_project_exclude_form', arg(1), $data['name'])); ?></td>
+                  <td class="center">
+                    <?php $security_samurai_controller_project_exclude_form = drupal_get_formo('security_samurai_controller_project_exclude_form', arg(1), $data['name']); ?>
+                    <?php print render($security_samurai_controller_project_exclude_form); ?>
+                  </td>
                   <td><?php print $data['name']; ?></td>
                   <td <?php
                     if (isset($data['status'])) {

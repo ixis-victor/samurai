@@ -461,6 +461,12 @@ function security_samurai_controller_security_actions_form_submit($form, $form_s
   }
 }
 
+/**
+ * Returns a form array
+ *
+ * @param int $arg The client_site entity ID
+ * @param string $data_name The name of the module
+ */
 function security_samurai_controller_project_exclude_form($form, &$form_state, $arg, $data_name) {
 
   $machine_name = samurai_project_machine_name($data_name);
@@ -504,6 +510,10 @@ function security_samurai_controller_project_exclude_form($form, &$form_state, $
   return $form;
 }
 
+/**
+ * Ajax callback
+ * @see security_samurai_controller_project_exlude_form
+ */
 function security_samurai_controller_project_exclude_form_callback($form, $form_state) {
 
   // Load the client_site entity
