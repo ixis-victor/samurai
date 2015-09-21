@@ -90,15 +90,3 @@ RUN echo -e '[program:apache2]\ncommand=/bin/bash -c "source /etc/apache2/envvar
 RUN echo -e '[program:mysql]\ncommand=/usr/bin/pidproxy /var/run/mysqld/mysqld.pid /usr/sbin/mysqld\nautorestart=true\n\n' >> /etc/supervisor/supervisord.conf
 RUN echo -e '[program:sshd]\ncommand=/usr/sbin/sshd -D\n\n' >> /etc/supervisor/supervisord.conf
 RUN echo -e '[program:blackfire]\ncommand=/usr/local/bin/launch-blackfire\n\n' >> /etc/supervisor/supervisord.conf
-
-# From here the following will have to happen:
-# - A script will have to be cloned from a repo that will generate an ssh key and echo it.
-#   - Add the ssh key to an account that is open to use.
-#   - Wait a minute.
-# - Clone the specified repo.
-# - Set up a new databsae for Drupal.
-# - Use drush aliases to grab a database, ssh key
-#   - Drush aliases are in a repo, this will need to be cloned.
-# - Set up files directory (e.g. /tmp/, sites/default/files), clear the cache.
-# - Run the codeception tests pre-update
-# - drush updb for non make file installations
