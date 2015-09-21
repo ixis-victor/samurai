@@ -880,3 +880,29 @@ function samurai_retrieve_security_updates_array($site_id) {
     return $security_updates;
   }
 }
+
+/**
+ * Returns TRUE/FALSE for auto-updates being enabled for
+ * a particular project
+ *
+ * @param int $site_id The entity ID of the current client_site
+ * @param string $machine_name The machine name of the project to check
+ */
+function samurai_project_auto_update_enabled($site_id, $machine_name) {
+
+  // Retrieve the site_update_data
+  $site_update_data = samurai_get_site_update_data_entity($site_id);
+  // Decode the site_update_data
+  $site_update_data = drupal_json_decode($site_update_data);
+  // Check if the array is set
+  if (isset($site_update_data[$machine_name]['auto_updates'])) {
+    // Return true if auto-update is enabled and false if not
+    if ($site_update_data[$machine_name]['auto_updates'] == 1) {
+      return TRUE;
+    } else {
+      return FALSE;
+    }
+  } else {
+    return FALSE;
+  }
+}

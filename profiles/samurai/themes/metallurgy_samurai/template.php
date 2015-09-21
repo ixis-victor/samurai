@@ -29,3 +29,8 @@ function metallurgy_samurai_preprocess_html(&$variables) {
   drupal_add_css(libraries_get_path('materialize') . '/css/materialize.min.css');
   drupal_add_js(libraries_get_path('materialize') . '/js/materialize.min.js');
 }
+
+function metallurgy_samurai_css_alter(&$css) {
+  // Remove defaults.css file.
+  unset($css[drupal_get_path('module', 'system') . '/system.theme.css']);
+}
