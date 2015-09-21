@@ -901,10 +901,8 @@ function security_samurai_docker_secupdate_batch($site_id, &$context) {
       $position = strpos($gitinfo->name, '/');
       $folder_name = substr($gitinfo->name, $position);
       foreach ($updates_array as $key => $value) {
-        foreach ($value as $key => $project_info) {
-          // Foreach project in the array update the value of the version
-          $docker->execute_command('sh -c "~/./samurai-scripts/makefile_update.sh ' . $key . ' ' . $value['new_version'] . ' ' . $gitinfo->make_location . '"');
-        }
+        // Foreach project in the array update the value of the version
+        $docker->execute_command('sh -c "~/./samurai-scripts/makefile_update.sh ' . $key . ' ' . $value['new_version'] . ' ' . $gitinfo->make_location . '"');
       }
       // Run the makefile
       $docker->execute_command('sh -c "cd /var/www && drush make sites' . $folder_name . '/' .  $gitinfo->make_location . ' . -y"');
