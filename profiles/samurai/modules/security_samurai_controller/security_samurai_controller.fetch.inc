@@ -107,7 +107,8 @@ function security_samurai_controller_cron() {
     // In future this should become extensible, allowing for custom
     // update retrieval methods
     if ($site->update_check_method == 1) {
-
+      // Save the previous state of the site_update_data
+      $site_update_data_old = drupal_json_decode($site->site_update_data);
       // -- Get the update data from the site.
       // -- Decode the json encoded update data, to use as a PHP array.
       // -- Decrypt the update data.
@@ -117,9 +118,16 @@ function security_samurai_controller_cron() {
       trim(samurai_decrypt_update_data(
         $encrypted_update_data['encrypted'],
         $site->encryption_key)));
-
+      // Process each project entry, resetting the auto_updates value
+      // from the previous state
+      $site_update_data = samurai_process_update_data(array_reverse($decrypted_update_data));
+      foreach ($site_update_data_old as $key => $value) {
+        if (isset($site_update_data[$key])) {
+          $site_update_data[$key]['auto_updates'] = $site_update_data_old[$key]['auto_updates'];
+        }
+      }
       // Assign values to the loaded entity
-      $site->site_update_data = drupal_json_encode(samurai_process_update_data(array_reverse($decrypted_update_data)));
+      $site->site_update_data = drupal_json_encode($site_update_data);
       $site->update_count = samurai_count_available_security_updates(drupal_json_decode($site->site_update_data));
       $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
       $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
@@ -410,6 +418,7 @@ function samurai_process_update_data($decrypted_update_data) {
       'name' => $c_name,
       'machine_name' => $c_machine_name,
       'version' => $core['version'],
+      'auto_updates' => 0,
     );
 
   }
@@ -426,6 +435,7 @@ function samurai_process_update_data($decrypted_update_data) {
       $m_machine_name = $m['machine_name'];
       $m_core = $m['core'];
       $m_split_version = samurai_split_version_number($m['version']);
+      $m['auto_updates'] = 0;
 
       // Don't retrieve project information if the project is already in the
       // database.
@@ -499,6 +509,7 @@ function samurai_process_update_data($decrypted_update_data) {
       $t_machine_name = $t['machine_name'];
       $t_core = $t['core'];
       $t_split_version = samurai_split_version_number($t['version']);
+      $t['auto_updates'] = 0;
 
       // Don't retrieve project information if the project is already in the
       // database.
@@ -714,6 +725,7 @@ function samurai_process_drush_update_data($unformatted_update_data) {
           $update_data['drupal']['name'] = 'Drupal core';
           $update_data['drupal']['machine_name'] = 'drupal';
           $update_data['drupal']['version'] = $version;
+          $update_data['drupal']['auto_updates'] = 0;
           $human_readable_name = 'Drupal core';
           $machine_name = 'drupal';
         }
@@ -722,6 +734,7 @@ function samurai_process_drush_update_data($unformatted_update_data) {
         $update_data[$machine_name]['machine_name'] = $machine_name;
         $update_data[$machine_name]['core'] = $core_version;
         $update_data[$machine_name]['version'] = $version;
+        $update_data[$machine_name]['auto_updates'] = 0;
       }
 
       if (!samurai_project_exists($machine_name, $core_version, $version_splitted['major'])) {
