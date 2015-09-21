@@ -274,194 +274,168 @@ function security_samurai_docker_build_environment_ajax() {
 
   $commands = array();
   $selector = '#samurai-remote-wrapper';
-
   $container_information = variable_get('samurai_container_temp_information', NULL);
 
   if (!is_null($container_information)) {
-
     // Check what ports in the port range are currently available.
     // Port range will start from 3000.
     $max_active_containers = variable_get('samurai_docker_max_active_containers', 0);
-
     if (samurai_docker_get_active_containers() >= $max_active_containers) {
-
       // No environments available. All are being used.
       $html = '<pre>' . t('All environments are currently in use.') . '</pre>';
       $html .= '<pre>' . t('You can either stop an active environment or raise the number of maximum active containers.') . '</pre>';
     } else {
-
-      // Retrieve a free port available for use
-      $available_port = samurai_docker_get_available_port();
-
-      // Update the samurai_docker_ports variable with the new used port
-      $docker_ports = variable_get('samurai_docker_ports', NULL);
-      if (!is_null($docker_ports)) {
-
-        $docker_ports[$available_port] = TRUE;
-        variable_set('samurai_docker_ports', $docker_ports);
-      } else {
-
-        $docker_ports = array();
-        $docker_ports[$available_port] = TRUE;
-        variable_set('samurai_docker_ports', $docker_ports);
-      }
-
-      // Retieve a free port available for use
-      $available_port_2 = samurai_docker_get_available_port();
-
-      $docker_ports = variable_get('samurai_docker_ports', NULL);
-      if (!is_null($docker_ports)) {
-
-        // The newly retrieved port is now in use.
-        $docker_ports[$available_port_2] = TRUE;
-        variable_set('samurai_docker_ports', $docker_ports);
-      }
-
-      $port_configuration = array();
-      $entity_port_configuration = array();
-
-      // Append ':80' on to the end of the available_port int
-      $port_configuration[] = $available_port . ':80';
-      $entity_port_configuration['80'] = $available_port;
-
-      // Append ':22' on to the end of the available_port_2 int
-      $port_configuration[] = $available_port_2 . ':22';
-      $entity_port_configuration['22'] = $available_port_2;
-
-      // Encode the forwarded ports for database storage
-      $json_encoded_ports = drupal_json_encode($entity_port_configuration);
-
-      // Init docker and run the create container command
-      $docker = new Docker();
-      $docker->create_container($port_configuration, $container_information['image']);
-
-      // Pull the latest samurai scripts changes
-      $docker->execute_command('sh -c "cd ~/samurai-scripts && git pull"');
-
-      // - Start apache on the container
-      // - Restart the SSH service
-      // - Start mysql
-      $docker->execute_command('service apache2 start');
-      $docker->execute_command('service ssh restart');
-      $docker->execute_command('service mysql start');
-
-      // Set the private SSH key of the container
-      $private_ssh_key = variable_get('samurai_gitapi_privkey', NULL);
-      if (!is_null($private_ssh_key)) {
-
-        // Construct a command that will add the ssh key to the container
-        $command = 'sh -c "echo ';
-        $command .= "'" . decrypt($private_ssh_key) . "'";
-        $command .= ' > /root/.ssh/id_rsa"';
-
-        // Execute the constructed command
-        $docker->execute_command($command);
-
-        // Update the permissions on the private key
-        $docker->execute_command('chmod 400 /root/.ssh/id_rsa');
-      }
-
-      // Prepare the environment for repository clone
-      $gitinfo_id = gitinfo_getid($container_information['site_id']);
-      $gitinfo = gitinfo_load($gitinfo_id);
-      $clone_url = $gitinfo->clone_url;
-
-      // Remove the default index.html file
-      $docker->execute_command('rm -rf /var/www/index.html');
-
-      // Check if site is makefile dependant
-      if ($gitinfo->is_make) {
-
-        // Split the gitinfo name so we know the folder name
-        // Git will clone the repo into.
-        $position = strpos($gitinfo->name, '/');
-        $folder_name = substr($gitinfo->name, $position);
-
-        // The site setup is makefile dependant
-        // - Create the sites directory
-        // - Clone the repository into the sites directory
-        // - Create a symbolic link between the site folder and default
-        // - Run the makefile with Drush
-        $docker->execute_command('mkdir /var/www/sites');
-        $docker->execute_command('mkdir /var/www/sites' . $folder_name);
-        $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/sites' . $folder_name);
-        $docker->execute_command('ln -s /var/www/sites' . $folder_name . ' /var/www/sites/default');
-        $docker->execute_command('sh -c "cd /var/www && drush make sites' . $folder_name . '/' .  $gitinfo->make_location . ' . -y"');
-      } else {
-
-        // The site setup can be cloned as normal
-        // Clone the repository
-        $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/.');
-      }
-
-      // Have a script on the container set up the settings.php
-
-      // Run a drush sql-dump on the external site via drush alias
-      $alias = samurai_get_site_alias($container_information['site_id']);
-      $dump_location = security_samurai_aliases_dump_database($alias);
-      // Move the database dump to the container and remove the
-      // original dump from /tmp
-      $docker->cp($dump_location, '/root/database.sql');
-      // Remove the original database dump from the host
-      unlink($dump_location);
-
-      // Create the database
-      $docker->execute_command('sh -c "echo \"CREATE DATABASE drupal;\" | mysql -u root"');
-      // Create new user and grant privileges
-      $default_database_pass = variable_get('security_samurai_docker_default_database_pass', 'password');
-      $docker->execute_command('sh -c "echo \"CREATE USER \'docker\'@\'localhost\' IDENTIFIED BY \'' . $default_database_pass . '\'\" | mysql -u root"');
-      $docker->execute_command('sh -c "echo \"GRANT ALL PRIVILEGES ON drupal . * TO \'docker\'@\'localhost\'\" | mysql -u root"');
-
-      // Setup the settings.php file - this is drupal 7 specific
-      $docker->execute_command('sh -c "cd /var/www/sites/default && cp default.settings.php settings.php"');
-      $docker->execute_command('sh -c "cd ~/samurai-scripts && ./set_settings.sh ' . $default_database_pass . ' /var/www/sites/default/settings.php"');
-
-      // Sync the database
-      $docker->execute_command('sh -c "cd /var/www/sites/default && drush sqlc < ~/database.sql"');
-
-      // Create a new docker container entity and save it
-      $container = entity_create('docker_containers', array(
-        'associated_site_id' => $container_information['site_id'],
-        'container_id' => $docker->container_id,
-        'container_name' => $container_information['name'],
-        'container_description' => $container_information['description'],
-        'container_branch' => $container_information['branch'],
-        'image_name' => $docker->image_name,
-        'assigned_ports' => $json_encoded_ports,
-        'status' => 1,
-        'creation_date' => REQUEST_TIME,
-      ));
-      $container_wrapper = entity_metadata_wrapper('docker_containers', $container);
-      $container_wrapper->save();
-
-      // Create a link between the new container and an existing site
-      $container_id = samurai_docker_get_container_row_id($docker->container_id);
-      $image_id = samurai_docker_get_image_row_id($docker->image_name);
-      $site_id = $container_information['site_id'];
-      $branch = $container_information['branch'];
-
-      samurai_docker_create_dockersite_link($container_id, $site_id, $image_id, $branch);
-
+      // Send container_information over to the function that will build the environment
+      security_samurai_docker_build_environment($container_information);
       // Success message
       $html = '<pre>' . t('Environment has been created') . '</pre>';
       $html .= t('You will be redirected to a page that will allow you to manage this environment upon submission of this form.');
       $html .= '<script type="text/javascript">(function ($) {$("#edit-submit").css({"display":"block"});})(jQuery);</script>';
-
       // Set the temp variable to NULL
       variable_set('samurai_contaier_temp_information', NULL);
     }
-
   } else {
-
     // No environments available
     $html = '<pre>' . t('No environment information specified') . '</pre>';
   }
-
   // Insert new requested content
   $commands[] = ajax_command_html($selector, $html);
-
   print ajax_render($commands);
   drupal_exit();
+}
+
+/**
+ * Create a new environment with Docker
+ *
+ * @param array[mixed] $container_information TODO
+ */
+function security_samurai_docker_build_environment($container_information) {
+
+  // Retrieve a free port available for use
+  $available_port = samurai_docker_get_available_port();
+  // Update the samurai_docker_ports variable with the new used port
+  $docker_ports = variable_get('samurai_docker_ports', NULL);
+  if (!is_null($docker_ports)) {
+    // Update the samurai_docker_ports variable
+    // this port is now in use
+    $docker_ports[$available_port] = TRUE;
+    variable_set('samurai_docker_ports', $docker_ports);
+  } else {
+    $docker_ports = array();
+    $docker_ports[$available_port] = TRUE;
+    variable_set('samurai_docker_ports', $docker_ports);
+  }
+  // Retieve a free port available for use
+  $available_port_2 = samurai_docker_get_available_port();
+  $docker_ports = variable_get('samurai_docker_ports', NULL);
+  if (!is_null($docker_ports)) {
+    // Update the samurai_docker_ports variable
+    // this port is now in use
+    $docker_ports[$available_port_2] = TRUE;
+    variable_set('samurai_docker_ports', $docker_ports);
+  }
+  // Initalise arrays for later use
+  $port_configuration = array();
+  $entity_port_configuration = array();
+  // Append ':80' on to the end of the available_port int
+  $port_configuration[] = $available_port . ':80';
+  $entity_port_configuration['80'] = $available_port;
+  // Append ':22' on to the end of the available_port_2 int
+  $port_configuration[] = $available_port_2 . ':22';
+  $entity_port_configuration['22'] = $available_port_2;
+  // Encode the forwarded ports for database storage
+  $json_encoded_ports = drupal_json_encode($entity_port_configuration);
+  // Init docker and run the create container command
+  $docker = new Docker();
+  $docker->create_container($port_configuration, $container_information['image']);
+  // Pull the latest samurai scripts changes
+  $docker->execute_command('sh -c "cd ~/samurai-scripts && git pull"');
+  // - Start apache on the container
+  // - Restart the SSH service
+  // - Start mysql
+  $docker->execute_command('service apache2 start');
+  $docker->execute_command('service ssh restart');
+  $docker->execute_command('service mysql restart');
+  // Set the private SSH key of the container
+  $private_ssh_key = variable_get('samurai_gitapi_privkey', NULL);
+  if (!is_null($private_ssh_key)) {
+    // Construct a command that will add the ssh key to the container
+    $command = 'sh -c "echo ';
+    $command .= "'" . decrypt($private_ssh_key) . "'";
+    $command .= ' > /root/.ssh/id_rsa"';
+    // Execute the constructed command
+    $docker->execute_command($command);
+    // Update the permissions on the private key
+    $docker->execute_command('chmod 400 /root/.ssh/id_rsa');
+  }
+  // Prepare the environment for repository clone
+  $gitinfo_id = gitinfo_getid($container_information['site_id']);
+  $gitinfo = gitinfo_load($gitinfo_id);
+  $clone_url = $gitinfo->clone_url;
+  // Remove the default index.html file
+  $docker->execute_command('rm -rf /var/www/index.html');
+  // Check if site is makefile dependant
+  if ($gitinfo->is_make) {
+    // Split the gitinfo name so we know the folder name
+    // Git will clone the repo into.
+    $position = strpos($gitinfo->name, '/');
+    $folder_name = substr($gitinfo->name, $position);
+    // The site setup is makefile dependant
+    // - Create the sites directory
+    // - Clone the repository into the sites directory
+    // - Create a symbolic link between the site folder and default
+    // - Run the makefile with Drush
+    $docker->execute_command('mkdir /var/www/sites');
+    $docker->execute_command('mkdir /var/www/sites' . $folder_name);
+    $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/sites' . $folder_name);
+    $docker->execute_command('ln -s /var/www/sites' . $folder_name . ' /var/www/sites/default');
+    $docker->execute_command('sh -c "cd /var/www && drush make sites' . $folder_name . '/' .  $gitinfo->make_location . ' . -y"');
+  } else {
+    // The site setup can be cloned as normal
+    // Clone the repository
+    $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/.');
+  }
+  // Run a drush sql-dump on the external site via drush alias
+  $alias = samurai_get_site_alias($container_information['site_id']);
+  $dump_location = security_samurai_aliases_dump_database($alias);
+  // Move the database dump to the container and remove the
+  // original dump from /tmp
+  $docker->cp($dump_location, '/root/database.sql');
+  // Remove the original database dump from the host
+  unlink($dump_location);
+  // Create the database
+  $docker->execute_command('sh -c "echo \"CREATE DATABASE drupal;\" | mysql -u root"');
+  // Create new user and grant privileges
+  $default_database_pass = variable_get('security_samurai_docker_default_database_pass', 'password');
+  $docker->execute_command('sh -c "echo \"CREATE USER \'docker\'@\'localhost\' IDENTIFIED BY \'' . $default_database_pass . '\'\" | mysql -u root"');
+  $docker->execute_command('sh -c "echo \"GRANT ALL PRIVILEGES ON drupal . * TO \'docker\'@\'localhost\'\" | mysql -u root"');
+  // Setup the settings.php file - this is drupal 7 specific
+  $docker->execute_command('sh -c "cd /var/www/sites/default && cp default.settings.php settings.php"');
+  $docker->execute_command('sh -c "cd ~/samurai-scripts && ./set_settings.sh ' . $default_database_pass . ' /var/www/sites/default/settings.php"');
+  // Sync the database
+  $docker->execute_command('sh -c "cd /var/www/sites/default && drush sqlc < ~/database.sql"');
+  // Create a new docker container entity and save it
+  $container = entity_create('docker_containers', array(
+    'associated_site_id' => $container_information['site_id'],
+    'container_id' => $docker->container_id,
+    'container_name' => $container_information['name'],
+    'container_description' => $container_information['description'],
+    'container_branch' => $container_information['branch'],
+    'image_name' => $docker->image_name,
+    'assigned_ports' => $json_encoded_ports,
+    'status' => 1,
+    'creation_date' => REQUEST_TIME,
+  ));
+  $container_wrapper = entity_metadata_wrapper('docker_containers', $container);
+  $container_wrapper->save();
+  // Create a link between the new container and an existing site
+  $container_id = samurai_docker_get_container_row_id($docker->container_id);
+  $image_id = samurai_docker_get_image_row_id($docker->image_name);
+  $site_id = $container_information['site_id'];
+  $branch = $container_information['branch'];
+  samurai_docker_create_dockersite_link($container_id, $site_id, $image_id, $branch);
+  // Return the container_id
+  return $docker->container_id;
 }
 
 /**
@@ -473,26 +447,20 @@ function security_samurai_docker_build_image_ajax($image_name) {
 
   $commands = array();
   $selector = '#samurai-remote-wrapper';
-
+  // Retrieve required variables
   $image_created = variable_get('samurai_' . $image_name . '_image_created', NULL);
   $image_dockerfile_location = variable_get('security_samurai_' . $image_name . '_dockerfile_location', NULL);
-
   // Check if the image_name image created Drupal variable exists.
   if (is_null($image_created) && !is_null($image_dockerfile_location)) {
-
     // Init docker and run the create image command.
     $docker = new Docker();
     $image_id = $docker->create_image($image_name, $image_dockerfile_location);
-
     // If the image was created successfully, a 12 character string is returned.
     if (strlen($image_id) > 12 || strlen($image_id) < 12) {
-
       // Presume image was not created successfully.
       $html = '<pre>The image creation process has failed. Here is the output received: ' . $image_id . '</pre>';
       $html .= '<p>Click the above text to restart the image creation process or create the image manually.</p>';
-
     } else {
-
       // Add the docker_image entity
       $docker_default_image = entity_create('docker_image', array(
         'image_name' => $image_name,
@@ -501,22 +469,18 @@ function security_samurai_docker_build_image_ajax($image_name) {
       ));
       $image_wrapper = entity_metadata_wrapper('docker_image', $docker_default_image);
       $image_wrapper->save();
-
       // Output for the user
       $html = '<pre>Image has been created: ' . $image_id . '</pre>';
       $html .= '<script type="text/javascript">(function ($) {$("#edit-submit").css({"display":"block"});})(jQuery);</script>';
-
       // The image has been created successfully.
       variable_set('samurai_' . $image_name . '_image_created', TRUE);
     }
   } else {
-
     $html = '<pre>Image has already been created</pre>';
   }
 
   // Insert new requested content
   $commands[] = ajax_command_html($selector, $html);
-
   print ajax_render($commands);
   drupal_exit();
 }
@@ -528,35 +492,28 @@ function samurai_docker_get_available_port() {
 
   // Make sure available_port is within scope
   $available_port = NULL;
-
   // Retrieve the array of ports currently in use
   $samurai_docker_ports = variable_get('samurai_docker_ports', NULL);
-
   // Create an array 3000 -- 3100.
   $port_range = range(3000, 3100);
 
   // Ideally the lowest port number would be best,
   // so the possible range is kept as low as possible
   foreach ($port_range as $key => $value) {
-
     // Check if the port is already in use by
     // crossreferencing samurai_docker_ports
     if (empty($samurai_docker_ports[$value])) {
-
       // The docker port is not currently in use
       $available_port = $value;
-
       // Break out of foreach
       break;
     }
   }
 
   if (!is_null($available_port)) {
-
     // Port is availalble
     return $available_port;
   } else {
-
     // No ports available
     return NULL;
   }
@@ -571,14 +528,11 @@ function samurai_docker_free_up_ports($assigned_ports) {
 
   // Retrieve the array of ports currently in use
   $samurai_docker_ports = variable_get('samurai_docker_ports', NULL);
-
   if (!is_null($samurai_docker_ports)) {
-
     // Unset each docker ports entry that matches the assigned_ports values
     foreach ($assigned_ports as $key => $value) {
       unset($samurai_docker_ports[$value]);
     }
-
     // Set the samurai_docker_ports variable
     variable_set('samurai_docker_ports', $samurai_docker_ports);
   }
@@ -592,13 +546,11 @@ function samurai_docker_get_active_containers() {
   // Perform the query
   $result = db_query('SELECT container_id FROM {securitysamurai_dockercontainers}
     WHERE status = 1')->fetchAll();
-
   // Loop through results adding 1 to $count each loop
   $count = 0;
   foreach ($result as $key => $value) {
     $count++;
   }
-
   // Return the result
   return $count;
 }
@@ -615,7 +567,6 @@ function samurai_docker_container_is_active($container_id) {
     WHERE id = :container_id', array(
       ':container_id' => $container_id,
     ))->fetchField();
-
   // Return true or false depending on the value of $result.
   if ($result == 0) {
     return FALSE;
@@ -636,7 +587,6 @@ function samurai_docker_get_container_row_id($container_id) {
     WHERE container_id = :container_id', array(
       ':container_id' => $container_id,
     ))->fetchField();
-
   // Return the result
   return $result;
 }
@@ -653,7 +603,6 @@ function samurai_docker_get_image_row_id($image_name) {
     WHERE image_name = :image_name', array(
       ':image_name' => $image_name,
     ))->fetchField();
-
   // Return the result
   return $result;
 }
@@ -670,9 +619,7 @@ function samurai_docker_get_accessible_url($container_id) {
     WHERE id = :container_id', array(
       ':container_id' => $container_id,
     ))->fetchField();
-
   if (!empty($result)) {
-
     // Construct the URL.
     $assigned_ports = drupal_json_decode($result);
     return $GLOBALS['base_url'] . ':' . $assigned_ports['80'];
@@ -837,7 +784,6 @@ function samurai_docker_container_actions_form($form, &$form_state) {
       ),
     );
   }
-
   $form['export_container'] = array(
     '#type' => 'submit',
     '#value' => t('Export environment'),
@@ -859,56 +805,157 @@ function samurai_docker_container_actions_form_submit($form, $form_state) {
 
   // Initialise new docker
   $docker = new Docker();
-
   // Load the current docker entity
   $container = docker_containers_load(arg(2));
 
   switch ($form_state['triggering_element']['#op']) {
     case 'stop':
-
       // Stop the container
       $docker->stop_container($container->container_id);
-
       // - Update container status
       // - Save the updated docker_containers entity
       $container->status = 0;
       $container->save();
       break;
     case 'delete':
-
       // Delete the container
       $docker->delete_container($container->container_id);
-
       // Delete the docker containers entity.
       entity_delete('docker_containers', $container->id);
-
       // Update the docker ports array
       samurai_docker_free_up_ports(drupal_json_decode($container->assigned_ports));
-
       // Redirect to a safe place after the environment has been deleted.
       drupal_goto('jobs');
       break;
     case 'start':
-
       // Start the container
       $docker->start_container($container->container_id);
-
       // - Start apache2
       // - Restart the SSH service
       $docker->execute_command('service apache2 start', $container->container_id);
       $docker->execute_command('service ssh restart', $container->container_id);
-
+      $docker->execute_command('service mysql restart', $container->container_id);
       // - Update the container status
       // - Save the updated docker_containers entity
       $container->status = 1;
       $container->save();
       break;
     case 'export':
-
       // Export the container
-
       break;
   }
+}
+
+/**
+ * Perform security updates on a site
+ *
+ * @param array[mixed] $site_id An array of site IDs to perform security updates on
+ */
+function security_samurai_docker_secupdate_batch($site_id, &$context) {
+
+  // Set the progress, title and maximum value
+  if (!isset($context['sandbox']['progress'])) {
+    $context['sandbox']['progress'] = 0;
+    $context['sandbox']['title'] = t('Performing security update');
+    $context['sandbox']['max'] = count($site_id);
+  }
+  if (!isset($context['sandbox']['security_samurai_current_site_id'])) {
+    $context['sandbox']['security_samurai_current_site_id'] = $site_id[0];
+    $context['sandbox']['security_samurai_current_site_id_key'] = 0;
+    $context['finished'] = 0;
+  } else {
+    $new_key = $context['sandbox']['security_samurai_current_site_id_key'] + 1;
+    if (isset($site_id[$new_key])) {
+      $context['sandbox']['security_samurai_current_site_id'] = $site_id[$new_key];
+      $context['sandbox']['security_samurai_current_site_id_key'] = $new_key;
+    } else {
+      $context['finished'] = 1;
+    }
+  }
+  $max_active_containers = variable_get('samurai_docker_max_active_containers', 0);
+  if (samurai_docker_get_active_containers() < $max_active_containers && $context['finished'] != 0) {
+    // Create the environment
+    $context['results'][] = check_plain('Creating environment to perform updates');
+    $container_information = array(
+      'site_id' => $context['sandbox']['security_samurai_current_site_id'],
+      'branch' => 'master',
+      'image' => 'default',
+      'name' => 'Security update BATCH ' . $context['sandbox']['security_samurai_current_site_id'],
+      'description' => 'Security update',
+    );
+    $context['sandbox']['security_samurai_docker_container_id'] = security_samurai_docker_build_environment($container_information);
+    $context['results'][] = check_plain('Created environment to perform updates');
+    // Perform the updates on the container
+    $context['message'] = t('Performing updates');
+    $docker = new Docker();
+    $docker->container_id = $context['sandbox']['security_samurai_docker_container_id'];
+    // Retrieve the pending updates of projects and latest secure versions in an array
+    $updates_array = samurai_retrieve_security_updates_array($container_information['site_id']);
+    // Load the related gitinfo entity to check if the project uses a makefile
+    $gitinfo_id = gitinfo_getid($container_information['site_id']);
+    $gitinfo = gitinfo_load($gitinfo_id);
+    // Set the branch variable to be within scope
+    $branch = 'hotfix/security-release-' . REQUEST_TIME;
+    // Check if the client_site depends on a makefile
+    if ($gitinfo->is_make) {
+      $position = strpos($gitinfo->name, '/');
+      $folder_name = substr($gitinfo->name, $position);
+      foreach ($updates_array as $key => $value) {
+        // Foreach project in the array update the value of the version
+        $docker->execute_command('sh -c "~/./samurai-scripts/makefile_update.sh ' . $key . ' ' . $value['new_version'] . ' ' . $gitinfo->make_location . '"');
+      }
+      // Run the makefile
+      $docker->execute_command('sh -c "cd /var/www && drush make sites' . $folder_name . '/' .  $gitinfo->make_location . ' . -y"');
+      // Run the tests
+      $context['message'] = t('Running tests');
+      // Commit the updates
+      // - Add the changes
+      // - Checkout to a new branch
+      // - Commit the changes
+      // - Push changes to origin
+      $context['message'] = t('Committing changes');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git checkout master"');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git add -u"');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git checkout -b ' . $branch . '"');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git commit -m \'Security updates\'"');
+      $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git push origin ' . $branch . '"');
+    } else {
+      // Process for non makefile installations
+
+    }
+    // Finish the process of merging and committing the changes
+    // - Merge the changes into both master and develop
+    // - Push the changes
+    $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git checkout master"');
+    $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git merge ' . $branch . '"');
+    $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git checkout develop"');
+    $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git merge ' . $branch . '"');
+    $docker->execute_command('sh -c "cd /var/www/sites' . $folder_name . ' && git push"');
+    // Deploy the updates
+    $context['message'] = t('Deploying changes');
+    // Schedule the container to check for updates in 5 minutes
+    // roughly when the site has finished deployment
+    $context['message'] = t('Scheduling a site scan for 5 minutes');
+    // Increment the progress by + 1
+    $context['sandbox']['progress']++;
+    // Stop the container
+    // TODO will also need to update the container entity
+    $docker->stop_container();
+  }
+  if ($context['sandbox']['progress'] >= $context['sandbox']['max']) {
+    $context['finished'] = 1;
+  }
+}
+
+function security_samurai_docker_secupdate_batch_finished($success, $results, $operations) {
+
+  // Set a display message based on the value of $success
+  if ($success) {
+    $message = t('Security updates have been performed');
+  } else {
+    $message = t('Finished with an error.');
+  }
+  drupal_set_message($message);
 }
 
 /**
@@ -965,9 +1012,7 @@ function security_samurai_docker_container_view_entity($entity, $view_mode = 'fu
       '#view_mode' => $view_mode,
       '#language'  => LANGUAGE_NONE,
     );
-
     drupal_set_title($entity->title);
-
     return $entity->content;
 }
 
@@ -1025,6 +1070,5 @@ function security_samurai_docker_images_view_entity($entity, $view_mode = 'full'
       '#view_mode' => $view_mode,
       '#language'  => LANGUAGE_NONE,
     );
-
     return $entity->content;
 }
