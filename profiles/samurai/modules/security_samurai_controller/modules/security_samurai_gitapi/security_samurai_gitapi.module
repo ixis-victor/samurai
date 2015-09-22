@@ -30,24 +30,17 @@ function security_samurai_gitapi_entity_info() {
   return $info;
 }
 
+function security_samurai_gitapi_cron() {
+
+  // Refresh the branches
+}
+
 /**
- * Extends the EntityAPIController class for the 'site' entity type
+ * Extends the EntityAPIController class for the 'gitinfo' entity type
  *
- * @method object save()
  * @method object buildContent()
  */
 class GitInfoEntityController extends EntityAPIController {
-  /**
-   * Override the default save function to
-   */
-  public function save($entity, DatabaseTransaction $transaction = NULL) {
-
-    if (isset($entity->is_new)) {
-      $entity->created_at = REQUEST_TIME;
-    }
-    $entity->updated_at = REQUEST_TIME;
-    return parent::save($entity, $transaction);
-  }
 
   public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
 
