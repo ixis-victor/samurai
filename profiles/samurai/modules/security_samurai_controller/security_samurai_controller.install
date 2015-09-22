@@ -91,6 +91,12 @@ function security_samurai_controller_schema() {
         'length' => 10,
         'not null' => TRUE,
       ),
+      'auto_updates' => array(
+        'description' => 'Auto updates status, enabled/disabled',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => FALSE,
+      ),
     ),
     'primary key' => array('id'),
   );
