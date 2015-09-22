@@ -1,0 +1,56 @@
+<?php
+/**
+ * @file
+ * security_samurai_deploy.install
+ * Installation functions
+ */
+
+/**
+ * Implements hook_schema
+ */
+function security_samurai_deploy_schema() {
+
+  // Initialse the array
+  $schema = array();
+
+  // The deploy_info entity table
+  $schema['securitysamurai_deployinfo'] = array(
+    'description' => 'Information regarding deployments',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key of the deployinfo entity.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'name' => array(
+        'description' => 'The human readable name of the deployment',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'client_site_id' => array(
+        'description' => 'The related client_site ID',
+        'type' => 'int',
+        'length' => 11,
+        'not null' => TRUE,
+      ),
+      'gitinfo_id' => array(
+        'description' => 'The branch of the deployment',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'args' => array(
+        'description' => 'The arguments that are relevant but do not appear in every deployinfo entity',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  // Return the schema
+  return $schema;
+}
