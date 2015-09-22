@@ -19,7 +19,10 @@
             <table class="client-projects card popup">
               <thead>
                 <tr>
-                  <th></th>
+                  <th class="center">
+                    <?php $security_samurai_controller_projects_exclude_form = drupal_get_form('security_samurai_controller_projects_exclude_form', arg(1)); ?>
+                    <?php print render($security_samurai_controller_projects_exclude_form); ?>
+                  </th>
                   <th>Name</th>
                   <th>Installed version</th>
                   <th>Latest version</th>

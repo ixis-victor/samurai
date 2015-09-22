@@ -906,3 +906,13 @@ function samurai_project_auto_update_enabled($site_id, $machine_name) {
     return FALSE;
   }
 }
+
+/**
+ * Returns TRUE/FALSE for auto-updates being enabled for an entire
+ * site
+ *
+ * @param int $site_id The entity ID of the current client_site
+ */
+function samurai_projects_auto_update_enabled($site_id) {
+  return TRUE;
+}

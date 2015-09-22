@@ -512,6 +512,7 @@ function security_samurai_controller_project_exclude_form($form, &$form_state, $
     '#type' => 'hidden',
     '#value' => $machine_name,
   );
+  // Hidden form element - current client_site ID
   $form['site_id'] = array(
     '#type' => 'hidden',
     '#value' => $arg,
@@ -531,6 +532,56 @@ function security_samurai_controller_project_exclude_form_callback($form, $form_
   $site_update_data = drupal_json_decode($site->site_update_data);
   $site_update_data[$form_state['values']['machine_name']]['auto_updates'] = $form_state['values']['checkbox'];
   $site->site_update_data = drupal_json_encode($site_update_data);
+  $site->save();
+}
+
+/**
+ * Returns a form array
+ *
+ * @param int $arg The client_site entity ID
+ */
+function security_samurai_controller_projects_exclude_form($form, &$form_state, $arg) {
+
+  $form = array();
+
+  if (samurai_projects_auto_update_enabled($arg)) {
+    $default_value = 1;
+  } else {
+    $default_value = 0;
+  }
+  // The checkbox itself
+  $form['checkbox'] = array(
+    '#type' => 'checkbox',
+    '#title' => ' ',
+    '#default_value' => $default_value,
+    '#prefix' => '<div id="auto-update-checkbox">',
+    '#suffix' => '</div>',
+    '#ajax' => array(
+      'callback' => 'security_samurai_controller_projects_exclude_form_callback',
+      'wrapper' => 'auto-update-checkbox',
+      'effect' => 'slide',
+      'progress' => array('type' => 'none'),
+    ),
+    '#attributes' => array(
+      'style' => array(
+        'margin: 0px;'
+      ),
+    ),
+  );
+  // Hidden form element - current client_site ID
+  $form['site_id'] = array(
+    '#type' => 'hidden',
+    '#value' => $arg,
+  );
+
+  return $form;
+}
+
+function security_samurai_controller_projects_exclude_form_callback($form, $form_state) {
+
+  // Load the client_site entity
+  $site = client_site_load($form_state['values']['site_id']);
+  $site->auto_updates = $form_state['values']['checkbox'];
   $site->save();
 }
 
