@@ -914,5 +914,21 @@ function samurai_project_auto_update_enabled($site_id, $machine_name) {
  * @param int $site_id The entity ID of the current client_site
  */
 function samurai_projects_auto_update_enabled($site_id) {
-  return TRUE;
+
+  // Query the database for the value of auto_updates
+  $result = db_query('SELECT auto_updates FROM {securitysamurai_site}
+    WHERE id = :site_id', array(
+      ':site_id' => $site_id,
+    ))->fetchField();
+  // If the value of auto_updates is NULL, then it hasn't
+  // been disabled
+  if (is_null($result)) {
+    return TRUE;
+  } else {
+    if ($result == 0) {
+      return FALSE;
+    } else {
+      return TRUE;
+    }
+  }
 }
