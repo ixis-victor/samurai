@@ -4,3 +4,51 @@
  * security_samurai_deploy.module
  */
 
+/**
+ * Implements hook_entity_info
+ */
+function security_samurai_deploy_entity_info() {
+
+  $info = array();
+
+  // The gitinfo entity.
+  $info['deployinfo'] = array(
+    'label' => t('Deploy info'),
+    'base table' => 'securitysamurai_deployinfo',
+    'entity keys' => array(
+      'id' => 'id',
+      'label' => 'name',
+    ),
+    'uri callback' => 'entity_class_uri',
+    'entity class' => 'Entity',
+    'controller class' => 'DeployInfoEntityController',
+    'module' => 'security_samurai_deploy',
+  );
+
+  return $info;
+}
+
+/**
+ * Extends the EntityAPIController class for the 'deployinfo' entity type
+ *
+ * @method object buildContent()
+ */
+class GitInfoEntityController extends EntityAPIController {
+
+  public function buildContent($entity, $view_mode = 'full', $langcode = NULL, $content = array()) {
+
+    $build = parent::buildContent($entity, $view_mode, $langcode, $content);
+    return $build;
+  }
+}
+
+/**
+ * Implements hook_load
+ *
+ * Menu autoloader for site/%site
+ */
+function deployinfo_load($id) {
+
+  $site = entity_load('deployinfo_load', array($id));
+  return array_pop($site);
+}
