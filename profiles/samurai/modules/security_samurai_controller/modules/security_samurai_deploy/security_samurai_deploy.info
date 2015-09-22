@@ -1,0 +1,9 @@
+name = Security Samurai deploy API
+description = Utilises APIs provided by popular Deployment systems
+core = 7.x
+version = 7.x-0.1.2
+package = Security Samurai
+
+dependencies[] = security_samurai_controller
+
+files[] = includes/samurai_deployhq.php
