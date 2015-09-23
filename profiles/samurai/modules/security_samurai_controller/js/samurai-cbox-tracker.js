@@ -1,8 +1,6 @@
 (function ($) {
-  /**
-   * Load remote content after the main page loaded.
-   */
-  Drupal.behaviors.samurai_load_remote_content = {
+
+  Drupal.behaviors.samurai_cbox_tracker_init = {
     attach: function(context, settings) {
       // On page load - set the project checkboxes to
       // disable/enable depending on the value of the
