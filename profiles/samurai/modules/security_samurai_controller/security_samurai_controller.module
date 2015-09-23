@@ -505,6 +505,9 @@ function security_samurai_controller_project_exclude_form($form, &$form_state, $
       'style' => array(
         'margin: 0px;'
       ),
+      'class' => array(
+        'samurai-cbox-tracker'
+      ),
     ),
   );
   // Hidden form element - module machine_name
@@ -544,13 +547,17 @@ function security_samurai_controller_projects_exclude_form($form, &$form_state, 
 
   $form = array();
 
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'security_samurai_controller') . '/js/samurai-cbox-tracker.js',
+  );
+
   if (samurai_projects_auto_update_enabled($arg)) {
     $default_value = 1;
   } else {
     $default_value = 0;
   }
   // The checkbox itself
-  $form['checkbox'] = array(
+  $form['master_checkbox'] = array(
     '#type' => 'checkbox',
     '#title' => ' ',
     '#default_value' => $default_value,
@@ -581,7 +588,7 @@ function security_samurai_controller_projects_exclude_form_callback($form, $form
 
   // Load the client_site entity
   $site = client_site_load($form_state['values']['site_id']);
-  $site->auto_updates = $form_state['values']['checkbox'];
+  $site->auto_updates = $form_state['values']['master_checkbox'];
   $site->save();
 }
 
