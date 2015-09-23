@@ -81,5 +81,3 @@
     <?php print render($page['content']); ?>
   </div>
 </section>
-
-<?php //var_dump($page['content']['system_main']['#attributes']); ?>
