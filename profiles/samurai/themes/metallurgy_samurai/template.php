@@ -34,3 +34,11 @@ function metallurgy_samurai_css_alter(&$css) {
   // Remove defaults.css file.
   unset($css[drupal_get_path('module', 'system') . '/system.theme.css']);
 }
+
+function metallurgy_samurai_form_alter(&$form, &$form_state, $form_id) {
+  // If form id is user_profile_form
+  if ($form_id == 'user_profile_form') {
+    $form['account']['#type'] = 'fieldset';
+    $form['account']['#title'] = t('User information');
+  }
+}

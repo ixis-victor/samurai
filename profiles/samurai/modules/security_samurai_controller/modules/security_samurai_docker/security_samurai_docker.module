@@ -959,6 +959,88 @@ function security_samurai_docker_secupdate_batch_finished($success, $results, $o
 }
 
 /**
+ * Returns an of form elements
+ * This particular function returns a form for managing public keys
+ * in the user profile
+ */
+function security_samurai_docker_user_ssh_key_form($form, &$form_state, $uid) {
+
+  $form = array();
+
+  // Retrieve the existing keys
+  $existing_keys = security_samurai_gitapi_get_user_public_keys($uid);
+
+  // The ssh key form wrapper
+  $form['ssh_key_wrapper'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Public keys'),
+    '#collapsible' => FALSE,
+    '#fieldset_icon' => 'vpn_keys'
+  );
+  // The ssh key list
+  if (!empty($existing_keys)) {
+    foreach ($existing_keys as $key => $value) {
+      // Print the public key name and a delete submit button
+      $form['key_markup_' . $key] = array(
+        '#type' => 'markup',
+        '#markup' => $value['key_name'],
+      );
+      $form['key_existing_delete_' . $key] = array(
+        '#type' => 'submit',
+        '#value' => t('Delete key'),
+        '#op' => 'delete_existing_' . $key,
+      );
+    }
+  } else {
+    $form['ssh_key_wrapper']['no_keys'] = array(
+      '#type' => 'markup',
+      '#markup' => '<p style="padding: 0; margin-bottom: 2em;">' . t('No keys exist for your user, add one below...') . '</p>',
+      '#attributes' => array(
+        'style' => array('margin-bottom: 1em;'),
+      ),
+    );
+  }
+  // Wrapper for the add key section
+  $form['ssh_key_wrapper']['inner_key_wrapper'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Add a public key'),
+    '#collapsed' => TRUE,
+    '#fieldset_icon' => 'add_circle_outline',
+    '#attributes' => array(
+      'class' => array('flatten'),
+    ),
+  );
+  // New public key name
+  $form['ssh_key_wrapper']['inner_key_wrapper']['new_key_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name'),
+    '#description' => t('A human readable name for the key'),
+  );
+  // New public key body
+  $form['ssh_key_wrapper']['inner_key_wrapper']['new_key_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Public key string'),
+  );
+  // Submit new public key
+  $form['ssh_key_wrapper']['inner_key_wrapper']['submit_new_key'] = array(
+    '#type' => 'submit',
+    '#value' => 'Add key',
+    '#op' => 'submit_new_key',
+  );
+
+  return $form;
+}
+
+/**
+ * Returns an array of public keys a user has linked to their account
+ *
+ * @param int $user_id The user ID
+ */
+function security_samurai_docker_get_user_public_keys($user_id) {
+
+}
+
+/**
  * Extends the default entity class for the 'project' entity type.
  */
 class DockerContainersEntity extends Entity {

@@ -88,7 +88,7 @@
           'class' => array(
             'links',
           ),
-        ), 
+        ),
         'heading' => t('Navigation'),
       )); ?>
     </div>
@@ -128,19 +128,15 @@
         ),
         'heading' => t('User menu'),
       )); ?>
-    </div>  
+    </div>
   </section>
-  <section id="content-wrapper" class="col s12 m10 l10 offset-l2">
+  <section id="content-wrapper" class="col s12 m12 l10 offset-l2">
     <div id="content">
       <?php if (!empty($messages)): ?>
         <?php print $messages; ?>
       <?php endif; ?>
-      <?php if (!empty($tabs)): ?>
-        <?php print render($tabs); ?>
-      <?php endif; ?>
-      <?php if (!empty($action_links)): ?>
-        <?php print render($action_links); ?>
-      <?php endif; ?>
+      <?php $profile_form = drupal_get_form('security_samurai_docker_user_ssh_key_form', arg(1)); ?>
+      <?php print render($profile_form); ?>
       <?php print render($page['content']); ?>
     </div>
   </section>

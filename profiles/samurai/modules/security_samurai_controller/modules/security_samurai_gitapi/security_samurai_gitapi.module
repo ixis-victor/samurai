@@ -30,6 +30,9 @@ function security_samurai_gitapi_entity_info() {
   return $info;
 }
 
+/**
+ * Implements hook_cron
+ */
 function security_samurai_gitapi_cron() {
 
   // Refresh the branches

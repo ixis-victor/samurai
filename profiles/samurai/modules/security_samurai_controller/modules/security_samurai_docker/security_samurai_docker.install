@@ -47,7 +47,6 @@ function security_samurai_docker_schema() {
     ),
     'primary key' => array('id'),
   );
-
   // Schema for Docker containers
   $schema['securitysamurai_dockercontainers'] = array(
     'description' => 'Security samurai docker container information',
@@ -120,7 +119,6 @@ function security_samurai_docker_schema() {
     ),
     'primary key' => array('id'),
   );
-
   // Schema for active builds
   $schema['securitysamurai_dockerbatches'] = array(
     'description' => 'The active builds for docker images and containers',
@@ -152,7 +150,6 @@ function security_samurai_docker_schema() {
     ),
     'primary key' => array('id'),
   );
-
   // Schema for bridge between sites and containers
   $schema['securitysamurai_dockersites'] = array(
     'description' => 'The bridge between security samurai sites and docker',
@@ -185,6 +182,36 @@ function security_samurai_docker_schema() {
         'description' => 'The branch that is set up in the container.',
         'type' => 'varchar',
         'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  // Schema for storing public keys in the database
+  $schema['securitysamurai_publickeys'] = array(
+    'description' => 'Store user public keys in the database',
+    'fields' => array(
+      'id' => array(
+        'description' => 'The row ID',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'The user ID the ssh key is associated with',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+      'key_name' => array(
+        'description' => 'The human readable name given to the public key',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'key_string' => array(
+        'description' => 'The encrypted public key string',
+        'type' => 'text',
         'not null' => TRUE,
       ),
     ),
