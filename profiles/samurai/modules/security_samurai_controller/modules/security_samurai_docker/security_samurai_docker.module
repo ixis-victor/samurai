@@ -799,7 +799,8 @@ function samurai_docker_container_actions_form($form, &$form_state) {
 }
 
 /**
- * Form handler for samurai_docker_container_actions_form()
+ * Form submit handler
+ * @see samurai_docker_container_actions_form()
  */
 function samurai_docker_container_actions_form_submit($form, $form_state) {
 
@@ -962,16 +963,18 @@ function security_samurai_docker_secupdate_batch_finished($success, $results, $o
  * Returns an of form elements
  * This particular function returns a form for managing public keys
  * in the user profile
+ *
+ * @param int $uid The user ID
  */
-function security_samurai_docker_user_ssh_key_form($form, &$form_state, $uid) {
+function security_samurai_docker_user_public_key_form($form, &$form_state, $uid) {
 
   $form = array();
 
   // Retrieve the existing keys
-  $existing_keys = security_samurai_gitapi_get_user_public_keys($uid);
+  $existing_keys = security_samurai_docker_get_user_public_keys($uid);
 
-  // The ssh key form wrapper
-  $form['ssh_key_wrapper'] = array(
+  // The public key form wrapper
+  $form['public_key_wrapper'] = array(
     '#type' => 'fieldset',
     '#title' => t('Public keys'),
     '#collapsible' => FALSE,
@@ -981,18 +984,28 @@ function security_samurai_docker_user_ssh_key_form($form, &$form_state, $uid) {
   if (!empty($existing_keys)) {
     foreach ($existing_keys as $key => $value) {
       // Print the public key name and a delete submit button
-      $form['key_markup_' . $key] = array(
-        '#type' => 'markup',
-        '#markup' => $value['key_name'],
+      $form['public_key_wrapper']['key_container_' . $value->id] = array(
+        '#type' => 'container',
+        '#attributes' => array(
+          'style' => array('margin-bottom: 5px;')
+        ),
       );
-      $form['key_existing_delete_' . $key] = array(
+      $form['public_key_wrapper']['key_container_' . $value->id]['key_markup_' . $value->id] = array(
+        '#type' => 'markup',
+        '#markup' => '<pre style="display: inline-block; margin: 0em 1em 0em 0em; padding: 0.2em 0.5em; background-color: #EEE; overflow: visible; width: 150px;">' . $value->key_name . '</pre>',
+      );
+      $form['public_key_wrapper']['key_container_' . $value->id]['key_existing_delete_' . $value->id] = array(
         '#type' => 'submit',
         '#value' => t('Delete key'),
-        '#op' => 'delete_existing_' . $key,
+        '#op' => 'delete_existing_' . $value->id,
+        '#name' => 'delete_existing_' . $value->id,
+        '#attributes' => array(
+          'style' => array('margin: 0em;'),
+        ),
       );
     }
   } else {
-    $form['ssh_key_wrapper']['no_keys'] = array(
+    $form['public_key_wrapper']['no_keys'] = array(
       '#type' => 'markup',
       '#markup' => '<p style="padding: 0; margin-bottom: 2em;">' . t('No keys exist for your user, add one below...') . '</p>',
       '#attributes' => array(
@@ -1001,34 +1014,77 @@ function security_samurai_docker_user_ssh_key_form($form, &$form_state, $uid) {
     );
   }
   // Wrapper for the add key section
-  $form['ssh_key_wrapper']['inner_key_wrapper'] = array(
+  $form['public_key_wrapper']['inner_key_wrapper'] = array(
     '#type' => 'fieldset',
     '#title' => t('Add a public key'),
     '#collapsed' => TRUE,
     '#fieldset_icon' => 'add_circle_outline',
     '#attributes' => array(
       'class' => array('flatten'),
+      'style' => array('margin-top: 1em;'),
     ),
   );
   // New public key name
-  $form['ssh_key_wrapper']['inner_key_wrapper']['new_key_name'] = array(
+  $form['public_key_wrapper']['inner_key_wrapper']['new_key_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Name'),
     '#description' => t('A human readable name for the key'),
   );
   // New public key body
-  $form['ssh_key_wrapper']['inner_key_wrapper']['new_key_body'] = array(
+  $form['public_key_wrapper']['inner_key_wrapper']['new_key'] = array(
     '#type' => 'textarea',
     '#title' => t('Public key string'),
   );
   // Submit new public key
-  $form['ssh_key_wrapper']['inner_key_wrapper']['submit_new_key'] = array(
+  $form['public_key_wrapper']['inner_key_wrapper']['submit_new_key'] = array(
     '#type' => 'submit',
     '#value' => 'Add key',
     '#op' => 'submit_new_key',
   );
+  $form['uid'] = array(
+    '#type' => 'hidden',
+    '#value' => $uid,
+  );
 
   return $form;
+}
+
+/**
+ * Form validation handler
+ * @see security_samurai_docker_user_public_key_form
+ */
+function security_samurai_docker_user_public_key_form_validate($form, $form_state) {
+
+  // Check the public key name and public key string do not have empty values if the other
+  // has a value
+  if ((!empty($form_state['values']['new_key_name']) && empty($form_state['values']['new_key']))
+    || (!empty($form_state['values']['new_key']) && empty($form_state['values']['new_key_name']))) {
+    return form_set_error('inner_key_wrapper', 'Values for "Name" and "Public key string" are required');
+  }
+}
+
+/**
+ * Form submit handler
+ * @see security_samurai_docker_user_public_key_form
+ */
+function security_samurai_docker_user_public_key_form_submit($form, $form_state) {
+
+  if ($form_state['triggering_element']['#op'] == 'submit_new_key') {
+    // Add the public key
+    db_insert('securitysamurai_publickeys')
+      ->fields(array(
+        'uid' => $form_state['values']['uid'],
+        'key_name' => $form_state['values']['new_key_name'],
+        'key_string' => $form_state['values']['new_key']
+      ))
+      ->execute();
+  } else {
+    // Delete key
+    $key_id = substr($form_state['triggering_element']['#op'], strlen('delete_existing_'));
+    db_delete('securitysamurai_publickeys')
+      ->condition('id', $key_id)
+      ->execute();
+  }
 }
 
 /**
@@ -1038,6 +1094,17 @@ function security_samurai_docker_user_ssh_key_form($form, &$form_state, $uid) {
  */
 function security_samurai_docker_get_user_public_keys($user_id) {
 
+  // Query the database for the keys
+  $result = db_query('SELECT * FROM securitysamurai_publickeys
+    WHERE uid = :uid', array(
+      ':uid' => $user_id
+    ))->fetchAll();
+
+  if (!empty($result)) {
+    return $result;
+  } else {
+    return NULL;
+  }
 }
 
 /**

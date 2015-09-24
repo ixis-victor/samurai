@@ -135,7 +135,7 @@
       <?php if (!empty($messages)): ?>
         <?php print $messages; ?>
       <?php endif; ?>
-      <?php $profile_form = drupal_get_form('security_samurai_docker_user_ssh_key_form', arg(1)); ?>
+      <?php $profile_form = drupal_get_form('security_samurai_docker_user_public_key_form', arg(1)); ?>
       <?php print render($profile_form); ?>
       <?php print render($page['content']); ?>
     </div>
