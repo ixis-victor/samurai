@@ -427,7 +427,7 @@ function security_samurai_controller_security_actions_form($form, &$form_state) 
     $form = array();
     $form['markup'] = array(
       '#type' => 'markup',
-      '#markup' => t('It looks like there is pending security updates for this site, would you Samurai to secure this site?'),
+      '#markup' => t('It looks like there is pending security updates for this site, would you like Samurai to secure this site?'),
     );
     $form['secure_the_site'] = array(
       '#type' => 'submit',
