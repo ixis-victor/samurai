@@ -41,6 +41,12 @@ function security_samurai_deploy_schema() {
         'length' => 255,
         'not null' => TRUE,
       ),
+      'deploy_service_provider' => array(
+        'description' => 'The deployment service provider',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE
+      ),
       'args' => array(
         'description' => 'The arguments that are relevant but do not appear in every deployinfo entity',
         'type' => 'varchar',
