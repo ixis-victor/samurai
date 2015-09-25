@@ -138,6 +138,23 @@
       <?php $profile_form = drupal_get_form('security_samurai_docker_user_public_key_form', arg(1)); ?>
       <?php print render($profile_form); ?>
       <?php print render($page['content']); ?>
+      <div class="fixed-action-btn" style="bottom: 45px; right: 24px;">
+        <a class="btn-floating btn-large samurai-blue waves-effect waves-light">
+          <i class="large material-icons">add</i>
+        </a>
+        <ul>
+          <li>
+            <a onclick="location.href='/client-site/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Add site"><i class="material-icons" style="color: #333;">note_add</i></a>
+          </li>
+          <li>
+            <a onclick="location.href='/jobs/images/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Create image"><i class="material-icons" style="color: #333;">camera</i></a>
+          </li>
+          <li>
+            <a onclick="location.href='/jobs/environments/config/add'"class="btn-floating white tooltipped" data-position="left" data-delay="0" data-tooltip="Create environment"><i class="material-icons" style="color: #333;">cloud</i></a>
+          </li>
+        </ul>
+      </div>
     </div>
   </section>
 </div>
+<div id="sidenav-overlay" style="opacity: 0; z-index: -10;"></div>
