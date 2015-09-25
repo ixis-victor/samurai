@@ -345,7 +345,10 @@ function security_samurai_docker_build_environment($container_information) {
   $entity_port_configuration['22'] = $available_port_2;
   // Encode the forwarded ports for database storage
   $json_encoded_ports = drupal_json_encode($entity_port_configuration);
-  // Init docker and run the create container command
+
+  /**
+   * Create a new container and start a few processes
+   */
   $docker = new Docker();
   $docker->create_container($port_configuration, $container_information['image']);
   // Pull the latest samurai scripts changes
@@ -356,7 +359,11 @@ function security_samurai_docker_build_environment($container_information) {
   $docker->execute_command('service apache2 start');
   $docker->execute_command('service ssh restart');
   $docker->execute_command('service mysql restart');
-  // Set the private SSH key of the container
+
+  /**
+   * Set the private key of the container to allow
+   * the cloning of the repository
+   */
   $private_ssh_key = variable_get('samurai_gitapi_privkey', NULL);
   if (!is_null($private_ssh_key)) {
     // Construct a command that will add the ssh key to the container
@@ -374,7 +381,10 @@ function security_samurai_docker_build_environment($container_information) {
   $clone_url = $gitinfo->clone_url;
   // Remove the default index.html file
   $docker->execute_command('rm -rf /var/www/index.html');
-  // Check if site is makefile dependant
+
+  /**
+   * Clone the repository in the web root directory
+   */
   if ($gitinfo->is_make) {
     // Split the gitinfo name so we know the folder name
     // Git will clone the repo into.
@@ -395,7 +405,10 @@ function security_samurai_docker_build_environment($container_information) {
     // Clone the repository
     $docker->execute_command('git clone ' . $clone_url . ' --branch="' . $container_information['branch'] . '" /var/www/.');
   }
-  // Run a drush sql-dump on the external site via drush alias
+
+  /**
+   * Retrieve the corresponding site alias using the correct database dump
+   */
   $alias = samurai_get_site_alias($container_information['site_id']);
   $dump_location = security_samurai_aliases_dump_database($alias);
   // Move the database dump to the container and remove the
@@ -414,7 +427,30 @@ function security_samurai_docker_build_environment($container_information) {
   $docker->execute_command('sh -c "cd ~/samurai-scripts && ./set_settings.sh ' . $default_database_pass . ' /var/www/sites/default/settings.php"');
   // Sync the database
   $docker->execute_command('sh -c "cd /var/www/sites/default && drush sqlc < ~/database.sql"');
-  // Create a new docker container entity and save it
+
+  /**
+   * Sync public keys over to the container and
+   * diable password authentication
+   */
+  $keys = security_samurai_docker_retrieve_all_public_keys();
+  if (!is_null($keys)) {
+    foreach ($keys as $key => $value) {
+      // For every key, add it to the container
+      $docker->execute_command('sh -c "echo \'' . $value->key_string . '\' >> ~/.ssh/authorized_keys"');
+    }
+    // Enable public key authentication
+    $docker->execute_command('sh -c "echo \'RSAAuthentication yes\' >> /etc/ssh/sshd_config"');
+    // Disable password authentication
+    $docker->execute_command('sh -c "sed -i \'s/UsePAM yes/UsePAM no/\' /etc/ssh/sshd_config"');
+    $docker->execute_command('sh -c "echo \'PasswordAuthentication no\' >> /etc/ssh/sshd_config"')
+    // Reload the configuration
+    $docker->execute_command('/etc/init.d/ssh reload');
+  }
+
+
+  /**
+   * Cleanup and saving the entity
+   */
   $container = entity_create('docker_containers', array(
     'associated_site_id' => $container_information['site_id'],
     'container_id' => $docker->container_id,
@@ -1086,6 +1122,21 @@ function security_samurai_docker_user_public_key_form_submit($form, $form_state)
     db_delete('securitysamurai_publickeys')
       ->condition('id', $key_id)
       ->execute();
+  }
+}
+
+/**
+ * Returns all public keys
+ */
+function security_samurai_docker_get_all_public_keys() {
+
+  // Query the database for the keys
+  $result = db_query('SELECT * FROM securitysamurai_publickeys'))->fetchAll();
+
+  if (!empty($result)) {
+    return $result;
+  } else {
+    return NULL;
   }
 }
 
