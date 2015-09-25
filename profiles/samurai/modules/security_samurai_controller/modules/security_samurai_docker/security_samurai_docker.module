@@ -442,7 +442,7 @@ function security_samurai_docker_build_environment($container_information) {
     $docker->execute_command('sh -c "echo \'RSAAuthentication yes\' >> /etc/ssh/sshd_config"');
     // Disable password authentication
     $docker->execute_command('sh -c "sed -i \'s/UsePAM yes/UsePAM no/\' /etc/ssh/sshd_config"');
-    $docker->execute_command('sh -c "echo \'PasswordAuthentication no\' >> /etc/ssh/sshd_config"')
+    $docker->execute_command('sh -c "echo \'PasswordAuthentication no\' >> /etc/ssh/sshd_config"');
     // Reload the configuration
     $docker->execute_command('/etc/init.d/ssh reload');
   }
