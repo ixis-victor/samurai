@@ -130,6 +130,7 @@ function client_site_form_step_3($form, $form_state) {
   } else {
     $service_default = 3;
   }
+  // The Git service the repository uses
   $form['gitapi_fieldset']['gitapi_service'] = array(
     '#type' => 'select',
     '#title' => t('Service'),
@@ -142,6 +143,8 @@ function client_site_form_step_3($form, $form_state) {
     ),
     '#default_value' => $service_default,
   );
+  // Allow a user to choose the preferred Git workflow
+  // the branches from this are configured in the next step
   $form['gitapi_fieldset']['gitapi_workflow_model'] = array(
     '#type' => 'select',
     '#title' => t('Workflow model'),
