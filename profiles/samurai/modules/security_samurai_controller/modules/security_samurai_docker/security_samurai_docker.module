@@ -1061,6 +1061,8 @@ function security_samurai_docker_user_public_key_form_validate($form, $form_stat
     || (!empty($form_state['values']['new_key']) && empty($form_state['values']['new_key_name']))) {
     return form_set_error('inner_key_wrapper', 'Values for "Name" and "Public key string" are required');
   }
+
+  // Validate the public key
 }
 
 /**
