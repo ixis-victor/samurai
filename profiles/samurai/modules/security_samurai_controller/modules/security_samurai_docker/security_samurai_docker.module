@@ -438,13 +438,11 @@ function security_samurai_docker_build_environment($container_information) {
       // For every key, add it to the container
       $docker->execute_command('sh -c "echo \'' . $value->key_string . '\' >> ~/.ssh/authorized_keys"');
     }
-    // Enable public key authentication
-    $docker->execute_command('sh -c "echo \'RSAAuthentication yes\' >> /etc/ssh/sshd_config"');
     // Disable password authentication
     $docker->execute_command('sh -c "sed -i \'s/UsePAM yes/UsePAM no/\' /etc/ssh/sshd_config"');
-    $docker->execute_command('sh -c "echo \'PasswordAuthentication no\' >> /etc/ssh/sshd_config"');
+    $docker->execute_command('sh -c "sed -i \'s/#PasswordAuthentication yes/PasswordAuthentication no/\' /etc/ssh/sshd_config"');
     // Reload the configuration
-    $docker->execute_command('/etc/init.d/ssh reload');
+    $docker->execute_command('/etc/init.d/ssh restart');
   }
 
 
