@@ -142,6 +142,17 @@ function client_site_form_step_3($form, $form_state) {
     ),
     '#default_value' => $service_default,
   );
+  $form['gitapi_fieldset']['gitapi_workflow_model'] = array(
+    '#type' => 'select',
+    '#title' => t('Workflow model'),
+    '#description' => t('The perferred Git workflow model for this project.'),
+    '#required' => TRUE,
+    '#options' => array(
+      0 => 'Git flow',
+      1 => 'Dev -> Stage -> Prod',
+      2 => 'Dev -> Prod',
+    ),
+  );
   // The repo clone URL.
   if (isset($form_state['values']['gitapi_clone_url'])) {
     $clone_default = $form_state['values']['gitapi_clone_url'];
