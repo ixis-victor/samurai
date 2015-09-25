@@ -432,7 +432,7 @@ function security_samurai_docker_build_environment($container_information) {
    * Sync public keys over to the container and
    * diable password authentication
    */
-  $keys = security_samurai_docker_retrieve_all_public_keys();
+  $keys = security_samurai_docker_get_all_public_keys();
   if (!is_null($keys)) {
     foreach ($keys as $key => $value) {
       // For every key, add it to the container
