@@ -1131,7 +1131,7 @@ function security_samurai_docker_user_public_key_form_submit($form, $form_state)
 function security_samurai_docker_get_all_public_keys() {
 
   // Query the database for the keys
-  $result = db_query('SELECT * FROM securitysamurai_publickeys'))->fetchAll();
+  $result = db_query('SELECT * FROM securitysamurai_publickeys')->fetchAll();
 
   if (!empty($result)) {
     return $result;
