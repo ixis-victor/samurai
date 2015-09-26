@@ -29,6 +29,9 @@ function client_site_form($form, &$form_state, $site = NULL) {
     case 'client_site_form_step_3':
       return client_site_form_step_3($form, $form_state);
       break;
+    case 'client_site_form_step_4':
+      return client_site_form_step_4($form, $form_state);
+      break;
     default:
       return client_site_form_step_1($form, $form_state);
       break;
@@ -48,6 +51,9 @@ function client_site_form_move_to_next($form, $form_state) {
     case 'client_site_form_step_2':
       return 'client_site_form_step_3';
       break;
+    case 'client_site_form_step_3':
+      return 'client_site_form_step_4';
+      break;
   }
 }
 
@@ -58,6 +64,9 @@ function client_site_form_move_to_previous($form, $form_state) {
 
   switch ($form_state['step']) {
 
+    case 'client_site_form_step_4':
+      return 'client_site_form_step_3';
+      break;
     case 'client_site_form_step_3':
       return 'client_site_form_step_2';
       break;
@@ -65,6 +74,92 @@ function client_site_form_move_to_previous($form, $form_state) {
       return 'client_site_form_step_1';
       break;
   }
+}
+
+/**
+ * Implements hook_validate
+ */
+function client_site_form_validate($form, &$form_state) {
+
+  if ($form_state['triggering_element']['#value'] == 'Back') {
+    return;
+  }
+
+  switch ($form_state['step']) {
+
+    case 'client_site_form_step_1':
+      return client_site_form_step_1_validate($form, $form_state);
+      break;
+    case 'client_site_form_step_2':
+      return client_site_form_step_2_validate($form, $form_state);
+      break;
+    case 'client_site_form_step_3':
+      return client_site_form_step_3_validate($form, $form_state);
+      break;
+    case 'client_site_form_step_4':
+      return client_site_form_step_4_validate($form, $form_state);
+      break;
+  }
+}
+
+/**
+ * The client_site_form form submit handler
+ */
+function client_site_form_submit($form, &$form_state) {
+
+  switch ($form_state['step']) {
+
+    case 'client_site_form_step_4':
+      $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
+      if ($form_state['triggering_element']['#value'] != 'Back') {
+        client_site_form_submit_details($form, $form_state);
+        $form_state['complete'] = TRUE;
+      }
+      break;
+    default:
+      $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
+      $form_state['new_step'] = client_site_form_move_to_next($form, $form_state);
+      if (isset($form_state['multistep_values'][$form_state['new_step']])) {
+        $form_state['values'] = $form_state['multistep_values'][$form_state['new_step']];
+      }
+      break;
+  }
+
+  if (isset($form_state['complete'])) drupal_goto('/client-site/' . samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']));
+
+  if ($form_state['triggering_element']['#value'] == 'Back') {
+    $form_state['new_step'] = client_site_form_move_to_previous($form, $form_state);
+    $form_state['values'] = $form_state['multistep_values'][$form_state['new_step']];
+  }
+
+  if (isset($form_state['multistep_values']['form_build_id'])) {
+    $form_state['values']['form_build_id'] = $form_state['multistep_values']['form_build_id'];
+  }
+  $form_state['multistep_values']['form_build_id'] = $form_state['values']['form_build_id'];
+  $form_state['step'] = $form_state['new_step'];
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Call the submit handlers for each step.
+ */
+function client_site_form_submit_details($form, $form_state) {
+
+  // Submit step 1
+  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_1'];
+  client_site_form_submit_details_step_1($form, $form_state);
+
+  // Submit step 2
+  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_2'];
+  client_site_form_submit_details_step_2($form, $form_state);
+
+  // Submit step 3
+  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_3'];
+  client_site_form_submit_details_step_3($form, $form_state);
+
+  // Submit step 4
+  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_4'];
+  client_site_form_submit_details_step_4($form, $form_state);
 }
 
 /**
@@ -157,29 +252,6 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
 }
 
 /**
- * Implements hook_validate
- */
-function client_site_form_validate($form, &$form_state) {
-
-  if ($form_state['triggering_element']['#value'] == 'Back') {
-    return;
-  }
-
-  switch ($form_state['step']) {
-
-    case 'client_site_form_step_1':
-      return client_site_form_step_1_validate($form, $form_state);
-      break;
-    case 'client_site_form_step_2':
-      return client_site_form_step_2_validate($form, $form_state);
-      break;
-    case 'client_site_form_step_3':
-      return client_site_form_step_3_validate($form, $form_state);
-      break;
-  }
-}
-
-/**
  * Form validation handler for the site details step of the client_site_form
  */
 function client_site_form_step_1_validate($form, $form_state) {
@@ -223,61 +295,6 @@ function client_site_form_step_1_validate($form, $form_state) {
   }
 }
 
-/**
- * The client_site_form form submit handler
- */
-function client_site_form_submit($form, &$form_state) {
-
-  switch ($form_state['step']) {
-
-    case 'client_site_form_step_3':
-      $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
-      if ($form_state['triggering_element']['#value'] != 'Back') {
-        client_site_form_submit_details($form, $form_state);
-        $form_state['complete'] = TRUE;
-      }
-      break;
-    default:
-      $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
-      $form_state['new_step'] = client_site_form_move_to_next($form, $form_state);
-      if (isset($form_state['multistep_values'][$form_state['new_step']])) {
-        $form_state['values'] = $form_state['multistep_values'][$form_state['new_step']];
-      }
-      break;
-  }
-
-  if (isset($form_state['complete'])) drupal_goto('/client-site/' . samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']));
-
-  if ($form_state['triggering_element']['#value'] == 'Back') {
-    $form_state['new_step'] = client_site_form_move_to_previous($form, $form_state);
-    $form_state['values'] = $form_state['multistep_values'][$form_state['new_step']];
-  }
-
-  if (isset($form_state['multistep_values']['form_build_id'])) {
-    $form_state['values']['form_build_id'] = $form_state['multistep_values']['form_build_id'];
-  }
-  $form_state['multistep_values']['form_build_id'] = $form_state['values']['form_build_id'];
-  $form_state['step'] = $form_state['new_step'];
-  $form_state['rebuild'] = TRUE;
-}
-
-/**
- * Call the submit handlers for each step.
- */
-function client_site_form_submit_details($form, $form_state) {
-
-  // Submit step 1
-  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_1'];
-  client_site_form_submit_details_step_1($form, $form_state);
-
-  // Submit step 2
-  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_2'];
-  client_site_form_submit_details_step_2($form, $form_state);
-
-  // Submit step 3
-  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_3'];
-  client_site_form_submit_details_step_3($form, $form_state);
-}
 
 /**
  * Form submit handler for the site details step of the client_site_form
