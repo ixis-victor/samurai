@@ -14,12 +14,11 @@ function client_site_form($form, &$form_state, $site = NULL) {
 
 
   // If no current step is defined, set it to the first one.
-  if (!isset($form_state['step'])) $form_state['step'] = 'client_site_form_step_1';
+  if (!isset($form_state['step']))
+    $form_state['step'] = 'client_site_form_step_1';
 
   $form = array();
-
   switch ($form_state['step']) {
-
     case 'client_site_form_step_1':
       return client_site_form_step_1($form, $form_state, $site);
       break;
@@ -31,6 +30,9 @@ function client_site_form($form, &$form_state, $site = NULL) {
       break;
     case 'client_site_form_step_4':
       return client_site_form_step_4($form, $form_state);
+      break;
+    case 'client_site_form_step_5':
+      return client_site_form_step_5($form, $form_state);
       break;
     default:
       return client_site_form_step_1($form, $form_state);
@@ -44,7 +46,6 @@ function client_site_form($form, &$form_state, $site = NULL) {
 function client_site_form_move_to_next($form, $form_state) {
 
   switch ($form_state['step']) {
-
     case 'client_site_form_step_1':
       return 'client_site_form_step_2';
       break;
@@ -53,6 +54,9 @@ function client_site_form_move_to_next($form, $form_state) {
       break;
     case 'client_site_form_step_3':
       return 'client_site_form_step_4';
+      break;
+    case 'client_site_form_step_4':
+      return 'client_site_form_step_5';
       break;
   }
 }
@@ -63,7 +67,9 @@ function client_site_form_move_to_next($form, $form_state) {
 function client_site_form_move_to_previous($form, $form_state) {
 
   switch ($form_state['step']) {
-
+    case 'client_site_form_step_5':
+      return 'client_site_form_step_4';
+      break;
     case 'client_site_form_step_4':
       return 'client_site_form_step_3';
       break;
@@ -84,9 +90,7 @@ function client_site_form_validate($form, &$form_state) {
   if ($form_state['triggering_element']['#value'] == 'Back') {
     return;
   }
-
   switch ($form_state['step']) {
-
     case 'client_site_form_step_1':
       return client_site_form_step_1_validate($form, $form_state);
       break;
@@ -99,6 +103,9 @@ function client_site_form_validate($form, &$form_state) {
     case 'client_site_form_step_4':
       return client_site_form_step_4_validate($form, $form_state);
       break;
+    case 'client_site_form_step_5':
+      return client_site_form_step_5_validate($form, $form_state);
+      break;
   }
 }
 
@@ -108,8 +115,7 @@ function client_site_form_validate($form, &$form_state) {
 function client_site_form_submit($form, &$form_state) {
 
   switch ($form_state['step']) {
-
-    case 'client_site_form_step_4':
+    case 'client_site_form_step_5':
       $form_state['multistep_values'][$form_state['step']] = $form_state['values'];
       if ($form_state['triggering_element']['#value'] != 'Back') {
         client_site_form_submit_details($form, $form_state);
@@ -124,14 +130,14 @@ function client_site_form_submit($form, &$form_state) {
       }
       break;
   }
-
-  if (isset($form_state['complete'])) drupal_goto('/client-site/' . samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']));
-
+  // If the form is complete, redirect to the site_id
+  if (isset($form_state['complete']))
+    drupal_goto('/client-site/' . samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']));
+  // If back submit button is selected
   if ($form_state['triggering_element']['#value'] == 'Back') {
     $form_state['new_step'] = client_site_form_move_to_previous($form, $form_state);
     $form_state['values'] = $form_state['multistep_values'][$form_state['new_step']];
   }
-
   if (isset($form_state['multistep_values']['form_build_id'])) {
     $form_state['values']['form_build_id'] = $form_state['multistep_values']['form_build_id'];
   }
@@ -148,18 +154,18 @@ function client_site_form_submit_details($form, $form_state) {
   // Submit step 1
   $form_state['values'] = $form_state['multistep_values']['client_site_form_step_1'];
   client_site_form_submit_details_step_1($form, $form_state);
-
   // Submit step 2
   $form_state['values'] = $form_state['multistep_values']['client_site_form_step_2'];
   client_site_form_submit_details_step_2($form, $form_state);
-
   // Submit step 3
   $form_state['values'] = $form_state['multistep_values']['client_site_form_step_3'];
   client_site_form_submit_details_step_3($form, $form_state);
-
   // Submit step 4
   $form_state['values'] = $form_state['multistep_values']['client_site_form_step_4'];
   client_site_form_submit_details_step_4($form, $form_state);
+  // Submit step 5
+  $form_state['values'] = $form_state['multistep_values']['client_site_form_step_5'];
+  client_site_form_submit_details_step_5($form, $form_state);
 }
 
 /**
@@ -167,6 +173,33 @@ function client_site_form_submit_details($form, $form_state) {
  */
 function client_site_form_step_1($form, $form_state, $site = NULL) {
 
+  // Set the default value for the name element
+  if (isset($site->name)) {
+    $name_default = $site->name;
+  } else if (isset($form_state['values']['name'])) {
+    $name_default = $form_state['values']['name'];
+  } else {
+    $name_default = '';
+  }
+  // Set the default value for the encryption_key element
+  if (isset($site->encryption_key)) {
+    if (strlen($site->encryption_key) > 0) {
+      $encryption_default = $site->encryption_key;
+    } elseif (isset($form_state['values']['encryption_key'])) {
+      $encyption_default = $form_state['values']['encryption_key'];
+    }
+  } elseif (isset($form_state['values']['encryption_key'])) {
+    $encryption_default = $form_state['values']['encryption_key'];
+  }
+  // Set the default value for the site_alias_id element
+  if (isset($site->site_alias_id)) {
+    $drush_alias_default = $site->site_alias_id;
+  } else if (isset($form_state['values']['drush_alias'])) {
+    $drush_alias_default = $form_state['values']['drush_alias'];
+  } else {
+    $drush_alias_default = 0;
+  }
+  // Fieldset for the form elements
   $form['client_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Site details'),
@@ -177,13 +210,6 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
     ),
   );
   // The human readable name to give the site.
-  if (isset($site->name)) {
-    $name_default = $site->name;
-  } else if (isset($form_state['values']['name'])) {
-    $name_default = $form_state['values']['name'];
-  } else {
-    $name_default = '';
-  }
   $form['client_fieldset']['name'] = array(
     '#title' => t('Site name'),
     '#type' => 'textfield',
@@ -192,15 +218,6 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
     '#required' => TRUE,
   );
   // The encryption key.
-  if (isset($site->encryption_key)) {
-    if (strlen($site->encryption_key) > 0) {
-      $encryption_default = $site->encryption_key;
-    } elseif (isset($form_state['values']['encryption_key'])) {
-      $encyption_default = $form_state['values']['encryption_key'];
-    }
-  } elseif (isset($form_state['values']['encryption_key'])) {
-    $encryption_default = $form_state['values']['encryption_key'];
-  }
   $form['client_fieldset']['encryption_key'] = array(
     '#title' => t('Encryption key'),
     '#type' => 'textfield',
@@ -211,7 +228,6 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
   // If it isn't, then the site has not been submitted before and the site_url
   // will be extracted from the enryption_key
   if (isset($site->site_url)) {
-
     $form['client_fieldset']['site_url'] = array(
       '#title' => t('Site URL'),
       '#type' => 'textfield',
@@ -227,13 +243,6 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
   //   '#markup' => '<h1 class="center" style="margin: 0; padding: 0">OR</h1><p class="center" style="margin: 0; padding: 0">In place of the encryption key, you can connect a site directly via drush!</p>',
   // );
   // The drush alias
-  if (isset($site->site_alias_id)) {
-    $drush_alias_default = $site->site_alias_id;
-  } else if (isset($form_state['values']['drush_alias'])) {
-    $drush_alias_default = $form_state['values']['drush_alias'];
-  } else {
-    $drush_alias_default = 0;
-  }
   $form['client_fieldset']['drush_alias'] = array(
     '#title' => t('Drush alias'),
     '#description' => t('The drush alias used by the site'),
@@ -247,7 +256,7 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
     '#value' => 'Next',
   );
 
-  // Return the form components.
+  // Return the form
   return $form;
 }
 
@@ -262,7 +271,6 @@ function client_site_form_step_1_validate($form, $form_state) {
       return form_set_error('name', t('A site with this name already exists'));
     }
   }
-
   // drush aliases OR encryption key must be set
   // Drush aliases is currently still a WIP
   // if ($form_state['values']['drush_alias'] == 0 && strlen($form_state['values']['encryption_key']) == 0) {
@@ -271,25 +279,21 @@ function client_site_form_step_1_validate($form, $form_state) {
   if (strlen($form_state['values']['encryption_key']) == 0) {
     return form_set_error('encryption_key', t('A value must be given for the encryption key textfield'));
   }
-
   $encryption_key_length = strlen($form_state['values']['encryption_key']);
   if ($encryption_key_length < 32) {
     return form_set_error('encryption_key', t('Enter a valid encryption key'));
   }
-
   if (!isset($form_state['values']['site_url'])) {
     // Retrieve the site_url.
     $encryptionsiteurl = $form_state['values']['encryption_key'];
     $site_url = substr($encryptionsiteurl, 32);
     $site_url = base64_decode($site_url);
-
     // Attempt connection to the site.
     if (!samurai_check_site_access($site_url)) {
       return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and
         Samurai is configured properly to access the site'));
     }
   }
-
   if (isset($form_state['values']['drush_alias'])) {
     // If drush aliases is set
   }
@@ -303,26 +307,21 @@ function client_site_form_submit_details_step_1($form, $form_state) {
 
   // Decrypt the site_url from the encryption string.
   if (!isset($form_state['values']['site_url'])) {
-
     $encryptionsiteurl = $form_state['values']['encryption_key'];
     $site_url = substr($encryptionsiteurl, 32);
     $encryption_string = substr($encryptionsiteurl, 0, 32);
     $form_state['values']['encryption_key'] = $encryption_string;
     $form_state['values']['site_url'] = base64_decode($site_url);
   }
-
   // Check if the site is being updated or saved.
   if (!samurai_site_exists($form_state['values']['name'], $form_state['values']['site_url'])) {
-
     // Set the update_next_check to 0, so the updates are checked
     // on the next cron execution - every minute.
     $form_state['values']['update_next_check'] = 0;
   }
-
   // Retrieve the site alias name
   $site_aliases = variable_get('security_samurai_aliases', NULL);
   $site_alias_name = $site_aliases[$form_state['values']['drush_alias']];
-
   // Set the update method for the site
   // 1 = encryption key
   // 2 = drush aliases
@@ -332,14 +331,11 @@ function client_site_form_submit_details_step_1($form, $form_state) {
   } elseif (isset($form_state['values']['drush_alias']) ) {
     $update_check_method = 2;
   }
-
   // -- Save the entity.
   // -- Print notification messages.
   // -- Log to watchdoge.
-  // -- Redirect to site/add.
   $site_id = arg(3);
   if (!samurai_site_exists($form_state['values']['name']) && is_null($site_id)) {
-
     // Entity doesn't exist.
     $site = entity_create('client_site', array(
       'name' => $form_state['values']['name'],
@@ -353,7 +349,6 @@ function client_site_form_submit_details_step_1($form, $form_state) {
     $site_wrapper = entity_metadata_wrapper('client_site', $site);
     $site_wrapper->save();
   } else {
-
     // Entity already exists, load it and update it.
     $site = client_site_load($site_id);
     $site->name = $form_state['values']['name'];
@@ -367,4 +362,466 @@ function client_site_form_submit_details_step_1($form, $form_state) {
   }
   drupal_set_message(t('@name has been saved.', array('@name' => $site->name)));
   watchdog('Security samurai', t('@name has been saved.', array('@name' => $site->name)));
+}
+
+/**
+ * Client form step 2
+ *
+ * Validation handler @see client_site_form_step_2_validate
+ * Submit handler @see client_site_form_submit_details_step_2
+ */
+function client_site_form_step_2($form, $form_state) {
+
+  // Set the default value for the docker_phpversion element
+  if (isset($form_state['values']['docker_phpversion'])) {
+    $phpversion_default = $form_state['values']['docker_phpversion'];
+  } elseif (isset($docker->phpversion)) {
+    // Not yet implemented
+  } else {
+    $phpversion_default = '';
+  }
+  // Set the default value for the docker_chosenimage element
+  if (isset($form_state['values']['docker_chosenimage'])) {
+    $chosenimage_default = $form_state['values']['docker_chosenimage'];
+  } elseif (isset($docker->chosenimage)) {
+    // Placeholder, will eventually be filled.
+  } else {
+    $chosenimage_default = '';
+  }
+
+  // Container for the docker elements
+  $form['docker_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Docker configuration'),
+    '#description' => t('Docker is used for creating test environments when applying the security updates.
+      The below configuration options are custom to this client.'),
+    '#collapsed' => FALSE,
+    '#fieldset_icon' => 'cloud',
+  );
+  // Select PHP version to run.
+  $form['docker_fieldset']['docker_chosenos'] = array(
+    '#type' => 'select',
+    '#title' => t('Docker container OS'),
+    '#description' => t('What operating system would you like the Docker container to use?'),
+    '#options' => array(
+      'debian:wheezy',
+    ),
+  );
+  // Select for docker PHP version
+  $form['docker_fieldset']['docker_phpversion'] = array(
+    '#type' => 'select',
+    '#title' => t('Docker container PHP version'),
+    '#description' => t('What PHP version would you like the Docker container to install when running your site?'),
+    '#default_value' => $phpversion_default,
+    '#options' => array(
+      1 => 'PHP 5.5 latest',
+    ),
+  );
+  // Select for docker image
+  $form['docker_fieldset']['docker_chosenimage'] = array(
+    '#type' => 'select',
+    '#title' => t('Docker image to use'),
+    '#description' => t('What docker image would you like the Docker container to use when running your site?'),
+    '#default_value' => $chosenimage_default,
+    '#options' => array(
+      0 => 'default',
+    ),
+  );
+  // Form back button
+  $form['form_back'] = array(
+    '#type' => 'submit',
+    '#value' => 'Back',
+  );
+  // Form next button
+  $form['form_next'] = array(
+    '#type' => 'submit',
+    '#value' => 'Next',
+  );
+  // Return the form
+  return $form;
+}
+
+/**
+ * Form validation handler
+ * @see client_site_form_step_2
+ */
+function client_site_form_step_2_validate($form, $form_state) {
+
+  // Check the docker PHP version is selected.
+  if ($form_state['values']['docker_phpversion'] == 0) {
+    return form_set_error('docker_phpversion', t('Select a PHP version'));
+  }
+}
+
+/**
+ * Form submit handler
+ * @see client_site_form_step_2
+ */
+function client_site_form_submit_details_step_2($form_id, $form_state) {
+  // Not yet implemented
+}
+
+/**
+ * Client form step 3
+ *
+ * Validation handler @see client_site_form_step_3_validate
+ * Submit handler @see client_site_form_submit_details_step_3
+ */
+function client_site_form_step_3($form, $form_state) {
+
+  // Load the gitinfo entity if one exists
+  $site_id = arg(3);
+  $gitinfo = NULL;
+  if (gitinfo_exists($site_id)) {
+    $gitinfo_id = gitinfo_getid($site_id);
+    if ($gitinfo_id != FALSE) {
+      $gitinfo = gitinfo_load($gitinfo_id);
+    }
+  }
+  // Set the default value for the gitapi_service element
+  if (isset($form_state['values']['gitapi_service'])) {
+    $service_default = $form_state['values']['gitapi_service'];
+  } elseif (!is_null($gitinfo)) {
+    $service_default = $gitinfo->service;
+  } else {
+    $service_default = 3;
+  }
+  // Set the default value for the gitapi_clone_url element
+  if (isset($form_state['values']['gitapi_clone_url'])) {
+    $clone_default = $form_state['values']['gitapi_clone_url'];
+  } elseif (!is_null($gitinfo)) {
+    $clone_default = $gitinfo->clone_url;
+  } else {
+    $clone_default = '';
+  }
+  // Set the default value for the gitapi_workflow_model element
+  if (isset($form_state['values']['gitapi_workflow_model'])) {
+    $workflow_model_default = $form_state['values']['gitapi_workflow_model'];
+  } elseif (!is_null($gitinfo)) {
+    $workflow_model_default = $gitinfo->gitapi_workflow_model;
+  } else {
+    $workflow_model_default = 0;
+  }
+  // Set the default value for the deploy_service element
+  if (isset($form_state['values']['deploy_service'])) {
+    $deploy_service_default = $form_state['values']['deploy_service'];
+  } else {
+    $deploy_service_default = 0;
+  }
+  // Fieldset for the services elements
+  $form['services_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Services configuration'),
+    '#fieldset_icon' => 'extension',
+  );
+  // The Git service the repository uses
+  $form['services_fieldset']['gitapi_service'] = array(
+    '#type' => 'select',
+    '#title' => t('Git service'),
+    '#description' => t('The Git service to use.'),
+    '#required' => TRUE,
+    '#options' => array(
+      1 => t('GitHub'),
+      2 => t('BitBucket'),
+      3 => t('Codebase'),
+    ),
+    '#default_value' => $service_default,
+  );
+  // Allow a user to choose the preferred Git workflow
+  // the branches from this are configured in the next step
+  $form['services_fieldset']['gitapi_workflow_model'] = array(
+    '#type' => 'select',
+    '#title' => t('Git workflow model'),
+    '#description' => t('The perferred Git workflow model for this project.'),
+    '#required' => TRUE,
+    '#options' => array(
+      0 => 'Git flow',
+      1 => 'Dev -> Stage -> Prod',
+      2 => 'Dev -> Prod',
+    ),
+    '#default_value' => $workflow_model_default,
+  );
+  // The repository clone URL
+  $form['services_fieldset']['gitapi_clone_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Clone URL'),
+    '#description' => t('The Git URL to the repo containing the site.'),
+    '#default_value' => $clone_default,
+    '#required' => TRUE,
+  );
+  // The deployment service used by the project
+  $form['services_fieldset']['deploy_service'] = array(
+    '#type' => 'select',
+    '#title' => t('Deployment service'),
+    '#description' => t('The preferred deployment service for this project.'),
+    '#required' => TRUE,
+    '#options' => array(
+      0 => 'DeployHQ',
+    ),
+    '#default_value' => $deploy_service_default,
+  );
+
+  return $form;
+}
+
+/**
+ * Form submit handler
+ * @see client_site_form_step_3
+ */
+function client_site_form_submit_details_step_3($form, $form_state) {
+
+}
+
+/**
+ * Client form step 4
+ *
+ * Validation handler @see client_site_form_step_4_validate
+ * Submit handler @see client_site_form_submit_details_step_4
+ */
+function client_site_form_step_4($form, $form_state) {
+
+  // Load the gitinfo entity if one exists.
+  $site_id = arg(3);
+  $gitinfo = NULL;
+  // Load the Gitinfo entity if exists
+  if (gitinfo_exists($site_id)) {
+    $gitinfo_id = gitinfo_getid($site_id);
+    if ($gitinfo_id != FALSE) {
+      $gitinfo = gitinfo_load($gitinfo_id);
+    }
+  }
+  // Set the default value for the gitapi_makefile element
+  if (isset($form_state['values']['gitapi_makefile'])) {
+    $makefile_default = $form_state['values']['gitapi_makefile'];
+  } elseif (!is_null($gitinfo)) {
+    $makefile_default = $gitinfo->is_make;
+  } else {
+    $makefile_default = '';
+  }
+  // Set the default value for the gitapi_makefile_location
+  // element
+  if (isset($form_state['values']['gitapi_makefile_location'])) {
+    $makefile_location_default = $form_state['values']['gitapi_makefile_location'];
+  } elseif (!is_null($gitinfo)) {
+    $makefile_location_default = $gitinfo->make_location;
+  } else {
+    $makefile_location_default = '';
+  }
+  // Fieldset for the GitAPI elements
+  $form['gitapi_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Git repository & workflow information'),
+    '#description' => t('Set up git branches, clone URLs and tagging per client here.'),
+    '#fieldset_icon' => 'info_outline',
+    '#collapsed' => FALSE,
+  );
+  // Checkbox for makefile
+  $form['gitapi_fieldset']['gitapi_makefile'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Does this project depends on a makefile?'),
+    '#description' => t('Only select this option if the site set up is based primarily on running a makefile.'),
+    '#default_value' => $makefile_default,
+  );
+  // The location of the makefile in the repository
+  $form['gitapi_fieldset']['gitapi_makefile_location'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Makefile location and name'),
+    '#description' => t('The name and location of the makefile to run e.g. some-folder/another-folder/samurai.make'),
+    '#attributes' => array(
+      'placeholder' => 'make/samurai.make',
+    ),
+    '#default_value' => $makefile_location_default,
+  );
+  // Form back button
+  $form['form_back'] = array(
+    '#type' => 'submit',
+    '#value' => 'Back',
+  );
+  // Form submit button
+  $form['form_next'] = array(
+    '#type' => 'submit',
+    '#value' => 'Next',
+  );
+  // Return the form
+  return $form;
+}
+
+/**
+ * Form validation handler
+ * @see client_site_form_step_4
+ */
+function client_site_form_step_4_validate($form, $form_state) {
+
+  // Check a Git service has been selected.
+  if ($form_state['values']['gitapi_service'] == 0) {
+    return form_set_error('gitapi_service', t('Select a Git service'));
+  }
+  // Bitbucket and Github integration currently not complete
+  if ($form_state['values']['gitapi_service'] == 1 ||
+    $form_state['values']['gitapi_service'] == 2) {
+    return form_set_error('gitapi_service', t('This git service option is currently disabled, select another'));
+  }
+  // Check makefile location is set, if makefile selected
+  if ($form_state['values']['gitapi_makefile'] == TRUE &&
+   !isset($form_state['values']['gitapi_makefile_location'])) {
+    return form_set_error('gitapi_makefile_location', t('The makefile location is required'));
+  }
+}
+
+/**
+ * Form submit handler
+ * @see client_site_form_step_4
+ */
+function client_site_form_submit_details_step_4($form, $form_state) {
+
+  // Attempt to retrieve the branches associated with the Git repo
+  $branches = '';
+  try {
+    // Retrieve branches
+    $branches = drupal_json_encode(get_branches($form_state['values']['gitapi_service'], $form_state['values']['gitapi_clone_url']));
+  } catch (Exception $e) {
+    watchdog_log('Security samurai GitAPI', '<pre>' . print_r($e) . '</pre>');
+    drupal_set_message('An error occurred during the process of retrieving available branches for the repository. It is recommended that you recache the branches later, on the site management page', 'error');
+    $branches = drupal_json_encode(array());
+  }
+  // Check if the gitinfo already exists.
+  $site_id = arg(3);
+  if (gitinfo_exists($site_id)) {
+    // Update the gitinfo entity.
+    $gitinfo_id = gitinfo_getid($site_id);
+    if ($gitinfo_id != FALSE) {
+      // Load and update each of the values of the gitinfo entity.
+      $gitinfo = gitinfo_load($gitinfo_id);
+      $gitinfo->name = parse_repo_name($form_state['values']['gitapi_clone_url']);
+      $gitinfo->service = $form_state['values']['gitapi_service'];
+      $gitinfo->clone_url = $form_state['values']['gitapi_clone_url'];
+      $gitinfo->branches = $branches;
+      $gitinfo->is_make = $form_state['values']['gitapi_makefile'];
+      $gitinfo->make_location = $form_state['values']['gitapi_makefile_location'];
+      $gitinfo->save();
+    }
+  } else {
+    // Create the gitinfo entity.
+    $gitinfo = entity_create('gitinfo', array(
+      'site' => samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']),
+      'name' => parse_repo_name($form_state['values']['gitapi_clone_url']), // repo name
+      'service' => $form_state['values']['gitapi_service'],
+      'clone_url' => $form_state['values']['gitapi_clone_url'],
+      'branches' => $branches,
+      'is_make' => $form_state['values']['gitapi_makefile'],
+      'make_location' => $form_state['values']['gitapi_makefile_location'],
+    ));
+    $gitinfo_wrapper = entity_metadata_wrapper('gitinfo', $gitinfo);
+    $gitinfo_wrapper->save();
+  }
+}
+
+/**
+ * Client site form step 5
+ *
+ * Validation handler @see client_site_form_step_5_validate
+ * Submit handler @see client_site_form_submit_details_step_5
+ */
+function client_site_form_step_5($form, $form_state) {
+
+  // Retrieve the information from the previous step
+  $chosen_workflow = $form_state['multistep_values']['client_site_form_step_3']['gitapi_workflow_model'];
+
+  // Fieldset for the form elements
+  $form['workflow_fieldset'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Customize the workflow'),
+    '#fieldset_icon' => 'edit',
+  );
+  switch ($chosen_workflow) {
+    case 0:
+      $form['workflow_fieldset']['master_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('Master branch'),
+        '#description' => t('The \'master\' or equivalent branch'),
+        '#required' => TRUE,
+        '#options' => array(
+          0 => 'test',
+        ),
+      );
+      break;
+    case 1:
+      $form['workflow_fieldset']['dev_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('Development branch'),
+        '#description' => t('The \'dev\' or equivalent branch'),
+        '#required' => TRUE,
+        '#options' => array(
+          0 => 'test',
+        ),
+      );
+      $form['workflow_fieldset']['stage_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('Staging branch'),
+        '#description' => t('The \'stage\' or equivalent branch'),
+        '#required' => TRUE,
+        '#options' => array(
+          0 => 'test',
+        ),
+      );
+      $form['workflow_fieldset']['prod_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('Production branch'),
+        '#description' => t('The \'prod\' or equivalent branch'),
+        '#required' => TRUE,
+        '#options' => array(
+          0 => 'test',
+        ),
+      );
+      break;
+    case 2:
+      $form['workflow_fieldset']['dev_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('Development branch'),
+        '#description' => t('The \'dev\' or equivalent branch'),
+        '#required' => TRUE,
+        '#options' => array(
+          0 => 'test',
+        ),
+      );
+      $form['workflow_fieldset']['prod_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('Production branch'),
+        '#description' => t('The \'prod\' or equivalent branch'),
+        '#required' => TRUE,
+        '#options' => array(
+          0 => 'test',
+        ),
+      );
+      break;
+  }
+  $form['chosen_workflow'] = array(
+    '#type' => 'hidden',
+    '#value' => $chosen_workflow,
+  );
+  // Form back button
+  $form['form_back'] = array(
+    '#type' => 'submit',
+    '#value' => 'Back',
+  );
+  // Form submit button
+  $form['form_next'] = array(
+    '#type' => 'submit',
+    '#value' => 'Submit',
+  );
+  return $form;
+}
+
+/**
+ * Form validation handler
+ * @see client_site_form_step_5
+ */
+function client_site_form_step_5_validate($form, $form_state) {}
+
+/**
+ * Form submit handler
+ * @see client_site_form_submit_details_step_5
+ */
+function client_site_form_submit_details_step_5($form, $form_state) {
+
 }
