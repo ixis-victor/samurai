@@ -12,10 +12,9 @@ class SamuraiDeployHQClient {
   /**
    * Initialise a new SamuraiDeployHQWrapper
    */
-  public function __construct($domain, $account, $key, $user) {
+  public function __construct($domain, $key, $user) {
 
     $this->wrapper = new SamuraiDeployHQWrapper($domain);
-    $this->wrapper->setAccount($account);
     $this->wrapper->setAuthentication($user, $key);
   }
 
@@ -104,17 +103,12 @@ class SamuraiDeployHQWrapper {
 
   // Protected variables
   // - Can contain some sensitive data
-  protected $account;
   protected $curl;
   protected $key;
   protected $user;
 
   public function __construct($domain) {
     $this->domain = $domain;
-  }
-
-  public function setAccount($account) {
-    $this->account = $account;
   }
 
   public function setAuthentication($user, $key) {
@@ -144,7 +138,7 @@ class SamuraiDeployHQWrapper {
         'https://' . $this->domain . '.deployhq.com/%s', trim($path, '/')
       ),
       CURLOPT_USERPWD     => sprintf(
-        '%s/%s:%s', $this->account, $this->user, $this->key
+        '%s:%s', $this->user, $this->key
       ),
       CURLOPT_RETURNTRANSFER  => true,
       CURLOPT_HEADER      => false,
