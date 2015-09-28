@@ -133,18 +133,18 @@ class SamuraiDeployHQWrapper {
   }
 
   protected function execute($method, $path, $data = null) {
-    $this->curl = curl_init()
+    $this->curl = curl_init();
 
     curl_setopt_array($this->curl, array(
-      CURLOPT_URL       => sprintf(
+      CURLOPT_URL => sprintf(
         'https://' . $this->domain . '.deployhq.com/%s', trim($path, '/')
       ),
-      CURLOPT_USERPWD     => sprintf(
+      CURLOPT_USERPWD => sprintf(
         '%s:%s', $this->user, $this->key
       ),
-      CURLOPT_RETURNTRANSFER  => true,
-      CURLOPT_HEADER      => false,
-      CURLOPT_HTTPHEADER    => array(
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_HEADER => false,
+      CURLOPT_HTTPHEADER => array(
         'Accept: application/json',
         'Content-type: application/json'
       )
