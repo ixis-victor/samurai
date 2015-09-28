@@ -58,6 +58,15 @@ class SamuraiDeployHQClient {
   }
 
   /**
+   * Returns the array of servers for a specific project
+   *
+   * @param string $project_permalink The machine readable name of the project
+   */
+  public function getServers($project_permalink) {
+    return $this->wrapper->GET('projects/' . $project_permalink . '/servers');
+  }
+
+  /**
    * Creates a new project in DeployHQ
    *
    * @param string $project_name The human readable name of the project
@@ -87,12 +96,31 @@ class SamuraiDeployHQClient {
   }
 
   /**
+   * Creates a new server for a project
+   *
+   * @param string $project_permalink The machine readable name of the project
+   */
+  public function createServer($project_permalink) {
+    return $this->wrapper->POST('projects/' . $project_permalink . '/servers');
+  }
+
+  /**
    * Deletes a project in DeployHQ
    *
    * @param string $project_permalink The machine readable project name
    */
   public function deleteProject($project_permalink) {
     return $this->wrapper->DELETE('projects/' . $project_permalink);
+  }
+
+  /**
+   * Delete a server from a project
+   *
+   * @param string $project_permalink The machine readable project name
+   * @param string $server_identifier The unique ID of the server
+   */
+  public function deleteServer($project_permalink, $server_identifier) {
+    return $this->wrapper->DELETE('projects/' . $project_permalink . '/servers' . $server_identifier)
   }
 }
 
