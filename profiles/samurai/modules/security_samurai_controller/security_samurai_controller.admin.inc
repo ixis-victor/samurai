@@ -637,6 +637,15 @@ function client_site_form_step_4($form, $form_state) {
     '#fieldset_icon' => 'info_outline',
     '#collapsed' => FALSE,
   );
+  $form['gitapi_fieldset']['deploy_project'] = array(
+    '#type' => 'select',
+    '#title' => t('Deployment project'),
+    '#description' => t('The deploy project this repository corresponds to'),
+    '#options' => array(
+      0 => 'test',
+    ),
+    '#required' => TRUE,
+  );
   switch ($workflow_model) {
     // Git flow
     case 0:
@@ -920,7 +929,7 @@ function client_site_form_submit_details_step_4($form, $form_state) {
  */
 function client_site_form_step_5($form, $form_state) {
 
-  // Retrieve the information from the previous step
+  // Retrieve information from the previous steps
   $chosen_workflow = $form_state['multistep_values']['client_site_form_step_3']['gitapi_workflow_model'];
 
   // Fieldset for the form elements
@@ -933,8 +942,17 @@ function client_site_form_step_5($form, $form_state) {
     case 0:
       $form['workflow_fieldset']['master_branch'] = array(
         '#type' => 'select',
-        '#title' => t('Master branch'),
-        '#description' => t('The \'master\' or equivalent branch'),
+        '#title' => t('Server for the \'master\' branch'),
+        '#description' => t('The server to deploy to when a change to the \'master\' branch is made'),
+        '#required' => TRUE,
+        '#options' => array(
+          0 => 'test',
+        ),
+      );
+      $form['workflow_fieldset']['develop_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('Server for the \'develop\' branch'),
+        '#description' => t('The server to deploy to when a change to the \'develop\' branch is made'),
         '#required' => TRUE,
         '#options' => array(
           0 => 'test',
