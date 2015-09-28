@@ -120,7 +120,7 @@ class SamuraiDeployHQClient {
    * @param string $server_identifier The unique ID of the server
    */
   public function deleteServer($project_permalink, $server_identifier) {
-    return $this->wrapper->DELETE('projects/' . $project_permalink . '/servers' . $server_identifier)
+    return $this->wrapper->DELETE('projects/' . $project_permalink . '/servers' . $server_identifier);
   }
 }
 
