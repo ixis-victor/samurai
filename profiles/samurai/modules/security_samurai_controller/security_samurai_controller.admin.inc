@@ -97,9 +97,7 @@ function client_site_form_validate($form, &$form_state) {
     case 'client_site_form_step_2':
       return client_site_form_step_2_validate($form, $form_state);
       break;
-    case 'client_site_form_step_3':
-      return client_site_form_step_3_validate($form, $form_state);
-      break;
+    // No validation for step 3 needed
     case 'client_site_form_step_4':
       return client_site_form_step_4_validate($form, $form_state);
       break;
@@ -498,7 +496,7 @@ function client_site_form_step_3($form, $form_state) {
   if (isset($form_state['values']['gitapi_workflow_model'])) {
     $workflow_model_default = $form_state['values']['gitapi_workflow_model'];
   } elseif (!is_null($gitinfo)) {
-    $workflow_model_default = $gitinfo->gitapi_workflow_model;
+    $workflow_model_default = $gitinfo->workflow;
   } else {
     $workflow_model_default = 0;
   }
@@ -560,7 +558,17 @@ function client_site_form_step_3($form, $form_state) {
     ),
     '#default_value' => $deploy_service_default,
   );
-
+  // Form back button
+  $form['form_back'] = array(
+    '#type' => 'submit',
+    '#value' => 'Back',
+  );
+  // Form submit button
+  $form['form_next'] = array(
+    '#type' => 'submit',
+    '#value' => 'Next',
+  );
+  // Return the form
   return $form;
 }
 
@@ -580,6 +588,12 @@ function client_site_form_submit_details_step_3($form, $form_state) {
  */
 function client_site_form_step_4($form, $form_state) {
 
+  // Retrieve the branches
+  $gitapi_service = $form_state['multistep_values']['client_site_form_step_3']['gitapi_service'];
+  $gitapi_clone_url = $form_state['multistep_values']['client_site_form_step_3']['gitapi_clone_url'];
+  $branches = get_branches($gitapi_service, $gitapi_clone_url);
+  // Retrieve the workflow model
+  $workflow_model = $form_state['multistep_values']['client_site_form_step_3']['gitapi_workflow_model'];
   // Load the gitinfo entity if one exists.
   $site_id = arg(3);
   $gitinfo = NULL;
@@ -607,18 +621,169 @@ function client_site_form_step_4($form, $form_state) {
   } else {
     $makefile_location_default = '';
   }
+  // Set the default value for the hotfix element
+  if (isset($form_state['values']['hotfix'])) {
+    $hotfix_default = $form_state['values']['hotfix'];
+  } elseif (!is_null($gitinfo)) {
+    $workflow_args = drupal_json_decode($gitinfo->workflow_args);
+    $hotfix_default = $workflow_args['hotfix'];
+  } else {
+    $hotfix_default = NULL;
+  }
   // Fieldset for the GitAPI elements
   $form['gitapi_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Git repository & workflow information'),
-    '#description' => t('Set up git branches, clone URLs and tagging per client here.'),
     '#fieldset_icon' => 'info_outline',
     '#collapsed' => FALSE,
+  );
+  switch ($workflow_model) {
+    // Git flow
+    case 0:
+      // Set the default value for the master_branch element
+      if (isset($form_state['values']['master_branch'])) {
+        $master_branch_default = $form_state['values']['master_branch'];
+      } elseif (!is_null($gitinfo)) {
+        $workflow_args = drupal_json_decode($gitinfo->workflow_args);
+        $master_branch_default = $workflow_args['master']['id'];
+      } else {
+        $master_branch_default = NULL;
+      }
+      // Set the default value for the develop_branch element
+      if (isset($form_state['values']['develop_branch'])) {
+        $develop_branch_default = $form_state['values']['develop_branch'];
+      } elseif (!is_null($gitinfo)) {
+        $workflow_args = drupal_json_decode($gitinfo->workflow_args);
+        $develop_branch_default = $workflow_args['develop']['id'];
+      } else {
+        $develop_branch_default = NULL;
+      }
+      // Git flow master branch
+      $form['gitapi_fieldset']['master_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('The \'master\' branch'),
+        '#description' => t('The equivalent of \'master\' for the Git flow workflow you have selected'),
+        '#options' => $branches,
+        '#required' => TRUE,
+        '#default_value' => $master_branch_default,
+      );
+      // Git flow develop branch
+      $form['gitapi_fieldset']['develop_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('The \'develop\' branch'),
+        '#description' => t('The equivalent of \'develop\' for the Git flow workflow you have selected'),
+        '#options' => $branches,
+        '#required' => TRUE,
+        '#default_value' => $develop_branch_default,
+      );
+      break;
+    // Dev -> stage -> prod
+    case 1:
+      // Set the default value for the prod_branch element
+      if (isset($form_state['values']['prod_branch'])) {
+        $prod_branch_default = $form_state['values']['prod_branch'];
+      } elseif (!is_null($gitinfo)) {
+        $workflow_args = drupal_json_decode($gitinfo->workflow_args);
+        $prod_branch_default = $workflow_args['prod']['id'];
+      } else {
+        $prod_branch_default = NULL;
+      }
+      // Set the default value for the stage_branch element
+      if (isset($form_state['values']['stage_branch'])) {
+        $stage_branch_default = $form_state['values']['stage_branch'];
+      } elseif (!is_null($gitinfo)) {
+        $workflow_args = drupal_json_decode($gitinfo->workflow_args);
+        $stage_branch_default = $workflow_args['stage']['id'];
+      } else {
+        $stage_branch_default = NULL;
+      }
+      // Set the default value for the develop_branch element
+      if (isset($form_state['values']['develop_branch'])) {
+        $develop_branch_default = $form_state['values']['develop_branch'];
+      } elseif (!is_null($gitinfo)) {
+        $workflow_args = drupal_json_decode($gitinfo->workflow_args);
+        $develop_branch_default = $workflow_args['dev']['id'];
+      } else {
+        $develop_branch_default = NULL;
+      }
+      // prod branch
+      $form['gitapi_fieldset']['prod_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('The \'prod\' branch'),
+        '#description' => t('The equivalent of \'prod\' for the Git flow workflow you have selected'),
+        '#options' => $branches,
+        '#required' => TRUE,
+        '#default_value' => $prod_branch_default,
+      );
+      // stage branch
+      $form['gitapi_fieldset']['stage_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('The \'stage\' branch'),
+        '#description' => t('The equivalent of \'stage\' for the Git flow workflow you have selected'),
+        '#options' => $branches,
+        '#required' => TRUE,
+        '#default_value' => $stage_branch_default,
+      );
+      // dev branch
+      $form['gitapi_fieldset']['develop_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('The \'dev\' branch'),
+        '#description' => t('The equivalent of \'dev\' for the Git flow workflow you have selected'),
+        '#options' => $branches,
+        '#required' => TRUE,
+        '#default_value' => $develop_branch_default,
+      );
+      break;
+    // Dev -> prod
+    case 2:
+      // Set the default value for the prod_branch element
+      if (isset($form_state['values']['prod_branch'])) {
+        $prod_branch_default = $form_state['values']['prod_branch'];
+      } elseif (!is_null($gitinfo)) {
+        $workflow_args = drupal_json_decode($gitinfo->workflow_args);
+        $prod_branch_default = $workflow_args['prod']['id'];
+      } else {
+        $prod_branch_default = NULL;
+      }
+      // Set the default value for the develop_branch element
+      if (isset($form_state['values']['develop_branch'])) {
+        $develop_branch_default = $form_state['values']['develop_branch'];
+      } elseif (!is_null($gitinfo)) {
+        $workflow_args = drupal_json_decode($gitinfo->workflow_args);
+        $develop_branch_default = $workflow_args['dev']['id'];
+      } else {
+        $develop_branch_default = NULL;
+      }
+      // prod branch
+      $form['gitapi_fieldset']['prod_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('The \'prod\' branch'),
+        '#description' => t('The equivalent of \'prod\' for the Git flow workflow you have selected'),
+        '#options' => $branches,
+        '#required' => TRUE,
+        '#default_value' => $prod_branch_default,
+      );
+      // dev branch
+      $form['gitapi_fieldset']['develop_branch'] = array(
+        '#type' => 'select',
+        '#title' => t('The \'dev\' branch'),
+        '#description' => t('The equivalent of \'dev\' for the Git flow workflow you have selected'),
+        '#options' => $branches,
+        '#required' => TRUE,
+        '#default_value' => $develop_branch_default,
+      );
+      break;
+  }
+  // Git flow hotfix
+  $form['gitapi_fieldset']['hotfix'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Create a hotfix for highly critical security updates'),
+    '#default_value' => $hotfix_default,
   );
   // Checkbox for makefile
   $form['gitapi_fieldset']['gitapi_makefile'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Does this project depends on a makefile?'),
+    '#title' => t('Does this project depend on a makefile?'),
     '#description' => t('Only select this option if the site set up is based primarily on running a makefile.'),
     '#default_value' => $makefile_default,
   );
@@ -652,15 +817,6 @@ function client_site_form_step_4($form, $form_state) {
  */
 function client_site_form_step_4_validate($form, $form_state) {
 
-  // Check a Git service has been selected.
-  if ($form_state['values']['gitapi_service'] == 0) {
-    return form_set_error('gitapi_service', t('Select a Git service'));
-  }
-  // Bitbucket and Github integration currently not complete
-  if ($form_state['values']['gitapi_service'] == 1 ||
-    $form_state['values']['gitapi_service'] == 2) {
-    return form_set_error('gitapi_service', t('This git service option is currently disabled, select another'));
-  }
   // Check makefile location is set, if makefile selected
   if ($form_state['values']['gitapi_makefile'] == TRUE &&
    !isset($form_state['values']['gitapi_makefile_location'])) {
@@ -674,16 +830,52 @@ function client_site_form_step_4_validate($form, $form_state) {
  */
 function client_site_form_submit_details_step_4($form, $form_state) {
 
-  // Attempt to retrieve the branches associated with the Git repo
-  $branches = '';
-  try {
-    // Retrieve branches
-    $branches = drupal_json_encode(get_branches($form_state['values']['gitapi_service'], $form_state['values']['gitapi_clone_url']));
-  } catch (Exception $e) {
-    watchdog_log('Security samurai GitAPI', '<pre>' . print_r($e) . '</pre>');
-    drupal_set_message('An error occurred during the process of retrieving available branches for the repository. It is recommended that you recache the branches later, on the site management page', 'error');
-    $branches = drupal_json_encode(array());
+  // Retrieve values from previous steps
+  $gitapi_service = $form_state['multistep_values']['client_site_form_step_3']['gitapi_service'];
+  $gitapi_clone_url = $form_state['multistep_values']['client_site_form_step_3']['gitapi_clone_url'];
+  $workflow = $form_state['multistep_values']['client_site_form_step_3']['gitapi_workflow_model'];
+  // Retrieve branches from form_state
+  $branches = drupal_json_encode(get_branches($gitapi_service, $gitapi_clone_url));
+
+  // Switch through each possible value of workflow
+  // setting the correct workflow_args
+  $workflow_args = array();
+  switch ($workflow) {
+    // Git flow
+    case 0:
+      // Set the args for the master branch
+      $workflow_args['master']['string'] = $branches[$form_state['values']['master_branch']];
+      $workflow_args['master']['id'] = $form_state['values']['master_branch'];
+      // Set the args for the develop branch
+      $workflow_args['develop']['string'] = $branches[$form_state['values']['develop_branch']];
+      $workflow_args['develop']['id'] = $form_state['values']['develop_branch'];
+      break;
+    // Dev -> stage -> prod
+    case 1:
+      // Set the args for the prod branch
+      $workflow_args['prod']['string'] = $branches[$form_state['values']['prod_branch']];
+      $workflow_args['prod']['id'] = $form_state['values']['prod_branch'];
+      // Set the args for the stage branch
+      $workflow_args['stage']['string'] = $branches[$form_state['values']['stage_branch']];
+      $workflow_args['stage']['id'] = $form_state['values']['stage_branch'];
+      // Set the args for the dev branch
+      $workflow_args['dev']['string'] = $branches[$form_state['values']['develop_branch']];
+      $workflow_args['dev']['id'] = $form_state['values']['develop_branch'];
+      break;
+    // Dev -> prod
+    case 2:
+      // Set the args for the prod branch
+      $workflow_args['prod']['string'] = $branches[$form_state['values']['prod_branch']];
+      $workflow_args['prod']['id'] = $form_state['values']['prod_branch'];
+      // Set the args for the dev branch
+      $workflow_args['dev']['string'] = $branches[$form_state['values']['develop_branch']];
+      $workflow_args['dev']['id'] = $form_state['values']['develop_branch'];
+      break;
   }
+  // JSON encode the workflow_args
+  $workflow_args['hotfix'] = isset($form_state['values']['hotfix']);
+  $workflow_args = drupal_json_encode($workflow_args);
+
   // Check if the gitinfo already exists.
   $site_id = arg(3);
   if (gitinfo_exists($site_id)) {
@@ -692,24 +884,28 @@ function client_site_form_submit_details_step_4($form, $form_state) {
     if ($gitinfo_id != FALSE) {
       // Load and update each of the values of the gitinfo entity.
       $gitinfo = gitinfo_load($gitinfo_id);
-      $gitinfo->name = parse_repo_name($form_state['values']['gitapi_clone_url']);
-      $gitinfo->service = $form_state['values']['gitapi_service'];
-      $gitinfo->clone_url = $form_state['values']['gitapi_clone_url'];
+      $gitinfo->name = parse_repo_name($gitapi_clone_url);
+      $gitinfo->service = $gitapi_service;
+      $gitinfo->clone_url = $gitapi_clone_url;
       $gitinfo->branches = $branches;
       $gitinfo->is_make = $form_state['values']['gitapi_makefile'];
       $gitinfo->make_location = $form_state['values']['gitapi_makefile_location'];
+      $gitinfo->workflow = $workflow;
+      $gitinfo->workflow_args = $workflow_args;
       $gitinfo->save();
     }
   } else {
     // Create the gitinfo entity.
     $gitinfo = entity_create('gitinfo', array(
       'site' => samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']),
-      'name' => parse_repo_name($form_state['values']['gitapi_clone_url']), // repo name
-      'service' => $form_state['values']['gitapi_service'],
-      'clone_url' => $form_state['values']['gitapi_clone_url'],
+      'name' => parse_repo_name($gitapi_clone_url),
+      'service' => $gitapi_service,
+      'clone_url' => $gitapi_clone_url,
       'branches' => $branches,
       'is_make' => $form_state['values']['gitapi_makefile'],
       'make_location' => $form_state['values']['gitapi_makefile_location'],
+      'workflow' => $workflow,
+      'workflow_args' => $workflow_args,
     ));
     $gitinfo_wrapper = entity_metadata_wrapper('gitinfo', $gitinfo);
     $gitinfo_wrapper->save();
