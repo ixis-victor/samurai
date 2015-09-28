@@ -10,7 +10,6 @@
 function security_samurai_deploy_entity_info() {
 
   $info = array();
-
   // The gitinfo entity.
   $info['deployinfo'] = array(
     'label' => t('Deploy info'),
@@ -24,14 +23,16 @@ function security_samurai_deploy_entity_info() {
     'controller class' => 'DeployInfoEntityController',
     'module' => 'security_samurai_deploy',
   );
-
+  // Return the entity info
   return $info;
 }
 
+/**
+ * Implements hook_menu
+ */
 function security_samurai_deploy_menu() {
 
   $items = array();
-
   // Create a new configuration page for managing the
   // APIs
   $items['admin/config/development/deploy'] = array(
@@ -42,6 +43,46 @@ function security_samurai_deploy_menu() {
     'access arguments' => array('administer security samurai deploy'),
     'file' => 'security_samurai_deploy.admin.inc',
   );
+  // Return the menu items
+  return $items;
+}
+
+/**
+ * Implements hook_cron
+ */
+function security_samurai_deploy_cron() {
+
+  // Update the projects for deployhq
+  if (!is_null(variable_get('security_samurai_deploy_deployhq_domain_prefix', NULL))) {
+    // Retrieve values required for communicating with the DeployHQ API
+    $prefix = variable_get('security_samurai_deploy_deployhq_domain_prefix', NULL);
+    $api_key = variable_get('security_samurai_deploy_deployhq_api_key', NULL);
+    $username = variable_get('security_samurai_deploy_deployhq_username', NULL);
+    // Initialise a new wrapper for deploy HQ
+    $client = new SamuraiDeployHQClient($prefix, $api_key, $username);
+    // Retrieve the projects
+    $projects = $client->getProjects();
+    $projects = $projects->document;
+    // Loop through each project
+    $projects_array = array();
+    foreach ($projects as $key => $value) {
+      $projects_array[$value->permalink]['permalink'] = $value->permalink;
+      $projects_array[$value->permalink]['name'] = $value->name;
+      // Retrieve the servers for a project
+      $servers = $client->getServers($value->permalink);
+      // Add the servers to the projects_array
+      foreach ($servers->document as $key => $project_value) {
+        $projects_array[$value->permalink]['servers'][] = array(
+          'name' => $project_value->name,
+          'last_revision' => $project_value->last_revision,
+          'identifier' => $project_value->identifier,
+          'auto_deploy' => $project_value->auto_deploy_url
+        );
+      }
+    }
+    // Save the projects array
+    variable_set('security_samurai_deploy_projects_information', $projects_array);
+  }
 }
 
 /**
