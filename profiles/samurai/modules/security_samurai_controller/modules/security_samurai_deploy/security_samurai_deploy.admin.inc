@@ -15,4 +15,6 @@
 function security_samurai_deploy_admin_config_form() {
 
   $form = array();
+
+  return $form;
 }
