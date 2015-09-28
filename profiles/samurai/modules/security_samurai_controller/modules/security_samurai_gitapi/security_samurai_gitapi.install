@@ -62,6 +62,18 @@ function security_samurai_gitapi_schema() {
         'length' => 255,
         'not null' => FALSE,
       ),
+      'workflow' => array(
+        'description' => 'The workflow used in the repository',
+        'type' => 'int',
+        'length' => 10,
+        'not null' => TRUE,
+      ),
+      'workflow_args' => array(
+        'description' => 'JSON formatted array of branches',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
     ),
     'primary key' => array('id'),
   );
