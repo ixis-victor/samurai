@@ -66,6 +66,9 @@ function security_samurai_deploy_cron() {
     // Loop through each project
     $projects_array = array();
     foreach ($projects as $key => $value) {
+      $projects_array['ref'][] = array(
+        $value->name => $value->permalink,
+      );
       $projects_array[$value->permalink]['permalink'] = $value->permalink;
       $projects_array[$value->permalink]['name'] = $value->name;
       // Retrieve the servers for a project
@@ -82,6 +85,132 @@ function security_samurai_deploy_cron() {
     }
     // Save the projects array
     variable_set('security_samurai_deploy_projects_information', $projects_array);
+  }
+}
+
+/**
+ * Returns the array of projects
+ * Suitable for form elements
+ */
+function security_samurai_deploy_retrieve_projects() {
+
+  // Load in the projects array
+  $projects = variable_get('security_samurai_deploy_projects_information', NULL);
+  // The ref part of the array will only get in the way
+  unset($projects['ref']);
+  $projects_array = array();
+  foreach ($projects as $key => $value) {
+    $projects_array[] = $value['name'];
+  }
+  // Return the array
+  return $projects_array;
+}
+
+/**
+ * Returns the array of servers for a specific project
+ * Suitable for form elements
+ *
+ * @param string $project_name The human readable name of the project
+ */
+function security_samurai_deploy_retrieve_project_servers($project_name) {
+
+  // Load in the projects array
+  $projects = variable_get('security_samurai_deploy_projects_information', NULL);
+  // Get the ref and with it, the servers
+  $project_permalink = '';
+  foreach ($projects['ref'] as $key => $value) {
+    if (isset($value[$project_name])) {
+      $project_permalink = $value[$project_name];
+      break;
+    }
+  }
+  $servers = $projects[$project_permalink]['servers'];
+  // Loop through each server entry, only taking the relevant information
+  $servers_array = array();
+  $servers_array[] = 'Not applicable';
+  foreach ($servers as $key => $value) {
+    $servers_array[] = $value['name'];
+  }
+  // Return the servers_array
+  return $servers_array;
+}
+
+/**
+ * Returns the key of the server, because of this
+ * the key can change and the true value will always be
+ * the same
+ *
+ * @param string $server_string The server name
+ * @param string $project_name The name of the project
+ */
+function security_samurai_deploy_get_server_key($server_string, $project_name) {
+
+  $servers = security_samurai_deploy_retrieve_project_servers($project_name);
+  // Loop through each of the servers in the array
+  $key_value = 0;
+  foreach ($servers as $key => $value) {
+    if ($value == $server_string) {
+      $key_value = $key;
+      break;
+    }
+  }
+  // Return the value
+  return $key_value;
+}
+
+function security_samurai_deploy_get_project_key($project_name) {
+
+  $projects_array = security_samurai_deploy_retrieve_projects();
+  $key_project = 0;
+  foreach ($projects_array as $key => $value) {
+    if ($value == $project_name) {
+      $key_project = $key;
+      break;
+    }
+  }
+  return $key_project;
+}
+
+
+/**
+ * Returns a bool value for a deployinfo entity existing
+ *
+ * @param int $site_id The client_site entity ID the deployinfo is
+ * directly linked to
+ */
+function deployinfo_exists($site_id) {
+
+  // Query the database
+  $result = db_query('SELECT id FROM securitysamurai_deployinfo WHERE
+    client_site_id = :site_id', array(
+      ':site_id' => $site_id
+    ))->fetchField();
+
+  if (!empty($result)) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
+/**
+ * Returns the ID of the deployinfo entity
+ *
+ * @param int $site_id The client_site entity ID the deployinfo is
+ * directly linked to
+ */
+function deployinfo_getid($site_id) {
+
+  // Query the database
+  $result = db_query('SELECT id FROM securitysamurai_deployinfo WHERE
+    client_site_id = :site_id', array(
+      ':site_id' => $site_id
+    ))->fetchField();
+
+  if (!empty($result)) {
+    return $result;
+  } else {
+    return NULL;
   }
 }
 

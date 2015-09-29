@@ -101,9 +101,7 @@ function client_site_form_validate($form, &$form_state) {
     case 'client_site_form_step_4':
       return client_site_form_step_4_validate($form, $form_state);
       break;
-    case 'client_site_form_step_5':
-      return client_site_form_step_5_validate($form, $form_state);
-      break;
+    // No validation for step 5 needed
   }
 }
 
@@ -476,6 +474,14 @@ function client_site_form_step_3($form, $form_state) {
       $gitinfo = gitinfo_load($gitinfo_id);
     }
   }
+  // Load the deployinfo entity if exists
+  $deployinfo = NULL;
+  if (deployinfo_exists($site_id)) {
+    $deployinfo_id = deployinfo_getid($site_id);
+    if (!is_null($deployinfo_id)) {
+      $deployinfo = deployinfo_load($deployinfo_id);
+    }
+  }
   // Set the default value for the gitapi_service element
   if (isset($form_state['values']['gitapi_service'])) {
     $service_default = $form_state['values']['gitapi_service'];
@@ -503,6 +509,8 @@ function client_site_form_step_3($form, $form_state) {
   // Set the default value for the deploy_service element
   if (isset($form_state['values']['deploy_service'])) {
     $deploy_service_default = $form_state['values']['deploy_service'];
+  } elseif (!is_null($deployinfo)) {
+    $deploy_service_default = $deployinfo->deploy_service_provider;
   } else {
     $deploy_service_default = 0;
   }
@@ -604,6 +612,14 @@ function client_site_form_step_4($form, $form_state) {
       $gitinfo = gitinfo_load($gitinfo_id);
     }
   }
+  // Load the deployinfo entity if exists
+  $deployinfo = NULL;
+  if (deployinfo_exists($site_id)) {
+    $deployinfo_id = deployinfo_getid($site_id);
+    if (!is_null($deployinfo_id)) {
+      $deployinfo = deployinfo_load($deployinfo_id);
+    }
+  }
   // Set the default value for the gitapi_makefile element
   if (isset($form_state['values']['gitapi_makefile'])) {
     $makefile_default = $form_state['values']['gitapi_makefile'];
@@ -630,6 +646,15 @@ function client_site_form_step_4($form, $form_state) {
   } else {
     $hotfix_default = NULL;
   }
+  // Set the default value for the deploy_project element
+  if (isset($form_state['values']['deploy_project'])) {
+    $deploy_project_default = $form_state['values']['deploy_project'];
+  } elseif (!is_null($deployinfo)) {
+    $args = drupal_json_decode($deployinfo->args);
+    $deploy_project_default = security_samurai_deploy_get_project_key($args['project']);
+  } else {
+    $deploy_project_default = NULL;
+  }
   // Fieldset for the GitAPI elements
   $form['gitapi_fieldset'] = array(
     '#type' => 'fieldset',
@@ -641,10 +666,9 @@ function client_site_form_step_4($form, $form_state) {
     '#type' => 'select',
     '#title' => t('Deployment project'),
     '#description' => t('The deploy project this repository corresponds to'),
-    '#options' => array(
-      0 => 'test',
-    ),
+    '#options' => security_samurai_deploy_retrieve_projects(),
     '#required' => TRUE,
+    '#default_value' => $deploy_project_default,
   );
   switch ($workflow_model) {
     // Git flow
@@ -924,13 +948,25 @@ function client_site_form_submit_details_step_4($form, $form_state) {
 /**
  * Client site form step 5
  *
- * Validation handler @see client_site_form_step_5_validate
  * Submit handler @see client_site_form_submit_details_step_5
  */
 function client_site_form_step_5($form, $form_state) {
 
   // Retrieve information from the previous steps
   $chosen_workflow = $form_state['multistep_values']['client_site_form_step_3']['gitapi_workflow_model'];
+  $site_id = samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']);
+  // Load the variable with server info
+  $projects = security_samurai_deploy_retrieve_projects();
+  $selected_project = $projects[$form_state['multistep_values']['client_site_form_step_4']['deploy_project']];
+  $deploy_servers = security_samurai_deploy_retrieve_project_servers($selected_project);
+  // Load the deployinfo entity if exists
+  $deployinfo = NULL;
+  if (deployinfo_exists($site_id)) {
+    $deployinfo_id = deployinfo_getid($site_id);
+    if (!is_null($deployinfo_id)) {
+      $deployinfo = deployinfo_load($deployinfo_id);
+    }
+  }
 
   // Fieldset for the form elements
   $form['workflow_fieldset'] = array(
@@ -940,72 +976,71 @@ function client_site_form_step_5($form, $form_state) {
   );
   switch ($chosen_workflow) {
     case 0:
+      if (!is_null($deployinfo)) {
+        $args = drupal_json_decode($deployinfo->args);
+        $master_branch_default = security_samurai_deploy_get_server_key($args['master'], $selected_project);
+        $develop_branch_default = security_samurai_deploy_get_server_key($args['develop'], $selected_project);
+      } elseif (isset($form_state['values']['master_branch'])) {
+        $master_branch_default = $form_state['values']['master_branch'];
+        $develop_branch_default = $form_state['values']['develop_branch'];
+      } else {
+        $master_branch_default = NULL;
+        $develop_branch_default = NULL;
+      }
       $form['workflow_fieldset']['master_branch'] = array(
         '#type' => 'select',
         '#title' => t('Server for the \'master\' branch'),
         '#description' => t('The server to deploy to when a change to the \'master\' branch is made'),
         '#required' => TRUE,
-        '#options' => array(
-          0 => 'test',
-        ),
+        '#options' => $deploy_servers,
+        '#default_value' => $master_branch_default,
       );
       $form['workflow_fieldset']['develop_branch'] = array(
         '#type' => 'select',
         '#title' => t('Server for the \'develop\' branch'),
         '#description' => t('The server to deploy to when a change to the \'develop\' branch is made'),
         '#required' => TRUE,
-        '#options' => array(
-          0 => 'test',
-        ),
+        '#options' => $deploy_servers,
+        '#default_value' => $develop_branch_default,
       );
       break;
     case 1:
       $form['workflow_fieldset']['dev_branch'] = array(
         '#type' => 'select',
-        '#title' => t('Development branch'),
-        '#description' => t('The \'dev\' or equivalent branch'),
+        '#title' => t('Server for the \'dev\' branch'),
+        '#description' => t('The server to deploy to when a change to the \'dev\' branch is made'),
         '#required' => TRUE,
-        '#options' => array(
-          0 => 'test',
-        ),
+        '#options' => $deploy_servers,
       );
       $form['workflow_fieldset']['stage_branch'] = array(
         '#type' => 'select',
-        '#title' => t('Staging branch'),
-        '#description' => t('The \'stage\' or equivalent branch'),
+        '#title' => t('Server for the \'stage\' branch'),
+        '#description' => t('The server to deploy to when a change to the \'stage\' branch is made'),
         '#required' => TRUE,
-        '#options' => array(
-          0 => 'test',
-        ),
+        '#options' => $deploy_servers,
       );
       $form['workflow_fieldset']['prod_branch'] = array(
         '#type' => 'select',
-        '#title' => t('Production branch'),
-        '#description' => t('The \'prod\' or equivalent branch'),
+        '#title' => t('Server for the \'prod\' branch'),
+        '#description' => t('The server to deploy to when a change to the \'prod\' branch is made'),
         '#required' => TRUE,
-        '#options' => array(
-          0 => 'test',
-        ),
+        '#options' => $deploy_servers,
       );
       break;
     case 2:
       $form['workflow_fieldset']['dev_branch'] = array(
         '#type' => 'select',
-        '#title' => t('Development branch'),
-        '#description' => t('The \'dev\' or equivalent branch'),
+        '#title' => t('Server for the \'dev\' branch'),
+        '#description' => t('The server to deploy to when a change to the \'dev\' branch is made'),
         '#required' => TRUE,
-        '#options' => array(
-          0 => 'test',
-        ),
+        '#options' => $deploy_servers,
       );
       $form['workflow_fieldset']['prod_branch'] = array(
         '#type' => 'select',
-        '#title' => t('Production branch'),
-        '#description' => t('The \'prod\' or equivalent branch'),
+        '#title' => t('Server for the \'prod\' branch'),
+        '#description' => t('The server to deploy to when a change to the \'prod\' branch is made'),
         '#required' => TRUE,
-        '#options' => array(
-          0 => 'test',
-        ),
+        '#options' => $deploy_servers,
       );
       break;
   }
@@ -1027,15 +1062,61 @@ function client_site_form_step_5($form, $form_state) {
 }
 
 /**
- * Form validation handler
- * @see client_site_form_step_5
- */
-function client_site_form_step_5_validate($form, $form_state) {}
-
-/**
  * Form submit handler
  * @see client_site_form_submit_details_step_5
  */
 function client_site_form_submit_details_step_5($form, $form_state) {
 
+  // Retrieve values from previous steps
+  $projects = security_samurai_deploy_retrieve_projects();
+  $selected_project = $projects[$form_state['multistep_values']['client_site_form_step_4']['deploy_project']];
+  $servers = security_samurai_deploy_retrieve_project_servers($selected_project);
+  // Create the args
+  $args = array();
+  switch ($form_state['values']['chosen_workflow']) {
+    // Git flow
+    case 0:
+      $args['project'] = $selected_project;
+      $args['master'] = $servers[$form_state['values']['master_branch']];
+      $args['develop'] = $servers[$form_state['values']['develop_branch']];
+      break;
+    // Dev -> stage -> prod
+    case 1:
+      $args['project'] = $selected_project;
+      $args['prod'] = $servers[$form_state['values']['prod_branch']];
+      $args['stage'] = $servers[$form_state['values']['stage_branch']];
+      $args['dev'] = $servers[$form_state['values']['dev_branch']];
+      break;
+    // Dev -> prod
+    case 2:
+      $args['project'] = $selected_project;
+      $args['prod'] = $servers[$form_state['values']['prod_branch']];
+      $args['dev'] = $servers[$form_state['values']['dev_branch']];
+      break;
+  }
+  // Encode the args
+  $args = drupal_json_encode($args);
+  // Submit the deployment information
+  $site_id = arg(3);
+  if (deployinfo_exists($site_id)) {
+    // Update the existing deployinfo entity
+    $deployinfo_id = deployinfo_getid($site_id);
+    if (!is_null($deployinfo_id))  {
+      $deployinfo = deployinfo_load($deployinfo_id);
+      $deployinfo->deploy_service_provider = $form_state['multistep_values']['client_site_form_step_3']['deploy_service'];
+      $deployinfo->args = $args;
+      $deployinfo->save();
+    }
+  } else {
+    // Create a new deployinfo entity
+    $deployinfo = entity_create('deployinfo', array(
+      'name' => 'deployinfo',
+      'client_site_id' => samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']),
+      'gitinfo_id' => gitinfo_getid($site_id),
+      'deploy_service_provider' => $form_state['multistep_values']['client_site_form_step_3']['deploy_service'],
+      'args' => $args
+    ));
+    $deployinfo_wrapper = entity_metadata_wrapper('deployinfo', $deployinfo);
+    $deployinfo_wrapper->save();
+  }
 }
