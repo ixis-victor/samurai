@@ -263,7 +263,8 @@ function client_site_form_step_1_validate($form, $form_state) {
 
   // Check if the site doesn't already exist
   if (arg(2) != 'manage') {
-    if (samurai_site_exists($form_state['values']['name'])) {
+    $client_site = new SecuritySamuraiControllerClientSite();
+    if ($client_site->exists_by_name($form_state['values']['name'])) {
       return form_set_error('name', t('A site with this name already exists'));
     }
   }
@@ -301,6 +302,8 @@ function client_site_form_step_1_validate($form, $form_state) {
  */
 function client_site_form_submit_details_step_1($form, $form_state) {
 
+  // Initialise a new client site class
+  $client_site = new SecuritySamuraiControllerClientSite();
   // Decrypt the site_url from the encryption string.
   if (!isset($form_state['values']['site_url'])) {
     $encryptionsiteurl = $form_state['values']['encryption_key'];
@@ -310,7 +313,7 @@ function client_site_form_submit_details_step_1($form, $form_state) {
     $form_state['values']['site_url'] = base64_decode($site_url);
   }
   // Check if the site is being updated or saved.
-  if (!samurai_site_exists($form_state['values']['name'], $form_state['values']['site_url'])) {
+  if (!$client_site->exists_by_name($form_state['values']['name'])) {
     // Set the update_next_check to 0, so the updates are checked
     // on the next cron execution - every minute.
     $form_state['values']['update_next_check'] = 0;
@@ -331,7 +334,7 @@ function client_site_form_submit_details_step_1($form, $form_state) {
   // -- Print notification messages.
   // -- Log to watchdoge.
   $site_id = arg(3);
-  if (!samurai_site_exists($form_state['values']['name']) && is_null($site_id)) {
+  if (!$client_site->exists_by_name($form_state['values']['name']) && is_null($site_id)) {
     // Entity doesn't exist.
     $site = entity_create('client_site', array(
       'name' => $form_state['values']['name'],

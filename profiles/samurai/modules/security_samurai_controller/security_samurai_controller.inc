@@ -7,205 +7,698 @@
  */
 
 /**
- * TODO - implementing a secure minor column in the SA entity table will
- * allow a more accurate return of the sites affected by this vulnerability
- *
- * Retrieve an array of sites affected by a particular security announcement.
- *
- * @param string $sa_id The security announcement ID.
- * @param string $project_name The name of the affected project.
- * @param string $core The json encoded string of compatible core version/s.
- *
- * @return string $return HTML content to return.
- * @return NULL Returned when there is no result from the query.
+ * Functions for manipulating and retrieving
+ * client_site entity data
  */
-function samurai_get_affected_sites($sa_id, $project_name, $core) {
+class SecuritySamuraiControllerClientSite {
 
-  // Strip whitespace from project_name
-  $project_name = trim($project_name);
+  // Client site entity variables
+  public $id;
+  public $name;
+  public $update_data;
+  public $encryption_key;
+  public $site_url;
+  public $created_at;
+  public $updated_at;
+  public $update_count;
+  public $update_next_check;
+  public $update_check_method;
+  public $core_version;
+  public $site_alias_name;
+  public $site_alias_id;
+  public $auto_updates;
 
-  // Retrieve the data on the site if they have the project in the update_data
-  if (samurai_sa_exists($sa_id)) {
+  /**
+   * Class constructor
+   *
+   * @param int $id The ID of the client_site entity
+   */
+  public function __construct($id = NULL) {
+    // If the ID parameter is set, load the client_site
+    // entity and assign variables
+    if (!is_null($id) && $this->exists($id)) {
+      $client_site = client_site_load($id);
+      $this->id = $client_site->id;
+      $this->name = $client_site->name;
+      $this->update_data = drupal_json_decode($client_site->site_update_data);
+      $this->site_url = $client_site->site_url;
+      $this->created_at = $client_site->created_at;
+      $this->updated_at = $client_site->updated_at;
+      $this->update_count = $client_site->update_count;
+      $this->update_next_check = $client_site->update_next_check;
+      $this->update_check_method = $client_site->update_check_method;
+      $this->core_version = $client_site->core_version;
+      $this->site_alias_name = $client_site->site_alias_name;
+      $this->site_alias_id = $client_site->site_alias_id;
+      $this->auto_updates = $client_site->auto_updates;
+    }
+  }
 
-    // Run the query.
-    $results = db_query('SELECT * FROM {securitysamurai_site} WHERE
-      LOCATE(:project_name, site_update_data) > 0',
-      array(
-        ':project_name' => $project_name
-      ))->fetchAll();
+  /**
+   * Check if an entity of client_site exists
+   *
+   * @param int $id The ID of the client_site entity
+   *
+   * @return bool TRUE/FALSE
+   */
+  public function exists($id) {
+    // Query the database for a row with the correct ID
+    $result = db_query('SELECT id FROM {securitysamurai_site}
+      WHERE id = :id', array(
+        ':id' => $id
+      ))->fetchField();
+    // If the result isn't empty, return TRUE
+    // else, return FALSE
+    if (!empty($result)) {
+      return TRUE;
+    } else {
+      return FALSE;
+    }
+  }
 
-    // Decode the JSON into a PHP array.
-    $core_array = drupal_json_decode($core);
+  /**
+   * Check if an entity of client_site exists by site_name
+   *
+   * @param string $name The name of the client_site entity
+   *
+   * @return bool TRUE/FALSE
+   */
+  public function exists_by_name($name) {
+    // Query the database for a row with the correct name
+    $result = db_query('SELECT id FROM {securitysamurai_site}
+      WHERE name = :name', array(
+        ':name' => $name
+      ))->fetchField();
+    // If the result isn't empty, return TRUE
+    // else, return FALSE
+    if (!empty($result)) {
+      return TRUE;
+    } else {
+      return FALSE;
+    }
+  }
 
-    if (!empty($results)) {
+  /**
+   * Returns an array of all the sites in the
+   *
+   * @return array[int] $result_return An array of site ID values
+   */
+  public function retrieve_sites_all_ids() {
+    // Query the database for all site ID values
+    $result = db_query('SELECT id FROM {securitysamurai_site}')
+      ->fetchAll();
+    // Reconstruct the result into a tidier array
+    $result_return = array();
+    foreach ($result as $key => $value) {
+      $result_return[] = $value->id;
+    }
+    // Return the result
+    return $result_return;
+  }
 
-      $return = '';
-      foreach ($results as $result => $r) {
+  /**
+   * Return an array of sites with the specified project in the
+   * site_update_data
+   *
+   * @param string $project_name The name of the project
+   *
+   * @return array[mixed] The array of site_ids that have the project
+   */
+  public function retrieve_sites_with_project($project_name) {
+    // Retrieve all site IDs
+    $site_ids = $this->retrieve_sites_all_ids();
+    // Loop through each site ID, checking the site_update_data
+    $sites_with_project = array();
+    foreach ($site_ids as $site_id => $value) {
+      $client_site = client_site_load($value);
+      $site_update_data = drupal_json_decode($client_site->site_update_data);
+      if (isset($site_update_data[$project_name])) {
+        if ($project_name == 'drupal') {
+          $helper = new SecuritySamuraiControllerHelper;
+          $helper->split_version_number($site_update_data[$project_name]['version']);
+          $sites_with_project[] = array(
+            'site_id' => $value,
+            'version' => $site_update_data[$project_name]['version'],
+            'core' => $helper->version_major . '.x',
+          );
+        } else {
+          $sites_with_project[] = array(
+            'site_id' => $value,
+            'version' => $site_update_data[$project_name]['version'],
+            'core' => $site_update_data[$project_name]['core'],
+          );
+        }
+      }
+    }
+    return $sites_with_project;
+  }
 
-        // - Check that the core versions are matching.
-        // - Split the version number of Drupal core into major and minor.
-        // - Retrieve the machine name of the affected project.
-        // - Split the version number of the project into major and minor.
-        $site_update = drupal_json_decode($r->site_update_data);
-        $split_version_core = samurai_split_version_number($site_update['drupal']['version']);
-        $machine_name = samurai_project_machine_name($project_name);
-        $split_version_contrib = samurai_split_version_number($site_update[$machine_name]['version']);
+  /**
+   * Returns a count of available security updates for a
+   * particular site
+   *
+   * @param array[mixed] $site_update_data The site update data
+   *
+   * @return bool FALSE If no value for $update_data is set
+   * @return int $update_counter The security update count
+   */
+  public function count_available_security_updates($update_data = NULL) {
+    // Set a value for $update_data if it doesn't have one already
+    if (is_null($update_data) && isset($this->update_data)) {
+      $update_data = $this->update_data;
+    } else {
+      return FALSE;
+    }
+    // Initialise variables
+    $projects = new SecuritySamuraiControllerProject();
+    $helper = new SecuritySamuraiControllerHelper;
+    $helper->split_version_number($update_data['drupal']['version']);
+    $drupal_major = $helper->version_major . '.x';
+    $update_counter = 0;
+    // Loop through each update data entry, checking if the project is at
+    // the latest secure version
+    foreach ($update_data as $machine_name => $data) {
+      // Split the version of the project
+      $helper->split_version_number($data['version']);
+      $secure_minor = $projects->retrieve_latest_secure_minor($data['machine_name'], $drupal_major, $version['major']);
+      // Check if the version minor is less than the secure_minor
+      if ($helper->version_minor < $secure_minor) {
+        $update_counter++;
+      } else {
+        continue;
+      }
+    }
+    // Return the update_counter
+    $this->update_count = $update_counter;
+    return $update_counter;
+  }
 
-        // Loop through each affected core version.
-        foreach ($core_array as $core) {
+  /**
+   * Returns the site update data of a client_site
+   *
+   * @param string $site_id The ID of the client_site entity
+   *
+   * @return array[mixed] The site update data
+   * @return bool FALSE If no value for $update_data is set
+   */
+  public function retrieve_update_data($site_id) {
+    // Query the database
+    $update_data = db_query('SELECT site_update_data FROM {securitysamurai_site}
+      WHERE id = :id', array(
+        ':id' => $site_id,
+      ))->fetchField();
+    // If $update_data isn't empty, return $update_data
+    // else, return FALSE
+    if (!empty($update_data)) {
+      $update_data = drupal_json_decode($update_data);
+      $this->update_data = $update_data;
+      return $update_data;
+    } else {
+      return FALSE;
+    }
+  }
 
-          // Compare the core versions.
-          if ($core == $split_version_core['major'] . '.x') {
-
-            // Check that the site minor version is less than the secure version.
-            if ($split_version_contrib['minor'] <
-              samurai_project_secure_minor($machine_name, $core, $split_version_contrib['major'])) {
-
-              // If the core versions are correct, return the site markup.
-              $return .= '<p class="content"><a href="/client-site/' . $r->id . '">' . $r->name . '</a></p>';
-            }
+  /**
+   * Retrieve an array of projects which require security updates
+   * for a project
+   * Filters out projects that are not set to have
+   *
+   * @param int $site_id The entity ID of the client_site
+   *
+   * @return bool FALSE When no value for site_id or update_data is set
+   * @return array[mixed] The projects that require a security update
+   */
+  public function retrieve_security_updates($site_id = NULL) {
+    // Retrieve the site_update_data
+    $update_data = array();
+    if (is_null($site_id) && isset($this->update_data)) {
+      $update_data = $this->update_data;
+    } elseif (isset($site_id)) {
+      $update_data = $this->retrieve_update_data($site_id);
+    } else {
+      return FALSE;
+    }
+    // Initialise classes that will be used
+    $helper = new SecuritySamuraiControllerHelper;
+    $projects = new SecuritySamuraiControllerProject();
+    // Initialise an array for the projects which will require a
+    // security update
+    $security_updates = array();
+    // Loop through each project in the update data array
+    foreach ($update_data as $machine_name => $data) {
+      // The Drupal version entry is structured a little differently
+      // compared to normal modules and themes
+      if ($data['auto_updates'] == 1) {
+        if ($machine_name == 'drupal') {
+          // Check for the latest_secure_minor_version of Drupal
+          $helper->split_version_number($data['version']);
+          $core_version = $helper->version_major . '.x';
+          $secure_minor = $projects->retrieve_latest_secure_minor($data['machine_name'],
+            $core_version, $helper->version_major);
+          if ($helper->version_minor < $secure_minor) {
+            // If project is not secure, add it to the secure
+            // update array
+            $security_updates[$data['machine_name']] = array(
+              'new_version' => $helper->version_major . '.' . $secure_minor,
+            );
+          }
+        } else {
+          // Retrieve the latest secure minor for the current project
+          $helper->split_version_number($data['version']);
+          $secure_minor = $projects->retrieve_latest_secure_minor($data['machine_name'],
+            $data['core'], $helper->version_major);
+          if ($helper->version_minor < $secure_minor) {
+            // If the project isn't the latest secure version
+            // add the project to the secure update array with the latest
+            // secure version to update to
+            $security_updates[$project['machine_name']] = array(
+              'new_version' => $helper->version_major . '.' . $secure_minor,
+            );
           }
         }
       }
-      if (!empty($return)) {
-        // Return the result.
-        return $return;
-      } else {
-        return NULL;
-      }
+    }
+    // Return the array of projects
+    return $security_updates;
+  }
+}
+
+/**
+ * Functions for manipulating and retrieving
+ * security_announcement entity data
+ */
+class SecuritySamuraiControllerSA {
+
+  // Security announcement variables
+  public $id;
+  public $sa_id;
+  public $risk_level;
+  public $date;
+  public $version;
+  public $vulnerability;
+  public $solution;
+  public $project_name;
+  public $secure_version;
+
+  /**
+   * Class contructor
+   *
+   * @param int $id The ID of the client_site entity
+   */
+  public function __construct($id = NULL) {
+    // If ID parameter is set, check if the security_announcement
+    // entity exists
+    if (!is_null($id) && $this->exists($id)) {
+      // Load the entity and assign the variables
+      $sa_entity = security_announcement_load($id);
+      $this->id = $sa_entity->id;
+      $this->sa_id = $sa_entity->sa_id;
+      $this->risk_level = $sa_entity->risk_level;
+      $this->date = $sa_entity->date;
+      $this->version = drupal_json_decode($sa_entity->version);
+      $this->vulnerability = $sa_entity->vulnerability;
+      $this->solution = $sa_entity->solution;
+      $this->project_name = $sa_entity->project_name;
+      $this->secure_version = $sa_entity->secure_version;
+    }
+  }
+
+  /**
+   * Check if an entity of security_announcement exists
+   *
+   * @param int $id The ID of the security_announcement entity
+   *
+   * @return bool TRUE/FALSE
+   */
+  public function exists($id) {
+    // Query the database for a row with the correct ID
+    $result = db_query('SELECT id FROM securitysamurai_sa
+      WHERE id = :id', array(
+        ':id' => $id
+      ))->fetchField();
+    // If the result isn't empty, return TRUE
+    // else, return FALSE
+    if (!empty($result)) {
+      return TRUE;
     } else {
-      // No result. return NULL.
+      return FALSE;
+    }
+  }
+
+  /**
+   * Check if an entity of security_announcement exists by
+   * checking with the sa ID
+   *
+   * @param string $sa_id The security announcement ID issued by drupal.org
+   *
+   * @return bool TRUE/FALSE
+   */
+  public function exists_by_sa($sa_id) {
+    // Query the database for a row with the correct ID
+    $result = db_query('SELECT id FROM securitysamurai_sa
+      WHERE sa_id = :sa_id', array(
+        'sa_id' => $sa_id
+      ))->fetchField();
+    // If the result isn't empty, return TRUE
+    // else, return FALSE
+    if (!empty($result)) {
+      return TRUE;
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Returns an array of sites affected by a security announcement
+   *
+   * @param string $project_name The name of the project to check
+   * @param string $core The JSON encoded string of compatible core versions
+   * @param string $sa_id The security announcement ID
+   *  - This variable will default to the sa_id set in the variable $this->sa_id
+   *    if no value is set
+   *
+   * @return array[int] An array of site IDs affected by a security announcement
+   * @return FALSE Returned when there is no result from the query
+   */
+  public function client_sites_affected($project_name, $core, $sa_id = NULL) {
+    // Set a value for $sa_id, if it doesn't have one already
+    if (is_null($sa_id) && !is_null($this->sa_id)) {
+      $sa_id = $this->sa_id;
+    }
+    // Strip whitespace project_name
+    $project_name = trim($project_name);
+    // Perform a check to see if the security_announcement entity exists
+    // before continuing
+    if ($this->exists_by_sa($sa_id)) {
+      // Retrieve the machine name of the project
+      $project = new SecuritySamuraiControllerProject();
+      $project->retrieve_project_machine_name($project_name);
+      // Check the sites which contain the specified project
+      $client_site = new SecuritySamuraiControllerClientSite();
+      $sites = $client_site->retrieve_sites_with_project($project->machine_name);
+      // Compare the version on each site to the latest secure version
+      // in the database
+      $affected_sites_array = array();
+      foreach ($sites as $site => $value) {
+        $helper = new SecuritySamuraiControllerHelper;
+        $helper->split_version_number($value['version']);
+        $project->retrieve_latest_secure_minor($project->machine_name, $value['core'], $helper->version_major);
+        if ($project->latest_secure_minor_version > $helper->version_minor) {
+          $affected_sites_array[] = $value['site_id'];
+        }
+      }
+      return $affected_sites_array;
+    }
+  }
+
+  /**
+   * Returns a HTML list of links to sites affected by a security announcement
+   *
+   * @param string $project_name The name of the project to check
+   * @param string $core The JSON encoded strign of compatible core versions
+   * @param string $sa_id THe security announcement ID
+   *  - This variable will default to the sa_id set in the variable $this->sa_id
+   *    if no value is set
+   *
+   * @return string $return_html HTML of affected sites
+   * @return NULL Returned if a value for $return_html is not set
+   */
+  public function client_sites_affected_html($project_name, $core, $sa_id = NULL) {
+    // Set a value for $sa_id, if it doesn't have one already
+    if (is_null($sa_id) && !is_null($this->sa_id)) {
+      $sa_id = $this->sa_id;
+    }
+    // Call the client_sites_affected function
+    $affected_sites_array = $this->client_sites_affected($project_name, $core, $sa_id);
+    // Loop through each site, adding it to the HTML
+    $return_html = '';
+    foreach ($affected_sites_array as $site => $value) {
+      $client_site = new SecuritySamuraiControllerClientSite($value);
+      $return_html .= '<p class="content"><a href="/client-site/' . $value . '">' . $client_site->name . '</a></p>';
+    }
+    // Return the HTML
+    if (strlen($return_html) > 0) {
+      return $return_html;
+    } else {
       return NULL;
     }
   }
 }
 
-function samurai_get_affected_sites_array($sa_id, $project_name, $core) {
-  // Not yet implemented
-}
-
 /**
- * Retrieve the risk category e.g. Low, moderate... etc.
- *
- * returns moderate, critical or low
- *
- * @param string $risk_raw The raw views output of the risk field.
- *
- * @return string $return The risk level.
+ * Functions for manipulating and retrieving
+ * project entity data
  */
-function samurai_parse_risk($risk_raw) {
+class SecuritySamuraiControllerProject {
 
-  // - Get the starting position of the risk classification.
-  // - Get the finishing position of the risk classification.
-  // - Calculate the length of the risk classification.
-  // - Retrieve the risk classification.
-  // - Remove spaces from the result.
-  $risk_pos_start = strpos($risk_raw, '(') + 1;
-  $risk_pos_end = strpos($risk_raw, ')');
-  $risk_length = $risk_pos_end - $risk_pos_start;
-  $risk = substr($risk_raw, $risk_pos_start, $risk_length);
-  $return = strtolower(str_replace(' ', '', $risk));
+  // Project entity variables
+  public $id;
+  public $name;
+  public $machine_name;
+  public $major_version;
+  public $latest_minor_version;
+  public $latest_secure_minor_version;
+  public $core;
+  public $supported;
+  public $project_type;
+  public $update_next_check;
 
-  // Return the result.
-  return $return;
-}
-
-/**
- * Check if a site exists in the database.
- *
- * @param string $site_name The name of the site.
- *
- * @return bool TRUE/FALSE The site exists in the database?
- */
-function samurai_site_exists($site_name) {
-
-  // Query the database.
-  $result = db_query('SELECT id FROM {securitysamurai_site} WHERE
-    name = :name',
-    array(
-      ':name' => $site_name,
-    ))->fetchField();
-
-  if (!empty($result)) {
-
-    // The result isn't empty.
-    // Site exists. Return TRUE.
-    return TRUE;
-  } else {
-
-    // The result is empty.
-    // Site doesn't exist. Return FALSE.
-    return FALSE;
+  /**
+   * The class constructor
+   */
+  public function __construct($id = NULL) {
+    // If ID parameter is set, check if the security_announcement
+    // entity exists
+    if (!is_null($id) && $this->exists($id)) {
+      // Load the entity and assign the variables
+      $project = project_load($id);
+      $this->id = $project->id;
+      $this->name = $project->name;
+      $this->machine_name = $project->machine_name;
+      $this->major_version = $project->major_version;
+      $this->latest_minor_version = $project->latest_minor_version;
+      $this->latest_secure_minor_version = $project->latest_secure_minor_version;
+      $this->core = $project->core;
+      $this->supported = $project->supported;
+      $this->project_type = $project->project_type;
+      $this->update_next_check = $project->update_next_check;
+    }
   }
-}
 
-/**
- * Check if a SA exists in the database.
- *
- * @param string $sa_id
- *
- * @return bool TRUE/FALSE The SA exists in the database.
- */
-function samurai_sa_exists($sa_id) {
-
-  // SA must be less that 30chars
-  if (strlen($sa_id) <= 30) {
-
-    // Query the database.
-    $result = db_query('SELECT id FROM {securitysamurai_sa} WHERE
-      sa_id = :sa_id',
-      array(
-        ':sa_id' => $sa_id,
+  /**
+   * Check if an entity of project exists
+   *
+   * @param int $id The ID of the project entity
+   *
+   * @return bool TRUE/FALSE
+   */
+  public function exists($id) {
+    // Query the database for a row with the correct ID
+    $result = db_query('SELECT id FROM securitysamurai_projects
+      WHERE id = :id', array(
+        ':id' => $id
       ))->fetchField();
-  } else {
-
-    return TRUE;
+    // If the result isn't empty, return TRUE
+    // else, return FALSE
+    if (!empty($result)) {
+      return TRUE;
+    } else {
+      return FALSE;
+    }
   }
 
-  if (!empty($result)) {
+  /**
+   * Check if an entity of project exists by:
+   * - Machine name
+   * - Core version
+   * - Major version number
+   *
+   * @param string $machine_name The machine name of the project
+   * @param string $core_version The core version string of the project
+   * @param int $major_version The major version of the project
+   *
+   * @return bool TRUE/FALSE
+   */
+  public function exists_by_data($machine_name, $core_version, $major_version) {
+    // Query the database for the project
+    $result = db_query('SELECT id FROM {securitysamurai_projects} WHERE
+      machine_name = :machine_name AND
+      core = :core AND
+      major_version = :major_version',
+      array(
+        ':machine_name' => $machine_name,
+        ':core' => $core,
+        ':major_version' => $major_version
+      )
+    )->fetchField();
+    // If the result is not empty, the project exists - return TRUE
+    // else, return FALSE
+    if (!empty($result)) {
+      return TRUE;
+    } else {
+      return FALSE;
+    }
+  }
 
-    // The result isn't empty.
-    // SA exists. Return TRUE.
-    return TRUE;
-  } else {
+  /**
+   * Create a new projects entity
+   * Adds an project entry to the securitysamurai_projects table
+   *
+   * @param string $name The human-readable name of the project
+   * @param string $machine_name The machine-readable name of the project
+   * @param string $type The project type
+   * @param int $major_version The major version of the project
+   * @param int $latest_minor_version The minor version of the project
+   * @param int $latest_secure_minor_version The latest secure minor version
+   * of the project
+   * @param int $supported Is the project supported? 1 OR 0
+   */
+  public function add($name, $machine_name, $type, $core, $major_version,
+    $latest_minor_version, $latest_secure_minor_version, $supported = NULL) {
+    // Check if the project exists
+    if ($this->exists_by_data($machine_name, $core, $major_version)) {
+      // The project has not yet been added
+      // Create a new project entity for this project
+      $project = entity_create('project', array(
+        'name' => $name,
+        'machine_name' => $machine_name,
+        'project_type' => $type,
+        'major_version' => (int)$major_version,
+        'latest_minor_version' => (int)$latest_minor_version,
+        'latest_secure_minor_version' => (int)$latest_secure_minor_version,
+        'core' => $core,
+        'supported' => $supported,
+        'update_next_check' => strtotime("+24 hours")
+      ));
+      // - Save the entity.
+      // - Log a message to watchdog.
+      $project_wrapper = entity_metadata_wrapper('project', $project);
+      $project_wrapper->save();
+      watchdog('Security samurai', $name . t(' has been added to the project list'));
+    }
+  }
 
-    // The result is empty.
-    // SA doesn't exist. Return FALSE.
-    return FALSE;
+  /**
+   * Retrieve a project machine name
+   *
+   * @param string $project_name Human-readable project name
+   *
+   * @return string $machine_name The machine name for the project
+   */
+  public function retrieve_project_machine_name($project_name) {
+    // Query the database for a machine name of the project
+    $machine_name = db_query('SELECT machine_name FROM {securitysamurai_projects}
+      WHERE name = :name', array(
+        ':name' => $project_name
+      ))->fetchField();
+    // If the result isn't empty, return it
+    // else, return FALSE
+    if (!empty($machine_name)) {
+      $this->machine_name = $machine_name;
+      return $machine_name;
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Retrieve the latest secure minor for a specific project
+   *
+   * @param string $machine_name The machine name of the project
+   * @param string $core The compatible core version of the project
+   * @param int $major_version The major version number of the project
+   *
+   * @return int $secure_minor The latest secure minor version
+   * @return bool FALSE Returned if a value for $secure_minor isn't set
+   */
+  function retrieve_latest_secure_minor($machine_name, $core, $major_version) {
+    // Query the database for the latest secure version of the
+    // project
+    $latest_secure_minor = db_query('SELECT latest_secure_minor_version FROM {securitysamurai_projects}
+      WHERE machine_name = :mn AND
+      core = :c AND
+      major_version = :mv', array(
+        ':mn' => $machine_name,
+        ':c' => $core,
+        ':mv' => $major_version
+      ))->fetchField();
+    // If the result not empty, return it
+    // else, return FALSE
+    if (!empty($latest_secure_version)) {
+      $this->latest_secure_minor_version = $latest_secure_minor;
+      return $latest_secure_minor;
+    } else {
+      return FALSE;
+    }
   }
 }
 
 /**
- * Checks whether a project is already in the database.
- *
- * @param string $machine_name The machine name of the project.
- * @param string $core The compatible core version e.g. 7.x, 6.x, 8.x
- * @param string $major_version The major version number e.g. 1.X
- *
- * @return bool TRUE/FALSE Depends on the project existing in the database
+ * Functions that have no direct link to any other entities
+ * however, are useful none the less
  */
-function samurai_project_exists($machine_name, $core, $major_version) {
+class SecuritySamuraiControllerHelper {
 
-  // Query the database for the project.
-  $result = db_query('SELECT name FROM {securitysamurai_projects} WHERE
-    machine_name = :machine_name AND
-    core = :core AND
-    major_version = :major_version',
-    array(
-      ':machine_name' => $machine_name,
-      ':core' => $core,
-      ':major_version' => $major_version
-    )
-  )->fetchField();
+  // Helper class variables
+  public $version_major;
+  public $version_minor;
 
-  if (!empty($result)) {
+  /**
+   * Retrieve the version major and version minor
+   * from a version string
+   *
+   * @param string $version The version number
+   *
+   * @return int $version_major The major version number
+   */
+  public function split_version_number($version) {
+    // Remove the '7.x-' from version numbers
+    if (strpos($version, '7.x-') !== FALSE) {
+      $version = substr($version, 4);
+    }
+    // Remove the version extension e.g. -beta1
+    if (strpos($version, '-') !== FALSE) {
+      $pos = strpos($version, '-');
+      $version = substr($version, 0, $pos);
+    }
+    // Remove the version extension e.g. +rc1
+    if (strpos($version, '+') !== FALSE) {
+      $pos = strpos($version, '+');
+      $version = substr($version, 0, $pos);
+    }
+    // Get the position of the splitter.
+    $splitter = strpos($version, '.');
+    $minor = substr($version, $splitter + 1);
+    $major = substr($version, 0, $splitter);
+    // Remove the spaces from the split version number
+    $minor = str_replace(' ', '', $minor);
+    $major = str_replace(' ', '', $major);
+    // Set the results to the public variables
+    $this->version_minor = $minor;
+    $this->version_major = $major;
+  }
 
-    // The project is in the database.
-    return TRUE;
-  } else {
+  /**
+   * Retrieve the risk category e.g. Low, moderately critical etc.
+   *
+   * @param string $risk The risk string
+   *
+   * @return string $return The risk level
+   */
+  public function parse_risk($risk) {
+    // - Get the starting position of the risk classification.
+    // - Get the finishing position of the risk classification.
+    // - Calculate the length of the risk classification.
+    // - Retrieve the risk classification.
+    // - Remove spaces from the result.
+    $risk_pos_start = strpos($risk, '(') + 1;
+    $risk_pos_end = strpos($risk, ')');
+    $risk_length = $risk_pos_end - $risk_pos_start;
+    $risk = substr($risk, $risk_pos_start, $risk_length);
+    $return = strtolower(str_replace(' ', '', $risk));
 
-    // The project is not in the database.
-    return FALSE;
+    // Return the result.
+    return $return;
   }
 }
 
@@ -269,57 +762,6 @@ function samurai_get_project_entity_id($machine_name, $core, $major_version) {
   } else {
 
     return NULL;
-  }
-}
-
-/**
- * Adds a project to the securitysamurai_projects table.
- *
- * @param string $name The human readable name of the project.
- * @param string $machine_name The machine name of the project.
- * @param string $type The project type.
- *        e.g.
- *          Theme Contrib,
- *          Theme Custom,
- *          Core,
- *          Module Contrib,
- *          Module Custom
- * @param string $major_version The major version of the project e.g. x.1
- * @param string $latest_minor_versino The minor version of the project 1.x
- * @param string $latest_secure_minor_version The latest secure minor version of the project e.g. 1.x
- * @param int $supported 1 OR 0, 1 for supported, 0 for unsupported.
- */
-function samurai_add_project(
-  $name,
-  $machine_name,
-  $type,
-  $core,
-  $major_version,
-  $latest_minor_version,
-  $latest_secure_minor_version,
-  $supported = NULL) {
-
-  if (!samurai_project_exists($machine_name, $core, $major_version)) {
-
-    // The project has not yet been created.
-    // Create the new project entity.
-    $project = entity_create('project', array(
-      'name' => $name,
-      'machine_name' => $machine_name,
-      'project_type' => $type,
-      'major_version' => $major_version,
-      'latest_minor_version' => (int)$latest_minor_version,
-      'latest_secure_minor_version' => (int)$latest_secure_minor_version,
-      'core' => $core,
-      'supported' => $supported,
-      'update_next_check' => strtotime("+24 hours")
-    ));
-
-    // - Save the entity.
-    // - Log a message to watchdog.
-    $project_wrapper = entity_metadata_wrapper('project', $project);
-    $project_wrapper->save();
-    watchdog('Security samurai', $name . t(' has been added to the project list'));
   }
 }
 
@@ -456,44 +898,6 @@ function samurai_split_version_number_core($version_number) {
 
   // Return the core version number
   return substr($version_number, 0, $core_version_end);
-}
-
-/**
- * Retrieve the latest secure version as stored in the database.
- *
- * @param string $machine_name The machine name of the project.
- * @param string $core The compatible core version e.g. 7.x, 6.x
- * @param string $major_version The major version of the project.
- */
-function samurai_project_secure_minor($machine_name, $core, $major_version) {
-
-  if (samurai_project_exists($machine_name, $core, $major_version)) {
-
-    $result = db_query('SELECT latest_secure_minor_version FROM {securitysamurai_projects} WHERE
-      machine_name = :machine_name AND
-      core = :core AND
-      major_version = :major_version',
-      array(
-        ':machine_name' => $machine_name,
-        ':core' => $core,
-        ':major_version' => $major_version
-      ))->fetchField();
-
-    // Check if the result is empty.
-    if (!empty($result)) {
-
-      // The result is not empty.
-      // Set the result to $return.
-      $return = $result;
-
-      // return the result.
-      return $return;
-    } else {
-
-      // The result is empty
-      return NULL;
-    }
-  }
 }
 
 /**
@@ -638,35 +1042,6 @@ function samurai_render_update_data($update_data) {
   } else {
     return NULL;
   }
-}
-
-/**
- * Returns a count of available security updates for a site
- *
- * @param array[mixed] $site_update_data The update data
- */
-function samurai_count_available_security_updates($update_data) {
-
-  $update_counter = 0;
-
-  $drupal_major = samurai_split_version_number($update_data['drupal']['version']);
-  $drupal_major = $drupal_major['major'] . '.x';
-
-  foreach ($update_data as $machine_name => $data) {
-
-    $version = samurai_split_version_number($data['version']);
-    $secure_minor = samurai_project_secure_minor($data['machine_name'], $drupal_major, $version['major']);
-
-    if ($version['minor'] < $secure_minor) {
-
-      $update_counter++;
-    } else {
-
-      continue;
-    }
-  }
-
-  return $update_counter;
 }
 
 /**
@@ -827,57 +1202,6 @@ function samurai_get_site_update_data_entity($site_id) {
     return $result;
   } else {
     return NULL;
-  }
-}
-
-/**
- * Returns security updates for modules that are not marked
- * to be ignored by Samurai
- *
- * @param int $site_id The entity ID of the client_site
- */
-function samurai_retrieve_security_updates_array($site_id) {
-
-  // Retrieve the site_update_data
-  $site_update_data = samurai_get_site_update_data_entity($site_id);
-  if (!is_null($site_update_data)) {
-    // Decode the JSON site_update_data
-    $site_update_data_array = drupal_json_decode($site_update_data);
-    // Initalise an array for the projects which will require a
-    // security update
-    $security_updates = array();
-    // Loop through each project entry in the site_update_data array
-    // looking for projects which require a security update
-    foreach ($site_update_data_array as $key => $project) {
-      // The drupal version entry is structured a little differently
-      if ($key == 'drupal') {
-        // Check for the latest_version secure version of Drupal
-        $split_version = samurai_split_version_number($project['version']);
-        $core_version = $split_version['major'] . '.x';
-        $secure_minor = samurai_project_secure_minor($project['machine_name'], $core_version, $split_version['major']);
-        if ($split_version['minor'] < $secure_minor) {
-          // If the project isn't the latest secure version
-          // add the project to the secure update array with the latest
-          // secure version to update to
-          $security_updates[$project['machine_name']] = array(
-            'new_version' => $split_version['major'] . '.' . $secure_minor,
-          );
-        }
-      } else {
-        // Retrieve the latest secure minor for the current project
-        $split_version = samurai_split_version_number($project['version']);
-        $secure_minor = samurai_project_secure_minor($project['machine_name'], $project['core'], $split_version['major']);
-        if ($split_version['minor'] < $secure_minor) {
-          // If the project isn't the latest secure version
-          // add the project to the secure update array with the latest
-          // secure version to update to
-          $security_updates[$project['machine_name']] = array(
-            'new_version' => $split_version['major'] . '.' . $secure_minor,
-          );
-        }
-      }
-    }
-    return $security_updates;
   }
 }
 

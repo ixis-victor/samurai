@@ -67,7 +67,7 @@
         </div>
       </div>
       <?php $security_actions_form = drupal_get_form('security_samurai_controller_security_actions_form'); ?>
-      <?php if (smaurai_get_site_update_count(arg(1)) > 0): ?>
+      <?php if ($element->update_count > 0): ?>
       <div class="card popup">
         <div class="card-content">
           <?php print render($security_actions_form); ?>

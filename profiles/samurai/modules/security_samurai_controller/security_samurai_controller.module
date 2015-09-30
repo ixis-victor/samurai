@@ -364,6 +364,8 @@ function security_samurai_controller_site_actions_form($form, &$form_state) {
  */
 function security_samurai_controller_site_actions_form_submit($form, $form_state) {
 
+  // Initialise classes
+  $client_site = new SecuritySamuraiControllerClientSite();
   // Check the op of the selected button
   switch ($form_state['triggering_element']['#op']) {
     case 'scan_site':
@@ -391,7 +393,7 @@ function security_samurai_controller_site_actions_form_submit($form, $form_state
         }
         // Assign values to the loaded entity
         $site->site_update_data = drupal_json_encode($site_update_data);
-        $site->update_count = samurai_count_available_security_updates(drupal_json_decode($site->site_update_data));
+        $site->update_count = $client_site->count_available_security_updates(drupal_json_decode($site->site_update_data));
         $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
         $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
       } elseif ($site->update_check_method == 2) {
@@ -403,7 +405,7 @@ function security_samurai_controller_site_actions_form_submit($form, $form_state
         $formatted_update_data = samurai_process_drush_update_data($unformatted_update_data['output']);
         // Assign values to the loaded entity
         $site->site_update_data = drupal_json_encode($formatted_update_data);
-        $site->update_count = samurai_count_available_security_updates(drupal_json_decode($site->site_update_data));
+        $site->update_count = $client_site->count_available_security_updates(drupal_json_decode($site->site_update_data));
         $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
         $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
       }

@@ -35,7 +35,8 @@
       <div class="card popup">
         <div class="card-content">
           <span class="card-title">Sites affected by this</span>
-          <?php $result = samurai_get_affected_sites($element->sa_id, $element->project_name, $element->version); ?>
+          <?php $sa = new SecuritySamuraiControllerSA($element->id); ?>
+          <?php $result = $sa->client_sites_affected_html($element->project_name, $element->version); ?>
           <?php if (!is_null($result)): ?>
             <?php print $result; ?>
           <?php else: ?>
