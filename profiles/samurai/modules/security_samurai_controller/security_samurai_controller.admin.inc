@@ -109,6 +109,8 @@ function client_site_form_validate($form, &$form_state) {
  * The client_site_form form submit handler
  */
 function client_site_form_submit($form, &$form_state) {
+  // Initialise classes
+  $client_site = new SecuritySamuraiControllerClientSite();
 
   switch ($form_state['step']) {
     case 'client_site_form_step_5':
@@ -128,7 +130,7 @@ function client_site_form_submit($form, &$form_state) {
   }
   // If the form is complete, redirect to the site_id
   if (isset($form_state['complete']))
-    drupal_goto('/client-site/' . samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']));
+    drupal_goto('/client-site/' . $client_site->retrieve_id($form_state['multistep_values']['client_site_form_step_1']['name']));
   // If back submit button is selected
   if ($form_state['triggering_element']['#value'] == 'Back') {
     $form_state['new_step'] = client_site_form_move_to_previous($form, $form_state);
@@ -261,9 +263,10 @@ function client_site_form_step_1($form, $form_state, $site = NULL) {
  */
 function client_site_form_step_1_validate($form, $form_state) {
 
+  // Initialise classes
+  $client_site = new SecuritySamuraiControllerClientSite();
   // Check if the site doesn't already exist
   if (arg(2) != 'manage') {
-    $client_site = new SecuritySamuraiControllerClientSite();
     if ($client_site->exists_by_name($form_state['values']['name'])) {
       return form_set_error('name', t('A site with this name already exists'));
     }
@@ -286,7 +289,7 @@ function client_site_form_step_1_validate($form, $form_state) {
     $site_url = substr($encryptionsiteurl, 32);
     $site_url = base64_decode($site_url);
     // Attempt connection to the site.
-    if (!samurai_check_site_access($site_url)) {
+    if (!$client_site->check_site_access($site_url)) {
       return form_set_error('encryption_key', t('Unable to connect to the site, check the encryption key is correct and
         Samurai is configured properly to access the site'));
     }
@@ -865,6 +868,8 @@ function client_site_form_step_4_validate($form, $form_state) {
  * @see client_site_form_step_4
  */
 function client_site_form_submit_details_step_4($form, $form_state) {
+  // Initalise classes
+  $client_site = new SecuritySamuraiControllerClientSite();
 
   // Retrieve values from previous steps
   $gitapi_service = $form_state['multistep_values']['client_site_form_step_3']['gitapi_service'];
@@ -933,7 +938,7 @@ function client_site_form_submit_details_step_4($form, $form_state) {
   } else {
     // Create the gitinfo entity.
     $gitinfo = entity_create('gitinfo', array(
-      'site' => samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']),
+      'site' => $client_site->retrieve_id($form_state['multistep_values']['client_site_form_step_1']['name']),
       'name' => parse_repo_name($gitapi_clone_url),
       'service' => $gitapi_service,
       'clone_url' => $gitapi_clone_url,
@@ -954,10 +959,11 @@ function client_site_form_submit_details_step_4($form, $form_state) {
  * Submit handler @see client_site_form_submit_details_step_5
  */
 function client_site_form_step_5($form, $form_state) {
-
+  // Initialise classes
+  $client_site = new SecuritySamuraiControllerClientSite();
   // Retrieve information from the previous steps
   $chosen_workflow = $form_state['multistep_values']['client_site_form_step_3']['gitapi_workflow_model'];
-  $site_id = samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']);
+  $site_id = $client_site->retrieve_id($form_state['multistep_values']['client_site_form_step_1']['name']);
   // Load the variable with server info
   $projects = security_samurai_deploy_retrieve_projects();
   $selected_project = $projects[$form_state['multistep_values']['client_site_form_step_4']['deploy_project']];
@@ -1069,7 +1075,8 @@ function client_site_form_step_5($form, $form_state) {
  * @see client_site_form_submit_details_step_5
  */
 function client_site_form_submit_details_step_5($form, $form_state) {
-
+  // Initialise classes
+  $client_site = new SecuritySamuraiControllerClientSite();
   // Retrieve values from previous steps
   $projects = security_samurai_deploy_retrieve_projects();
   $selected_project = $projects[$form_state['multistep_values']['client_site_form_step_4']['deploy_project']];
@@ -1114,7 +1121,7 @@ function client_site_form_submit_details_step_5($form, $form_state) {
     // Create a new deployinfo entity
     $deployinfo = entity_create('deployinfo', array(
       'name' => 'deployinfo',
-      'client_site_id' => samurai_get_site_id($form_state['multistep_values']['client_site_form_step_1']['name']),
+      'client_site_id' => $client_site->retrieve_id($form_state['multistep_values']['client_site_form_step_1']['name']),
       'gitinfo_id' => gitinfo_getid($site_id),
       'deploy_service_provider' => $form_state['multistep_values']['client_site_form_step_3']['deploy_service'],
       'args' => $args

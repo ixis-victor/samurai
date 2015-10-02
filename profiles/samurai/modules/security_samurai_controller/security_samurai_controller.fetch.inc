@@ -110,7 +110,7 @@ function security_samurai_controller_cron() {
       $encoded_update_data = samurai_get_site_update_data($site->site_url);
       $encrypted_update_data = drupal_json_decode($encoded_update_data);
       $decrypted_update_data = drupal_json_decode(
-      trim(samurai_decrypt_update_data(
+      trim($client_site->decrypt_update_data(
         $encrypted_update_data['encrypted'],
         $site->encryption_key)));
       // Process each project entry, resetting the auto_updates value
@@ -125,7 +125,7 @@ function security_samurai_controller_cron() {
       $site->site_update_data = drupal_json_encode($site_update_data);
       $site->update_count = $client_site->count_available_security_updates(drupal_json_decode($site->site_update_data));
       $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
-      $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
+      $site->core_version = $client_site->retrieve_core_major($site->id, $site->site_update_data);
     } elseif ($site->update_check_method == 2) {
 
       // Initialise a new SamuraiDocker object
@@ -140,7 +140,7 @@ function security_samurai_controller_cron() {
       $site->site_update_data = drupal_json_encode($formatted_update_data);
       $site->update_count = $client_site->count_available_security_updates(drupal_json_decode($site->site_update_data));
       $site->update_next_check = strtotime(variable_get('security_samurai_controller_site_check_interval', '12 hours'));
-      $site->core_version = samurai_get_site_core_major($site->name, $site->site_update_data);
+      $site->core_version = $client_site->retrieve_core_major($site->id, $site->site_update_data);
     }
 
     // Save the entity
@@ -190,6 +190,7 @@ function samurai_process_sa($xml, $type) {
   // Initialise a new security samurai sa class
   $sa_class = new SecuritySamuraiControllerSA();
   $projects_class = new SecuritySamuraiControllerProject();
+  $helper = new SecuritySamuraiControllerHelper;
   // Loop through each item in the security announcement XML
   foreach ($xml->channel->item as $item) {
     // RSS sometimes isn't recognised properly in SimpleXML
@@ -199,7 +200,7 @@ function samurai_process_sa($xml, $type) {
     // The description contains everything needed and will need to be split up.
     $description = (string)$item->description;
     // Parse the security announcement ID.
-    $sa = samurai_split_sa_data($description, 'Advisory ID:', 'Project:');
+    $sa = $helper->retrieve_string_between($description, 'Advisory ID:', 'Project:');
     // Check the security announcement doesn't already exist.
     if (!$sa_class->exists_by_sa($sa)) {
       // Security announcement doesn't exist.
@@ -211,19 +212,19 @@ function samurai_process_sa($xml, $type) {
       // -- Vulnerability description
       // -- The solution to the vulnerabilty
       if ($type == 'contrib') {
-        $project_name = samurai_split_sa_data($description, 'Project:', '(third-party module)');
+        $project_name = $helper->retrieve_string_between($description, 'Project:', '(third-party module)');
       } else {
         $project_name = 'Drupal core';
       }
-      $version_aff_raw = samurai_split_sa_data($description, 'Version:', 'Date:');
+      $version_aff_raw = $helper->retrieve_string_between($description, 'Version:', 'Date:');
       $version_aff_json = drupal_json_encode(explode(',', $version_aff_raw));
       $version_aff = str_replace(' ', '', $version_aff_json);
-      $risk_level = samurai_split_sa_data($description, 'Security risk:', 'Vulnerability:');
-      $time = strtotime(samurai_split_sa_data($description, 'Date:', 'Security risk:'));
-      $vulnerability = samurai_split_sa_data($description, 'Vulnerability:', 'CVE identifier(s)');
-      $solution  = samurai_split_sa_data($description, 'Solution', 'Reported by');
+      $risk_level = $helper->retrieve_string_between($description, 'Security risk:', 'Vulnerability:');
+      $time = strtotime($helper->retrieve_string_between($description, 'Date:', 'Security risk:'));
+      $vulnerability = $helper->retrieve_string_between($description, 'Vulnerability:', 'CVE identifier(s)');
+      $solution  = $helper->retrieve_string_between($description, 'Solution', 'Reported by');
       // Retrieve the machine_name for the project
-      $machine_name = samurai_project_machine_name($project_name);
+      $machine_name = $projects_class->retrieve_machine_name($project_name);
       // Check for a security update concerning the project_name from the SA
       // If $machine_name is empty - then the project doesn't exist
       $core = drupal_json_decode($version_aff);
@@ -243,7 +244,7 @@ function samurai_process_sa($xml, $type) {
         } else {
           // Check update for each core version
           foreach ($core as $c => $core_major) {
-            $am = samurai_get_available_major_versions($machine_name, $core_major);
+            $am = $projects_class->retrieve_major_versions($machine_name, $core_major);
             if (is_array($am)) {
               foreach ($am as $available_major) {
                 // Retrieve the update.
@@ -293,18 +294,17 @@ function samurai_process_sa($xml, $type) {
  */
 function samurai_get_project_update($machine_name, $major_version, $core, $xml = NULL) {
 
+  // Initialise classes
+  $projects_class = new SecuritySamuraiControllerProject();
   if (is_null($xml)) {
     // Retrieve the update data.
     $xml = samurai_xml_curl_request(SAMURAI_ORG_UPDATE_URL . $machine_name . "/" . $core);
   }
-
   // Get the latest version and secure version.
   $latest_secure_version = samurai_get_project_latest_secure_version($machine_name, $core, $major_version, $xml);
   $latest_version = samurai_get_project_latest_version($machine_name, $core, $major_version, $xml);
-
   // Get the entity ID of the project.
-  $result = samurai_get_project_entity_id($machine_name, $core, $major_version);
-
+  $result = $projects_class->retrieve_id($machine_name, $core, $major_version);
   if (!is_null($result)) {
     // -- Load the entity
     // -- Update the entity fields:
@@ -315,7 +315,6 @@ function samurai_get_project_update($machine_name, $major_version, $core, $xml =
     $project_entity->latest_minor_version = (int)$latest_version;
     $project_entity->update_next_check = strtotime('+24 hours');
     $project_entity = entity_metadata_wrapper('project', $project_entity);
-
     // Save the entity.
     $project_entity->save();
   }
@@ -343,8 +342,9 @@ function samurai_get_site_update_data($site_url) {
  */
 function samurai_process_update_data($decrypted_update_data) {
 
-  // Initialise a new projects class
+  // Initialise classes
   $project_class = new SecuritySamuraiControllerProject();
+  $helper = new SecuritySamuraiControllerHelper;
   // This array will be used to produce a tidy version of site_update_data.
   $projects_array = array();
   // Split the data into the three categories
@@ -362,12 +362,12 @@ function samurai_process_update_data($decrypted_update_data) {
     // -- Define the project type as core.
     $c_name = 'Drupal core';
     $c_machine_name = 'drupal';
-    $c_split_version = samurai_split_version_number($core['version']);
-    $c_core = $c_split_version['major'] . '.x';
+    $helper->split_version_number($core['version']);
+    $c_core = $helper->version_major . '.x';
     $c_type = 'core';
     // Don't retrieve project information if the project is already in the
     // database.
-    if (!$projects_class->exists_by_data($c_machine_name, $c_core, $c_split_version['major'])) {
+    if (!$projects_class->exists_by_data($c_machine_name, $c_core, $helper->version_major)) {
       // Request the update history XML.
       $c_xml = samurai_xml_curl_request(
         SAMURAI_ORG_UPDATE_URL . $c_machine_name . '/' . $c_core);
@@ -377,21 +377,21 @@ function samurai_process_update_data($decrypted_update_data) {
       $c_latest_minor_secure = samurai_get_project_latest_secure_version(
         $c_machine_name,
         $c_core,
-        $c_split_version['major'],
+        $helper->version_major,
         $c_xml);
       $c_latest_minor = samurai_get_project_latest_version(
         $c_machine_name,
         $c_core,
-        $c_split_version['major'],
+        $helper->version_major,
         $c_xml);
       $c_supported = samurai_get_project_is_supported(
         $c_machine_name,
         $c_core,
-        $c_split_version['major'],
+        $helper->version_major,
         $c_xml);
       // Add the project to the database.
       $project_class->add($c_name, $c_machine_name, $c_type,
-        $c_core, $c_split_version['major'], $c_latest_minor,
+        $c_core, $helper->version_major, $c_latest_minor,
         $c_latest_minor_secure, $c_supported);
     }
     // Add the core project to the projects array.
@@ -412,11 +412,11 @@ function samurai_process_update_data($decrypted_update_data) {
       $m_name = $m['name'];
       $m_machine_name = $m['machine_name'];
       $m_core = $m['core'];
-      $m_split_version = samurai_split_version_number($m['version']);
+      $helper->split_version_number($m['version']);
       $m['auto_updates'] = 0;
       // Don't retrieve project information if the project is already in the
       // database.
-      if (!$projects_class->exists_by_data($m_machine_name, $m_core, $m_split_version['major'])) {
+      if (!$projects_class->exists_by_data($m_machine_name, $m_core, $helper->version_major)) {
         // Request the update history XML.
         $m_xml = samurai_xml_curl_request(
           SAMURAI_ORG_UPDATE_URL . $m_machine_name . '/' . $m_core);
@@ -425,16 +425,16 @@ function samurai_process_update_data($decrypted_update_data) {
         $m_status = samurai_get_project_is_supported(
           $m_machine_name,
           $m_core,
-          $m_split_version['major'],
+          $helper->version_major,
           $m_xml);
         $m_type = 'module' . samurai_get_project_type(
           $m_machine_name,
           $m_core,
-          $m_split_version['major'],
+          $helper->version_major,
           $m_xml);
         // Assign NULL values to version checks.
-        $m_latest_minor = $m_split_version['minor'];
-        $m_latest_minor_secure = $m_split_version['minor'];
+        $m_latest_minor = $helper->version_minor;
+        $m_latest_minor_secure = $helper->version_minor;
         // First check that the project isn't custom.
         if ($m_type != 'module_custom') {
           // -- Retrieve the latest secure minor version of the module.
@@ -442,24 +442,23 @@ function samurai_process_update_data($decrypted_update_data) {
           $m_latest_minor_secure = samurai_get_project_latest_secure_version(
             $m_machine_name,
             $m_core,
-            $m_split_version['major'],
+            $helper->version_major,
             $m_xml);
           $m_latest_minor = samurai_get_project_latest_version(
             $m_machine_name,
             $m_core,
-            $m_split_version['major'],
+            $helper->version_major,
             $m_xml);
         }
         // Add the project to the database.
         $projects_class->add($m_name, $m_machine_name, $m_type,
-          $m_core, $m_split_version['major'], $m_latest_minor,
+          $m_core, $helper->version_major, $m_latest_minor,
           $m_latest_minor_secure, $m_status);
       }
       // Add the module on to the projects_array.
       $projects_array[$m['machine_name']] = $m;
     }
   }
-
   // Process theme projects.
   if (!empty($themes)) {
     foreach ($themes as $theme => $t) {
@@ -470,11 +469,11 @@ function samurai_process_update_data($decrypted_update_data) {
       $t_name = $t['name'];
       $t_machine_name = $t['machine_name'];
       $t_core = $t['core'];
-      $t_split_version = samurai_split_version_number($t['version']);
+      $helper->split_version_number($t['version']);
       $t['auto_updates'] = 0;
       // Don't retrieve project information if the project is already in the
       // database.
-      if (!$projects_class->exists_by_data($t_machine_name, $t_core, $t_split_version['major'])) {
+      if (!$projects_class->exists_by_data($t_machine_name, $t_core, $helper->version_major)) {
         // Request the update history XML.
         $t_xml = samurai_xml_curl_request(
           SAMURAI_ORG_UPDATE_URL . $t_machine_name  . '/' . $t_core);
@@ -483,15 +482,15 @@ function samurai_process_update_data($decrypted_update_data) {
         $t_type = 'theme' . samurai_get_project_type(
           $t_machine_name,
           $t_core,
-          $t_split_version['major'],
+          $helper->version_major,
           $t_xml);
         $t_status = samurai_get_project_is_supported(
           $t_machine_name,
           $t_core,
-          $t_split_version['major'],
+          $helper->version_major,
           $t_xml);
         // Assign NULL values to version checks.
-        $t_latest_minor = $t_split_version['minor'];
+        $t_latest_minor = $helper->version_minor;
         $t_latest_minor_secure = NULL;
         // Check that the project isn't custom.
         if ($t_type != 'theme_custom') {
@@ -500,25 +499,23 @@ function samurai_process_update_data($decrypted_update_data) {
           $t_latest_minor_secure = samurai_get_project_latest_secure_version(
             $t_machine_name,
             $t_core,
-            $t_split_version['major'],
+            $helper->version_major,
             $t_xml);
           $t_latest_minor = samurai_get_project_latest_version(
             $t_machine_name,
             $t_core,
-            $t_split_version['major'],
+            $helper->version_major,
             $t_xml);
         }
         // Add the project to the database.
         $projects_class->add($t_name, $t_machine_name, $t_type,
-          $t_core, $t_split_version['major'], $t_latest_minor,
+          $t_core, $helper->version_major, $t_latest_minor,
           $t_latest_minor_secure, $t_status);
       }
-
       // Add the theme on to the projects_array.
       $projects_array[$t['machine_name']] = $t;
     }
   }
-
   // Return the projects array for manipulation.
   return $projects_array;
 }
@@ -530,8 +527,9 @@ function samurai_process_update_data($decrypted_update_data) {
  */
 function samurai_process_drush_update_data($unformatted_update_data) {
 
-  // Initialise a new projects class
+  // Initialise classes
   $projects_class = new SecuritySamuraiControllerProject();
+  $helper = new SecuritySamuraiControllerHelper;
   // The first entry is the header for the pm-list table
   // - Retrieve it and remove it from the array
   $first_entry = $unformatted_update_data[0];
@@ -630,10 +628,10 @@ function samurai_process_drush_update_data($unformatted_update_data) {
     $package = str_replace(' ', '', $package);
     // Get the version numbers
     $version = substr($data, $version_start);
-    $version_splitted = samurai_split_version_number($version);
-    $core_version = samurai_split_version_number_core($version);
+    $helper->split_version_number($version);
+    $core_version = $helper->split_core_version_number($version);
     if ($package == 'Core') {
-      $core_version = $version_splitted['major'] . '.x';
+      $core_version = $helper->version_major . '.x';
     }
     // Get the project status
     $status = substr($data, $status_start, $status_length);
@@ -657,13 +655,13 @@ function samurai_process_drush_update_data($unformatted_update_data) {
         $update_data[$machine_name]['version'] = $version;
         $update_data[$machine_name]['auto_updates'] = 0;
       }
-      if (!$projects_class->exists_by_data($machine_name, $core_version, $version_splitted['major'])) {
+      if (!$projects_class->exists_by_data($machine_name, $core_version, $helper->version_major)) {
         $xml = samurai_xml_curl_request(SAMURAI_ORG_UPDATE_URL . $machine_name . '/' . $core_version);
         $type = str_replace(' ', '', $type);
         $type = strtolower($type) . samurai_get_project_type(
           $machine_name,
           $core_version,
-          $version_splitted['major'],
+          $helper->version_major,
           $xml);
         if ($package == 'core') {
           $type == 'core';
@@ -674,30 +672,30 @@ function samurai_process_drush_update_data($unformatted_update_data) {
         $latest_minor_secure = samurai_get_project_latest_secure_version(
           $machine_name,
           $core_version,
-          $version_splitted['major'],
+          $helper->version_major,
           $xml);
         $latest_minor = samurai_get_project_latest_version(
           $machine_name,
           $core_version,
-          $version_splitted['major'],
+          $helper->version_major,
           $xml);
         $supported = samurai_get_project_is_supported(
           $machine_name,
           $core_version,
-          $version_splitted['major'],
+          $helper->version_major,
           $xml);
         if ($type != 'module_custom' && $type != 'theme_custom') {
           if ($type == 'core') {
             if ($machine_name == 'drupal') {
               // Add the project to the database
               $projects_class->add($human_readable_name, $machine_name, $type,
-                $core_version, $version_splitted['major'], $latest_minor,
+                $core_version, $helper->version_major, $latest_minor,
                 $latest_minor_secure, $supported);
             }
           } else {
             // Add the project to the database
             $projects_class->add($human_readable_name, $machine_name, $type,
-              $core_version, $version_splitted['major'], $latest_minor,
+              $core_version, $helper->version_major, $latest_minor,
               $latest_minor_secure, $supported);
           }
         } else {

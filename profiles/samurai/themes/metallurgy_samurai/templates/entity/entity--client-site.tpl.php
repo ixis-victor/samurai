@@ -13,8 +13,8 @@
               <?php endif; ?>
             </div>
           </div>
-          <!-- print a theme grid right here. -->
-          <?php $grid_data = samurai_render_update_data($element->site_update_data); ?>
+          <?php $client_site = new SecuritySamuraiControllerClientSite(); ?>
+          <?php $grid_data = $client_site->render_update_data($element->site_update_data); ?>
           <?php if (!is_null($grid_data)): ?>
             <table class="client-projects card popup">
               <thead>

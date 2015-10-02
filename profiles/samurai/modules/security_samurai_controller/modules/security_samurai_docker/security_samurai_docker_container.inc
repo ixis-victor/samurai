@@ -86,6 +86,8 @@ function docker_container_form_move_to_previous($form, $form_state) {
  * Form step 1 for docker_container_form
  */
 function docker_container_form_step_1($form, $form_state) {
+  // Initialise classes
+  $client_site = new SecuritySamuraiControllerClientSite();
 
   $form = array();
 
@@ -110,7 +112,7 @@ function docker_container_form_step_1($form, $form_state) {
     '#description' => t('Give a little bit more information about what this environment is going to be used for. (optional)')
   );
   // The site the container will use.
-  $sites_array = samurai_get_sites();
+  $sites_array = $client_site->retrieve_sites();
   $new_site_array = array();
   array_push($new_site_array, '- Select one -');
   if (!empty($sites_array)) {
@@ -149,6 +151,9 @@ function docker_container_form_step_1_validate($form, $form_state) {
  */
 function docker_container_form_step_2($form, $form_state) {
 
+  // Initialise classes
+  $client_site = new SecuritySamuraiControllerClientSite();
+
   $form = array();
 
   // Wrapper for the form elements.
@@ -159,9 +164,9 @@ function docker_container_form_step_2($form, $form_state) {
     '#collapsed' => FALSE,
   );
   // Select the branch.
-  $site_array = samurai_get_sites();
+  $site_array = $client_site->retrieve_sites();
   $site_key = $form_state['multistep_values']['docker_container_form_step_1']['docker_container_form_site'];
-  $branches = gitinfo_branches(samurai_get_site_id($site_array[$site_key - 1]));
+  $branches = gitinfo_branches($client_site->retrieve_id($site_array[$site_key - 1]));
   $new_branch_array = array();
   array_push($new_branch_array, '- Select one -');
   foreach ($branches as $key => $value) {
@@ -203,10 +208,13 @@ function docker_container_form_step_2_validate($form, $form_state) {
  */
 function docker_container_form_step_3($form, $form_state) {
 
+  // Initialise classes
+  $client_site = new SecuritySamuraiControllerClientSite();
+
   // This could be done in docker_container_form_step_2_submit
-  $sites_array = samurai_get_sites();
+  $sites_array = $client_site->retrieve_sites();
   $site_key = $form_state['multistep_values']['docker_container_form_step_1']['docker_container_form_site'] - 1;
-  $site_id = samurai_get_site_id($sites_array[$site_key]);
+  $site_id = $client_site->retrieve_id($sites_array[$site_key]);
   $branches_array = gitinfo_branches($site_id);
   $selected_branch = $branches_array[$form_state['multistep_values']['docker_container_form_step_2']['docker_container_form_branch'] - 1];
   $name = $form_state['multistep_values']['docker_container_form_step_1']['docker_container_form_name'];

@@ -99,6 +99,96 @@ class SecuritySamuraiControllerClientSite {
   }
 
   /**
+   * Returns a count of available security updates for a
+   * particular site
+   *
+   * @param array[mixed] $site_update_data The site update data
+   *
+   * @return bool FALSE If no value for $update_data is set
+   * @return int $update_counter The security update count
+   */
+  public function count_available_security_updates($update_data = NULL) {
+    // Set a value for $update_data if it doesn't have one already
+    if (is_null($update_data) && isset($this->update_data)) {
+      $update_data = $this->update_data;
+    } else {
+      return FALSE;
+    }
+    // Initialise variables
+    $projects = new SecuritySamuraiControllerProject();
+    $helper = new SecuritySamuraiControllerHelper;
+    $helper->split_version_number($update_data['drupal']['version']);
+    $drupal_major = $helper->version_major . '.x';
+    $update_counter = 0;
+    // Loop through each update data entry, checking if the project is at
+    // the latest secure version
+    foreach ($update_data as $machine_name => $data) {
+      // Split the version of the project
+      $helper->split_version_number($data['version']);
+      $secure_minor = $projects->retrieve_latest_secure_minor($data['machine_name'], $drupal_major, $version['major']);
+      // Check if the version minor is less than the secure_minor
+      if ($helper->version_minor < $secure_minor) {
+        $update_counter++;
+      } else {
+        continue;
+      }
+    }
+    // Return the update_counter
+    $this->update_count = $update_counter;
+    return $update_counter;
+  }
+
+  /**
+   * Decrypt the update data retrieved from a site
+   *
+   * @param string $encrypted_update_data The encrypted update data string
+   * @param string $encryption_key The encrpytion key
+   *
+   * @return string $decrypted The decrypted update data
+   */
+  public function decrypt_update_data($encrypted_update_data, $encryption_key) {
+    // Create the SHA key from the encryption key
+    $key = hash('SHA256', $encryption_key, TRUE);
+    // Decode the $encrypted_update_data - wrapped in base64
+    $ciphertext_decoded = base64_decode($encrypted_update_data);
+    // Get the IV from $ciphertext_decoded
+    $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+    $iv_decoded = substr($ciphertext_decoded, 0, $iv_size);
+    // Remove the IV from $ciphertext_decoded
+    $ciphertext_decoded = substr($ciphertext_decoded, $iv_size);
+    // Decrypt $ciphertext_decoded
+    $plaintext_decoded = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key,
+      $ciphertext_decoded, MCRYPT_MODE_CBC, $iv_decoded);
+    $decrypted = str_replace('\u0022', '"', $plaintext_decoded);
+    // Return the decrypted string
+    return $decrypted;
+  }
+
+  /**
+   * Check if Samurai has access to a site
+   *
+   * @param string $site_url The URL of the site to check access on
+   *
+   * @return bool TRUE/FALSE Returns TRUE if Samurai has access to the site
+   */
+  public function check_site_access($site_url) {
+    // Create a new cURL request
+    $content = samurai_curl_request($site_url . '/admin/reports/security_samurai');
+    // Check that the content is not empty
+    if (!empty($content)) {
+      $decoded = drupal_json_decode($content);
+      if (isset($decoded['encrypted'])) {
+        // Samurai has access to the site
+        return TRUE;
+      } else {
+        return FALSE;
+      }
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
    * Returns an array of all the sites in the
    *
    * @return array[int] $result_return An array of site ID values
@@ -151,71 +241,6 @@ class SecuritySamuraiControllerClientSite {
       }
     }
     return $sites_with_project;
-  }
-
-  /**
-   * Returns a count of available security updates for a
-   * particular site
-   *
-   * @param array[mixed] $site_update_data The site update data
-   *
-   * @return bool FALSE If no value for $update_data is set
-   * @return int $update_counter The security update count
-   */
-  public function count_available_security_updates($update_data = NULL) {
-    // Set a value for $update_data if it doesn't have one already
-    if (is_null($update_data) && isset($this->update_data)) {
-      $update_data = $this->update_data;
-    } else {
-      return FALSE;
-    }
-    // Initialise variables
-    $projects = new SecuritySamuraiControllerProject();
-    $helper = new SecuritySamuraiControllerHelper;
-    $helper->split_version_number($update_data['drupal']['version']);
-    $drupal_major = $helper->version_major . '.x';
-    $update_counter = 0;
-    // Loop through each update data entry, checking if the project is at
-    // the latest secure version
-    foreach ($update_data as $machine_name => $data) {
-      // Split the version of the project
-      $helper->split_version_number($data['version']);
-      $secure_minor = $projects->retrieve_latest_secure_minor($data['machine_name'], $drupal_major, $version['major']);
-      // Check if the version minor is less than the secure_minor
-      if ($helper->version_minor < $secure_minor) {
-        $update_counter++;
-      } else {
-        continue;
-      }
-    }
-    // Return the update_counter
-    $this->update_count = $update_counter;
-    return $update_counter;
-  }
-
-  /**
-   * Returns the site update data of a client_site
-   *
-   * @param string $site_id The ID of the client_site entity
-   *
-   * @return array[mixed] The site update data
-   * @return bool FALSE If no value for $update_data is set
-   */
-  public function retrieve_update_data($site_id) {
-    // Query the database
-    $update_data = db_query('SELECT site_update_data FROM {securitysamurai_site}
-      WHERE id = :id', array(
-        ':id' => $site_id,
-      ))->fetchField();
-    // If $update_data isn't empty, return $update_data
-    // else, return FALSE
-    if (!empty($update_data)) {
-      $update_data = drupal_json_decode($update_data);
-      $this->update_data = $update_data;
-      return $update_data;
-    } else {
-      return FALSE;
-    }
   }
 
   /**
@@ -280,6 +305,269 @@ class SecuritySamuraiControllerClientSite {
     }
     // Return the array of projects
     return $security_updates;
+  }
+
+  /**
+   * Returns the site update data of a client_site
+   *
+   * @param string $site_id The ID of the client_site entity
+   *
+   * @return array[mixed] The site update data
+   * @return bool FALSE If no value for $update_data is set
+   */
+  public function retrieve_update_data($site_id) {
+    // Query the database
+    $update_data = db_query('SELECT site_update_data FROM {securitysamurai_site}
+      WHERE id = :id', array(
+        ':id' => $site_id,
+      ))->fetchField();
+    // If $update_data isn't empty, return $update_data
+    // else, return FALSE
+    if (!empty($update_data)) {
+      $update_data = drupal_json_decode($update_data);
+      $this->update_data = $update_data;
+      return $update_data;
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Returns the value for auto_updates for a client_site entity
+   *
+   * @param int $site_id The ID of the client_site entity
+   *
+   * @return bool TRUE/FALSE
+   */
+  public function retrieve_auto_updates($site_id) {
+    // Query the database for the value of auto_updates
+    $result = db_query('SELECT auto_updates FROM {securitysamurai_site}
+      WHERE id = :site_id', array(
+        ':site_id' => $site_id
+      ))->fetchField();
+    // If the value of auto_updates is NULL, then it hasn't
+    // been disabled
+    if (is_null($result)) {
+      return TRUE;
+    } else {
+      if ($result == 0) {
+        return FALSE;
+      } else {
+        return TRUE;
+      }
+    }
+  }
+
+  /**
+   * Returns the core version of a particular site
+   *
+   * @param int $site_id The ID of the client_site entity
+   * @param string $site_update_data The json decoded site update data
+   *
+   * @return bool FALSE No value for $site_id
+   * @return string The compatible core version major
+   */
+  public function retrieve_core_major($site_id = NULL, $site_update_data = NULL) {
+    // Initialise classes
+    $helper = new SecuritySamuraiControllerHelper;
+    // Get a value for $site_id
+    if (!is_null($this->id) && is_null($site_id)) {
+      $site_id = $this->id;
+    } else {
+      // Return FALSE - $site_id is a required argument
+      return FALSE;
+    }
+    // Get the site_update_data if the param is left null
+    if (is_null($site_update_data)) {
+      if (is_null($this->update_data)) {
+        $site_update_data = $this->retrieve_update_data($site_id);
+      } else {
+        $site_update_data = $this->update_data;
+      }
+    }
+    $update_data = drupal_json_decode($site_update_data);
+    $helper->split_version_number($update_data['drupal']['version']);
+    // Return the major core version
+    return $helper->version_major . '.x';
+  }
+
+  /**
+   * Returns the site alias
+   *
+   * @param int $site_id The uniue ID of the client_site entity
+   *
+   * @return bool FALSE Returned when the following occur:
+   * - There is no value for the site_id
+   * - The value of $result doesn't have a value
+   * @return string $result The site alias name
+   */
+  public function retrieve_alias($site_id = NULL) {
+    // Get a value for $site_id
+    if (!is_null($this->id) && is_null($site_id)) {
+      $site_id = $this->id;
+    } else {
+      // Return FALSE - $site_id is a required argument
+      return FALSE;
+    }
+    // Query the database for the site_alias_name
+    $result = db_query('SELECT site_alias_name FROM {securitysamurai_site}
+      WHERE id = :id', array(
+        ':id' => $site_id
+      ))->fetchField();
+    // If the result is not empty, return it
+    // else, return FALSE
+    if (!empty($result)) {
+      $this->site_alias_name = $result;
+      return $result;
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Retrieve the ID of a site based on a site_name
+   *
+   * @param string $site_name The name of the site
+   *
+   * @return int $result The ID of the client_site entity
+   * @return bool FALSE The $result doesn't have a value
+   */
+  public function retrieve_id($site_name) {
+    // Query the database for an ID that corresponds to
+    // the name
+    $result = db_query('SELECT id FROM {securitysamurai_site}
+      WHERE name = :name', array(
+        ':name' => $site_name
+      ))->fetchField();
+    // If the result is not empty, return it
+    // else, return FALSE
+    if (!empty($result)) {
+      $this->id = $result;
+      return $result;
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Retrieve an array of sites
+   *
+   * @return array[mixed] $return The array of sites
+   * @return bool FALSE No value for $result
+   */
+  public function retrieve_sites() {
+    // Query the database for all sites
+    $result = db_query('SELECT name FROM {securitysamurai_site}')->fetchAll();
+    // If the result isn't empty, processs it into a returnable array
+    // Suitable for a select form element
+    if (!empty($result)) {
+      $return = array();
+      foreach ($result as $name) {
+        $return[] = $name->name;
+      }
+      // Return the sites
+      return $return;
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Render a site's update data in to an easily printable array
+   *
+   * @param string $update_data The JSON encoded update data string
+   *
+   * @return array[mixed] $return Array of rendered update data:
+   *  - Latest version
+   *  - Project name
+   *  - Installed version
+   */
+  public function render_update_data($update_data = NULL) {
+    // Initialise variables and classes
+    $helper = new SecuritySamuraiControllerHelper;
+    $project = new SecuritySamuraiControllerProject();
+    $return = array();
+    $array_key = 0;
+    // Decode the JSON update_data
+    $decoded_update_data = drupal_json_decode($update_data);
+    // Split the core version number to retrieve the major version
+    if (isset($decoded_update_data['drupal'])) {
+      $helper->split_version_number($decoded_update_data['drupal']['version']);
+      $core_version = $helper->version_major;
+    } else {
+      // The Drupal major version is a requirement
+      // Return FALSE without it
+      return FALSE;
+    }
+    // Loop through each project in the update data and retrieve more
+    // information about it
+    foreach ($decoded_update_data as $key => $value) {
+      // Get the major version of the current project
+      $helper->split_version_number($value['version']);
+      // Retrieve the project
+      if ($project->exists_by_data($key, $core_version . '.x', $helper->version_major)) {
+        $project->load();
+      }
+      $return[$array_key]['name'] = $project->name;
+      $return[$array_key]['type'] = str_replace('_', ' ', $project->project_type);
+      $return[$array_key]['latest_version'] = $project->major_version . '.' . $project->latest_minor_version;
+      $return[$array_key]['secure_version'] = $project->major_version . '.' . $project->latest_secure_minor_version;
+
+      // This process is slightly different for Drupal core
+      if ($value['name'] == 'Drupal core') {
+        $return[$array_key]['installed_version'] = $value['version'];
+      } else {
+        $return[$array_key]['installed_version'] = substr($value['version'], 4);
+      }
+
+      // Check if the project is supported
+      if (!$project->supported)
+        $return[$array_key]['status'] = 'unsupported';
+      // Check if the project version is a development version, mark it as
+      // unsecure
+      if ($helper->version_minor == 'x')
+        $return[$array_key]['status'] = 'unsecure';
+      // Check if the project minor is less than the latest minor version
+      if ($helper->version_minor < $project->latest_minor_version)
+        $return[$array_key]['status'] = 'secure';
+      // Check if the project minor is equal to the latest minor version
+      if ($helper->version_minor == $project->latest_minor_version)
+        $return[$array_key]['status'] = 'latest';
+      // Check if the project minor is less than the latest secure
+      // version
+      if ($helper->version_minor < $project->latest_secure_minor_version)
+        $return[$array_key]['status'] = 'unsecure';
+
+      // Increment the array_key by 1
+      $array_key++;
+    }
+    // Return the rendered data
+    return $return;
+  }
+
+  /**
+   * Check if auto updates are enabled for a particular client_site entity
+   * project
+   *
+   * @param int $site_id The ID of the client_site entity
+   * @param string $machine_name The machine name of the project
+   *
+   * @return bool TRUE/FALSE Project has auto updates
+   */
+  public function auto_updates_enabled_project($site_id, $machine_name) {
+    // Retrieve the site_update_data
+    $this->retrieve_update_data($site_id);
+    // Check if the array is set
+    if (isset($this->update_data[$machine_name]['auto_updates'])) {
+      // Return TRUE if auto_updates is 1, FALSE if 0
+      if ($this->update_data[$machine_name]['auto_updates'] == 1) {
+        return TRUE;
+      } else {
+        return FALSE;
+      }
+    } else {
+      return FALSE;
+    }
   }
 }
 
@@ -501,6 +789,7 @@ class SecuritySamuraiControllerProject {
     // If the result isn't empty, return TRUE
     // else, return FALSE
     if (!empty($result)) {
+      $this->id = $result;
       return TRUE;
     } else {
       return FALSE;
@@ -527,13 +816,14 @@ class SecuritySamuraiControllerProject {
       major_version = :major_version',
       array(
         ':machine_name' => $machine_name,
-        ':core' => $core,
+        ':core' => $core_version,
         ':major_version' => $major_version
       )
     )->fetchField();
     // If the result is not empty, the project exists - return TRUE
     // else, return FALSE
     if (!empty($result)) {
+      $this->id = $result;
       return TRUE;
     } else {
       return FALSE;
@@ -611,25 +901,137 @@ class SecuritySamuraiControllerProject {
    * @return int $secure_minor The latest secure minor version
    * @return bool FALSE Returned if a value for $secure_minor isn't set
    */
-  function retrieve_latest_secure_minor($machine_name, $core, $major_version) {
+  public function retrieve_latest_secure_minor($machine_name, $core, $major_version) {
     // Query the database for the latest secure version of the
     // project
     $latest_secure_minor = db_query('SELECT latest_secure_minor_version FROM {securitysamurai_projects}
-      WHERE machine_name = :mn AND
-      core = :c AND
-      major_version = :mv', array(
+      WHERE machine_name = :mn
+      AND core = :c
+      AND major_version = :mv', array(
         ':mn' => $machine_name,
         ':c' => $core,
         ':mv' => $major_version
       ))->fetchField();
     // If the result not empty, return it
     // else, return FALSE
-    if (!empty($latest_secure_version)) {
+    if (!empty($latest_secure_minor)) {
       $this->latest_secure_minor_version = $latest_secure_minor;
       return $latest_secure_minor;
     } else {
       return FALSE;
     }
+  }
+
+  /**
+   * Retrieve all major versions of a particular project
+   *
+   * @param string $machine_name The machine-readable name
+   * @param int $core The compatible core version string
+   *
+   * @return bool FALSE Returned if any result doesn't have a value
+   * @return array[int] $return An array of major versions
+   */
+  public function retrieve_major_versions($machine_name, $core) {
+    // Query the database for the major_versions
+    $major_versions = db_query('SELECT major_version FROM {securitysamurai_projects}
+      WHERE machine_name = :machine_name
+      AND core = :core', array(
+        ':machine_name' => $machine_name,
+        ':core' => $core
+      ))->fetchAll();
+    // IF the result is empty, return FALSE
+    if (!empty($major_versions)) {
+      $return = array();
+      foreach ($result as $res => $r) {
+        $return[sizeof($return)] = $r->major_version;
+      }
+      // Return the result.
+      return $return;
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Retrieve the ID of a project
+   *
+   * @param string $machine_name The machine-readable name of the project
+   * @param string $core The compatible core version string
+   * @param int $major_version The major version
+   *
+   * @return int $id The ID of the project
+   * @return bool FALSE Returned if no value for $id is set
+   */
+  public function retrieve_id($machine_name, $core, $major_version) {
+    // Query the database for the ID
+    $id = db_query('SELECT id FROM {securitysamurai_projects}
+      WHERE major_version = :mv
+      AND machine_name = :mn
+      AND core = :c', array(
+        ':mv' => $major_version,
+        ':mn' => $machine_name,
+        ':c' => $core
+      ))->fetchField();
+    // If the result isn't empty, return it
+    // else, return FALSE
+    if (!empty($id)) {
+      return $id;
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Retrieve the machine name for a project
+   *
+   * @param string $project_name The human readable name of the project
+   *
+   * @return string $machine_name The machine readable name of the project
+   * @return bool FALSE If result doesn't have a value
+   */
+  public function retrieve_machine_name($project_name) {
+    // Query the database for the machine name
+    $result = db_query('SELECT machine_name FROM {securitysamurai_projects}
+      WHERE name = :pn', array(
+        ':pn' => $project_name
+      ))->fetchField();
+    // If the result is not empty, return it
+    if (!empty($result)) {
+      // The result is not empty
+      $this->name = $result;
+      return $result;
+    } else {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Load an entity and assign values to class variables
+   *
+   * @param int $id The id of the project entity
+   *
+   * @return bool FALSE No ID is found
+   */
+  public function load($id = NULL) {
+    // Check if the ID is set on the class variables
+    if (is_null($id) && !is_null($this->id)) {
+      $id = $this->id;
+    } else {
+      // Return FALSE due to the ID being a required argument
+      return FALSE;
+    }
+    // Load the entity and assign the variables
+    $project = project_load($id);
+    $this->id = $project->id;
+    $this->name = $project->name;
+    $this->machine_name = $project->machine_name;
+    $this->major_version = $project->major_version;
+    $this->latest_minor_version = $project->latest_minor_version;
+    $this->latest_secure_minor_version = $project->latest_secure_minor_version;
+    $this->core = $project->core;
+    $this->supported = $project->supported;
+    $this->project_type = $project->project_type;
+    $this->update_next_check = $project->update_next_check;
   }
 }
 
@@ -679,6 +1081,19 @@ class SecuritySamuraiControllerHelper {
   }
 
   /**
+   * Retrieve the compatible core version from a version string
+   * e.g. "7.x"-1.2
+   *
+   * @param string $version The version number
+   */
+  public function split_core_version_number($version) {
+    // Retrieve the position of '-' in the version
+    $core_version_end = strpos($version_number, '-');
+    // Return the core version number
+    return substr($version_number, 0, $core_version_end);
+  }
+
+  /**
    * Retrieve the risk category e.g. Low, moderately critical etc.
    *
    * @param string $risk The risk string
@@ -700,559 +1115,37 @@ class SecuritySamuraiControllerHelper {
     // Return the result.
     return $return;
   }
-}
 
-/**
- * Returns a array of available project major versions.
- *
- * @param string $machine_name The machine name of the project.
- * @param string $core The compatible core version e.g. 7.x
- *
- * @return array[int] $return The array of major versions.
- */
-function samurai_get_available_major_versions($machine_name, $core) {
-
-  // Query the database for the major_versions
-  $result = db_query('SELECT major_version FROM {securitysamurai_projects} WHERE
-    machine_name = :machine_name AND
-    core = :core', array(
-      ':machine_name' => $machine_name,
-      ':core' => $core
-    ))->fetchAll();
-
-  // Check if the result is empty.
-  if (!empty($result)) {
-    $return = array();
-    foreach ($result as $res => $r) {
-
-      $return[sizeof($return)] = $r->major_version;
-    }
-    // Return the result.
-    return $return;
-  } else {
-
-    // The result is empty.
-    return NULL;
-  }
-}
-
-/**
- * Returns the entity ID of a project.
- *
- * @param string $machine_name The machine name of the project
- * @param string $core The compatible core version e.g. 7.x
- * @param int $major_version The major_version
- */
-function samurai_get_project_entity_id($machine_name, $core, $major_version) {
-
-  // Query the database for the ID
-  $result = db_query("SELECT id FROM {securitysamurai_projects} WHERE
-    major_version = :major_version AND
-    machine_name = :machine_name AND
-    core = :core", array(
-      ":major_version" => $major_version,
-      ":machine_name" => $machine_name,
-      ":core" => $core
-    ))->fetchField();
-
-  // Check if the result is empty.
-  if (!empty($result)) {
-
-    return $result;
-  } else {
-
-    return NULL;
-  }
-}
-
-/**
- * Split the XML data, to retrieve specific values.
- *
- * This will retrieve the string in between $str1 and $str2.
- *
- * @param string $xml_string The whole string.
- * @param int $str1 The first string.
- * @param int $str2 The second string.
- *
- * @return string $return The value of the collected string
- */
-function samurai_split_sa_data($xml_string, $str1, $str2 = NULL) {
-
-  if (is_null($str2)) {
-
-    // - If $str2 is null then it can't be used.
-    // - Work out the starting position of the string to return.
-    // - Retrieve the returning value.
-    $string1_start = strpos($xml_string, $str1);
-    $return_start = $string1_start + (strlen($str1) + 1);
-    $return = substr($xml_string, $return_start);
-  } else {
-    // - Get the start position of the two specified strings.
-    // - Work out the starting position of the string to return.
-    // - Work out the length of the string to return.
-    // - Retrieve the returning value.
-    $string1_start = strpos($xml_string, $str1);
-    $string2_start = strpos($xml_string, $str2);
-    $return_start = $string1_start + (strlen($str1) + 1);
-    $return_length = $string2_start - $return_start - 1;
-    $return = substr($xml_string, $return_start, $return_length);
-  }
-
-  // Return $return.
-  return $return;
-}
-
-/**
- * Decrypt the update data retrieved from a site site.
- *
- * @param string $update_data The encrypted update data string.
- * @param string $encryption_key The encryption key.
- *
- * @return string $decrypted The decrypted update data.
- */
-function samurai_decrypt_update_data($update_data, $encryption_key) {
-
-  // - Create the SHA key from the encryption key.
-  // - Base 64 decode the update data.
-  // - Get the IV from $ciphertext_dec.
-  // - Remove the IV from $ciphertext_dec.
-  // - Decrypt $ciphertext_dec.
-  // - There can be problems with \u0022 appearing.
-  $key = hash('SHA256', $encryption_key, TRUE);
-  $ciphertext_dec = base64_decode($update_data);
-  $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
-  $iv_dec = substr($ciphertext_dec, 0, $iv_size);
-  $ciphertext_dec = substr($ciphertext_dec, $iv_size);
-  $plaintext_dec = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, $ciphertext_dec, MCRYPT_MODE_CBC, $iv_dec);
-  $decrypted = str_replace('\u0022', '"', $plaintext_dec);
-
-  // Return the decrypted json string
-  return $decrypted;
-}
-
-/**
- * Change the project type
- * e.g. From Contrib -> Custom
- *
- * @param string $project_name The project name.
- * @param string $type The new project type.
- * @param string $core The compatible core version
- * @param string $major_version The major version number e.g. x.1
- */
-function samurai_mark_project_type($project_name, $core, $major_version, $type) {}
-
-/**
- * Splits a version number into their major and minor numbers.
- *
- * @param string $version_number The unsplit version number e.g. 1.14.
- *
- * @return array[mixed] $split The split version number.
- */
-function samurai_split_version_number($version_number) {
-
-  $return = array();
-  if (strpos($version_number, '7.x-') !== FALSE) {
-
-    // Cater for version numbers that contain 7.x-
-    $version_number = substr($version_number, 4);
-  }
-  if (strpos($version_number, '-') !== FALSE) {
-
-    // Remove the ending version e.g. -beta1
-    $pos = strpos($version_number, '-');
-    $version_number = substr($version_number, 0, $pos);
-  }
-  if (strpos($version_number, '+') !== FALSE) {
-
-    // Remove the ending version e.g. +rc1
-    $pos = strpos($version_number, '+');
-    $version_number = substr($version_number, 0, $pos);
-  }
-
-  // Get the position of the splitter.
-  $splitter = strpos($version_number, '.');
-  $minor = substr($version_number, $splitter + 1);
-  $major = substr($version_number, 0, $splitter);
-
-  // Remove the spaces from the split version number
-  $minor = str_replace(' ', '', $minor);
-  $major = str_replace(' ', '', $major);
-
-  // - Add the values to the return array.
-  // - Return the array.
-  $return['minor'] = $minor;
-  $return['major'] = $major;
-  return $return;
-}
-
-/**
- * Splits a drupal.org project version number returning the
- * compatible core version
- *
- * @param string $version_number The version number of the project e.g. 7.x-1.1
- */
-function samurai_split_version_number_core($version_number) {
-
-  // Retrieve the position of '-'
-  $core_version_end = strpos($version_number, '-');
-
-  // Return the core version number
-  return substr($version_number, 0, $core_version_end);
-}
-
-/**
- * Retrieve the machine name for a project as stored in the database.
- *
- * @param string $project_name The project_name NOT the machine name
- */
-function samurai_project_machine_name($project_name) {
-
-  // Query the database for the machine_name
-  $result = db_query("SELECT machine_name FROM {securitysamurai_projects} WHERE
-    name = :project_name",
-    array(
-      ':project_name' => $project_name
-    ))->fetchField();
-
-  // Check if the result is empty.
-  if (!empty($result)) {
-
-    // The result is not empty.
-    // Set the result to $return.
-    $return = $result;
-
-    // Return the result.
-    return $return;
-  } else {
-
-    // The result is empty.
-    return NULL;
-  }
-}
-
-/**
- * Check that samurai has access to the site site.
- *
- * @param string $site_url The site url of which to check access on.
- */
-function samurai_check_site_access($site_url) {
-
-  // Now we must check that we have access to the site.
-  $content = samurai_curl_request($site_url . '/admin/reports/security_samurai');
-
-  // Check that the content returned is not empty.
-  if (!empty($content)) {
-
-    $decoded = drupal_json_decode($content);
-
-    if (isset($decoded['encrypted'])) {
-
-      // We have access to the site, return TRUE.
-      return TRUE;
+  /**
+   * Return the value of data between str1 and str2
+   * from string
+   *
+   * @param string $string The whole string
+   * @param string $str1 The first string
+   * @param string $str2 The second string
+   *
+   * @return string $return The value of the string between str1 and str2
+   */
+  public function retrieve_string_between($string, $str1, $str2 = NULL) {
+    // Check if str2 has a value
+    if (is_null($str2)) {
+      // Retrieve the start position of str1
+      $string1_start = strpos($string, $str1);
+      // Add the length of str1 to the string1_start
+      // this will omit the value of str1 from the return value
+      $return_start = $string1_start + strlen($str1) + 1;
+      $return = substr($string, $return_start);
     } else {
-
-      // We can't find what we're looking for.
-      return FALSE;
+      // Retrieve the start position of str1 and str2
+      $string1_start = strpos($string, $str1);
+      $string2_start = strpos($string, $str2);
+      // Add the length of str1 to the string1_start
+      $return_start = $string1_start + strlen($str1) + 1;
+      // Calculate the length of the string to return
+      $return_length = $string2_start - $return_start - 1;
+      $return = substr($string, $return_start, $return_length);
     }
-  } else {
-
-    // We can't find what we're looking for.
-    return FALSE;
-  }
-}
-
-/**
- * This function may be misleading due to it's name.
- * This function will actually organise the update data into an array
- * that can be easily printed out on to the page.
- *
- * @param string $update_data The json encoded update data
- */
-function samurai_render_update_data($update_data) {
-
-  // Create the return array
-  $return = array();
-  $array_key = 0;
-  // Decoode the json update_data
-  $decoded = drupal_json_decode($update_data);
-  // Split the core version number - we need the major number
-  if (isset($decoded['drupal'])) {
-    $core_version = samurai_split_version_number($decoded['drupal']['version']);
-  } else {
-    return NULL;
-  }
-  // Loop through each project.
-  foreach ($decoded as $key => $value) {
-    // Get the major project version
-    $split_version_project = samurai_split_version_number($value['version']);
-    // Get the stored project data.
-    $result = db_query("SELECT
-      name,
-      major_version,
-      latest_minor_version,
-      latest_secure_minor_version,
-      project_type,
-      supported
-      FROM {securitysamurai_projects}
-      WHERE machine_name = :key
-      AND core = :core
-      AND major_version = :major_version
-      AND project_type != 'module_custom'",
-      array(
-        ':key' => $key,
-        ':major_version' => $split_version_project['major'],
-        ':core' => $core_version['major'] . '.x'
-    ))->fetchAll();
-    if (!empty($result)) {
-      $return[$array_key]['name'] = $result[0]->name;
-      $return[$array_key]['type'] = str_replace('_', ' ', $result[0]->project_type);
-      if ($value['name'] == 'Drupal core') {
-        $return[$array_key]['installed_version'] = $value['version'];
-      } else {
-        $return[$array_key]['installed_version'] = substr($value['version'], 4);
-      }
-      $return[$array_key]['latest_version'] = $result[0]->major_version . '.' . $result[0]->latest_minor_version;
-      $return[$array_key]['secure_version'] = $result[0]->major_version . '.' . $result[0]->latest_secure_minor_version;
-      // If the module is unsupported.
-      if ($result[0]->supported == 0) {
-        $return[$array_key]['status'] = 'unsupported';
-      }
-      // Check if the project minor is equal to x e.g. 1.x 2.x
-      // It is generally not recommended to install modules like this.
-      if ($split_version_project['minor'] == 'x') {
-        $return[$array_key]['status'] = 'unsecure';
-      }
-      // Check if the project minor is lest than the latest minor.
-      if ($split_version_project['minor'] < $result[0]->latest_minor_version) {
-        $return[$array_key]['status'] = 'secure';
-      }
-      // Check if the project minor is equal to the latest minor.
-      if ($split_version_project['minor'] == $result[0]->latest_minor_version) {
-        $return[$array_key]['status'] = 'latest';
-      }
-      // Check if the project minor is less than the latest secure minor.
-      if ($split_version_project['minor'] < $result[0]->latest_secure_minor_version) {
-        $return[$array_key]['status'] = 'unsecure';
-      }
-      $array_key++;
-    }
-  }
-  if (!empty($return)) {
+    // Return the value
     return $return;
-  } else {
-    return NULL;
-  }
-}
-
-/**
- * Retrieve the core version of a particular site.
- *
- * @param string $site_name The name of the site.
- * @param string $site_update_data The json encoded site update data.
- */
-function samurai_get_site_core_major($site_name, $site_update_data = NULL) {
-
-  $update_data = '';
-
-  // Get the site update data if left empty.
-  if (is_null($site_update_data)) {
-    $site_update_data = db_query('SELECT site_update_data FROM {securitysamurai_site}
-      WHERE name = :name', array(
-        ':name' => $site_name,
-      ))->fetchAll();
-
-    $update_data = '';
-    foreach ($site_update_data as $key => $value) {
-      $update_data = drupal_json_decode($value->site_update_data);
-      if (isset($update_data['drupal']['version'])) {
-        break;
-      }
-    }
-  } else {
-    $update_data = drupal_json_decode($site_update_data);
-  }
-
-  $split_version = samurai_split_version_number($update_data['drupal']['version']);
-
-  return $split_version['major'] . '.x';
-}
-
-/**
- * Returns the alias
- *
- * NOT YET IMPLEMENTED
- */
-function samurai_get_site_alias_id($site_id) {}
-
-/**
- * Returns the site update count
- *
- * @param int $site_id The entity ID of the client_site entity
- */
-function smaurai_get_site_update_count($site_id) {
-
-  // Query the database
-  $result = db_query('SELECT update_count FROM {securitysamurai_site} WHERE
-    id = :site_id', array(
-      ':site_id' => $site_id,
-    ))->fetchField();
-
-  if (!empty($result)) {
-    return $result;
-  } else {
-    return NULL;
-  }
-}
-
-/**
- * Returns a site id from the database.
- *
- * @param string $site_name The site name as present in the database.
- */
-function samurai_get_site_id($site_name) {
-
-  // Query the database and return the result.
-  $result = db_query('SELECT id FROM {securitysamurai_site} WHERE
-    name = :name', array(
-      ':name' => $site_name
-    ))->fetchField();
-
-  if (!empty($result)) {
-    return $result;
-  } else {
-    return NULL;
-  }
-}
-
-/**
- * Returns the site alias
- *
- * @param int $site_id The unique ID of the client_site entity
- */
-function samurai_get_site_alias($site_id) {
-
-  // Query the database and return the result
-  $result = db_query('SELECT site_alias_name FROM {securitysamurai_site} WHERE
-    id = :id', array(
-      ':id' => $site_id
-    ))->fetchField();
-
-  if (!empty($result)) {
-    return $result;
-  } else {
-    return NULL;
-  }
-}
-
-/**
- * Returns the site update checking method
- *
- * @param int $site_id The unique ID of the client_site entity
- */
-function samurai_get_site_update_method($site_id) {
-
-  // Query the database and return the result
-  $result = db_query('SELECT update_check_method FROM {securitysamurai_site} WHERE
-    id = :id', array(
-      ':id' => $site_id
-    ))->fetchField();
-
-  if (!empty($result)) {
-    return $result;
-  } else {
-    return NULL;
-  }
-}
-
-/**
- * Returns a list of sites in an array.
- */
-function samurai_get_sites() {
-
-  // Query the database.
-  $result = db_query('SELECT name FROM {securitysamurai_site}')->fetchAll();
-
-  if (!empty($result)) {
-
-    // Return the result as an array, and not
-    // the object it was received as.
-    $return = array();
-    foreach ($result as $name) {
-      $return[] = $name->name;
-    }
-    return $return;
-  } else {
-    return NULL;
-  }
-}
-
-/**
- * Returns the site update data from the client_site entity
- *
- * @param int $site_id The entity ID of the client_site
- */
-function samurai_get_site_update_data_entity($site_id) {
-
-  $result = db_query('SELECT site_update_data FROM {securitysamurai_site}
-    WHERE id = :site_id', array(
-      ':site_id' => $site_id
-    ))->fetchField();
-
-  if (!empty($result)) {
-    return $result;
-  } else {
-    return NULL;
-  }
-}
-
-/**
- * Returns TRUE/FALSE for auto-updates being enabled for
- * a particular project
- *
- * @param int $site_id The entity ID of the current client_site
- * @param string $machine_name The machine name of the project to check
- */
-function samurai_project_auto_update_enabled($site_id, $machine_name) {
-
-  // Retrieve the site_update_data
-  $site_update_data = samurai_get_site_update_data_entity($site_id);
-  // Decode the site_update_data
-  $site_update_data = drupal_json_decode($site_update_data);
-  // Check if the array is set
-  if (isset($site_update_data[$machine_name]['auto_updates'])) {
-    // Return true if auto-update is enabled and false if not
-    if ($site_update_data[$machine_name]['auto_updates'] == 1) {
-      return TRUE;
-    } else {
-      return FALSE;
-    }
-  } else {
-    return FALSE;
-  }
-}
-
-/**
- * Returns TRUE/FALSE for auto-updates being enabled for an entire
- * site
- *
- * @param int $site_id The entity ID of the current client_site
- */
-function samurai_projects_auto_update_enabled($site_id) {
-
-  // Query the database for the value of auto_updates
-  $result = db_query('SELECT auto_updates FROM {securitysamurai_site}
-    WHERE id = :site_id', array(
-      ':site_id' => $site_id,
-    ))->fetchField();
-  // If the value of auto_updates is NULL, then it hasn't
-  // been disabled
-  if (is_null($result)) {
-    return TRUE;
-  } else {
-    if ($result == 0) {
-      return FALSE;
-    } else {
-      return TRUE;
-    }
   }
 }

@@ -409,7 +409,9 @@ function security_samurai_docker_build_environment($container_information) {
   /**
    * Retrieve the corresponding site alias using the correct database dump
    */
-  $alias = samurai_get_site_alias($container_information['site_id']);
+  // Initialise a new client site class
+  $client_site = new SecuritySamuraiControllerClientSite();
+  $alias = $client_site->retrieve_alias($container_information['site_id']);
   $dump_location = security_samurai_aliases_dump_database($alias);
   // Move the database dump to the container and remove the
   // original dump from /tmp
