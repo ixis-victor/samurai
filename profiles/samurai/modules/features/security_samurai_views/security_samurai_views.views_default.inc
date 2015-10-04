@@ -191,16 +191,12 @@ function security_samurai_views_views_default_views() {
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'basic';
-  $handler->display->display_options['pager']['type'] = 'some';
+  $handler->display->display_options['pager']['type'] = 'mini';
   $handler->display->display_options['pager']['options']['items_per_page'] = '6';
   $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['pager']['options']['id'] = '0';
   $handler->display->display_options['style_plugin'] = 'default';
   $handler->display->display_options['row_plugin'] = 'fields';
-  /* Footer: Global: Unfiltered text */
-  $handler->display->display_options['footer']['area_text_custom']['id'] = 'area_text_custom';
-  $handler->display->display_options['footer']['area_text_custom']['table'] = 'views';
-  $handler->display->display_options['footer']['area_text_custom']['field'] = 'area_text_custom';
-  $handler->display->display_options['footer']['area_text_custom']['content'] = '<a href="/security-announcement">See more</a>';
   /* Field: Security announcement: ID */
   $handler->display->display_options['fields']['id']['id'] = 'id';
   $handler->display->display_options['fields']['id']['table'] = 'securitysamurai_sa';
@@ -258,17 +254,6 @@ function security_samurai_views_views_default_views() {
   /* Display: Security announcement overview */
   $handler = $view->new_display('panel_pane', 'Security announcement overview', 'securityannouncement_panel_1');
   $handler->display->display_options['display_description'] = 'Front page security announcement overview.';
-  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
-  $handler->display->display_options['defaults']['filters'] = FALSE;
-
-  /* Display: Security announcement list */
-  $handler = $view->new_display('panel_pane', 'Security announcement list', 'securityannouncement_panel_2');
-  $handler->display->display_options['defaults']['pager'] = FALSE;
-  $handler->display->display_options['pager']['type'] = 'mini';
-  $handler->display->display_options['pager']['options']['items_per_page'] = '8';
-  $handler->display->display_options['pager']['options']['offset'] = '0';
-  $handler->display->display_options['pager']['options']['id'] = '0';
-  $handler->display->display_options['defaults']['footer'] = FALSE;
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
   $export['security_announcements'] = $view;
