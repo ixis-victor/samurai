@@ -20,9 +20,6 @@ function metallurgy_samurai_status_messages($variables) {
   );
   foreach (drupal_get_messages($display) as $type => $messages) {
     $output .= "<script type='text/javascript'>";
-    if (!empty($status_heading [$type])) {
-      // $output .= 'Materialize.toast("' . $status_heading [$type] . '"';
-    }
     if (count($messages) > 1) {
       foreach ($messages as $message) {
         $output .= 'Materialize.toast("' . str_replace('"', "'", $message) . '", 5000);';
