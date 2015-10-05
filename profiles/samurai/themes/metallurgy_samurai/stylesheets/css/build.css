@@ -105,6 +105,10 @@ section p {
     .panel-col-last .inside,
     .panel-col .inside {
       margin: 0px !important; } }
+#toast-container {
+  top: 1em;
+  right: 2em; }
+
 .inline-block {
   display: inline-block; }
 

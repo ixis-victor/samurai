@@ -19,6 +19,23 @@
           return true;
         }
       }
+
+      if (getVal() == true) {
+        donechecked = false;
+      } else {
+        donechecked = true
+      }
+
+      $("label[for='edit-master-checkbox']").on("click", function() {
+        if (getVal() == true && donechecked == false) {
+          donechecked = true;
+          Materialize.toast('Auto-updates are now enabled', 3000);
+        }
+        if (getVal() == false && donechecked == true) {
+          donechecked = false;
+          Materialize.toast('Auto-updates are now disabled', 3000);
+        }
+      });
     }
   };
 })(jQuery);

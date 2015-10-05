@@ -133,7 +133,7 @@ section {
   select {
     height: 2rem;
   }
-  
+
   .panel-col-first,
   .panel-col-last,
   .panel-col {
@@ -142,6 +142,11 @@ section {
       margin: 0px !important;
     }
   }
+}
+
+#toast-container {
+  top: 1em;
+  right: 2em;
 }
 
 .inline-block {
