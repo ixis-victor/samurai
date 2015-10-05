@@ -19,21 +19,19 @@ function metallurgy_samurai_status_messages($variables) {
     'warning' => t('Warning message'),
   );
   foreach (drupal_get_messages($display) as $type => $messages) {
-    $output .= "<div class=\"messages card $type\">\n";
+    $output .= "<script type='text/javascript'>";
     if (!empty($status_heading [$type])) {
-      $output .= '<h2 class="element-invisible">' . $status_heading [$type] . "</h2>\n";
+      // $output .= 'Materialize.toast("' . $status_heading [$type] . '"';
     }
     if (count($messages) > 1) {
-      $output .= " <ul>\n";
       foreach ($messages as $message) {
-        $output .= '  <li>' . $message . "</li>\n";
+        $output .= 'Materialize.toast("' . str_replace('"', "'", $message) . '", 5000);';
       }
-      $output .= " </ul>\n";
     }
     else {
-      $output .= reset($messages);
+      $output .= 'Materialize.toast("' . str_replace('"', "'", $messages[0]) . '", 5000);';
     }
-    $output .= "</div>\n";
+    $output .= "</script>\n";
   }
   return $output;
 }
