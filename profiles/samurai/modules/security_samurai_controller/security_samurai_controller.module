@@ -331,7 +331,9 @@ function security_samurai_controller_site_actions_form($form, &$form_state) {
     '#value' => t('Scan the site now'),
     '#op' => 'scan_site',
     '#attributes' => array(
-      'style' => array('width: 100%;')
+      'style' => array(
+        'width: 100%;',
+        'margin-bottom: 1em;')
     ),
   );
   // Will redirect to the site edit page
@@ -340,7 +342,10 @@ function security_samurai_controller_site_actions_form($form, &$form_state) {
     '#value' => t('Edit site'),
     '#op' => 'edit_site',
     '#attributes' => array(
-      'style' => array('width: 49%;', 'float: right;')
+      'style' => array(
+        'width: 49%;',
+        'float: right;',
+        'margin-bottom: 1em;')
     ),
   );
   // Remove the site entity and any related containers/images/entities
@@ -350,7 +355,10 @@ function security_samurai_controller_site_actions_form($form, &$form_state) {
     '#op' => 'delete_site',
     '#disabled' => TRUE,
     '#attributes' => array(
-      'style' => array('width: 49%;', 'float: left;'),
+      'style' => array(
+        'width: 49%;',
+        'float: left;',
+        'margin-bottom: 1em;'),
       'disabled' => array('disabled'),
     ),
   );
