@@ -1,6 +1,6 @@
 section {
   font-weight: 300;
-  
+
   &#menu-wrapper {
     color: $menu_font_color;
     #menu {
@@ -160,7 +160,7 @@ section {
       }
     }
   }
-  .view-footer { 
+  .view-footer {
     margin-top: 1em;
   }
   .item-list {
@@ -210,7 +210,7 @@ section {
   #content-main {
     z-index: -10;
     .publish-info {
-      padding: 1em;
+      padding: 2em 1em 2em 1em;
       margin-top: 0px;
     }
   }
@@ -302,7 +302,7 @@ section {
 
 .logo {
   margin-left: 10px;
-  margin-top: 3px; 
+  margin-top: 3px;
   &.center {
     margin-left: 49%;
   }
@@ -311,7 +311,7 @@ section {
 .site-name {
   display: inline-block;
   position: absolute;
-  margin-left: 10px; 
+  margin-left: 10px;
 }
 
 .page-client-site {
@@ -448,7 +448,7 @@ section {
           -webkit-transition: 0.2s ease;
           transition: 0.2s ease;
 
-          &:hover { 
+          &:hover {
             background-color: $menu_item_hover_background_color;
           }
         }
