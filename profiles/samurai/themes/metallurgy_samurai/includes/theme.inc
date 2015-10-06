@@ -118,3 +118,22 @@ function metallurgy_samurai_preprocess_textarea(&$variables) {
   // Add a class to the textarea element
   $variables['element']['#attributes']['class'][] = 'materialize-textarea';
 }
+
+/**
+ * Returns HTML for a progress bar.
+ *
+ * Note that the core Batch API uses this only for non-JavaScript batch jobs.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - percent: The percentage of the progress.
+ *   - message: A string containing information to be displayed.
+ */
+function metallurgy_samurai_progress_bar($variables) {
+  $output = '<div class="progress">';
+  $output .= '<div class="indeterminate"></div>';
+  $output .= '</div>';
+  
+  return $output;
+}
+
